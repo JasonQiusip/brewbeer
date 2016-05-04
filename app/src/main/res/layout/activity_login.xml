@@ -95,7 +95,7 @@
                     android:textSize="16sp"
                     android:text="忘记密码？"/>
                 <Button
-                    android:id="@+id/registet_btn"
+                    android:id="@+id/register_btn"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="@null"

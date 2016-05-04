@@ -47,9 +47,10 @@
             android:label="@string/title_activity_add_recipe"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".uis.activity.BrewSessionsActivity"
-            android:label="@string/title_activity_brew_sessions"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:name=".uis.activity.BrewSessionActivity"
+            android:label="@string/title_activity_brew_session"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".uis.activity.BaseActivity"></activity>
     </application>
 
 </manifest>

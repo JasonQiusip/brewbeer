@@ -7,4 +7,7 @@ public interface LoginView {
 
     void onCheckSuccess(String state);
     void onCheckFailed(String msg);
+
+    void onLoginSuccess();
+    void onLoginFailed(String msg);
 }

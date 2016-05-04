@@ -2,6 +2,7 @@ package com.ltbrew.brewbeer.uis;
 
 public interface Constants {
 
+    String NETWORK_ERROR = "-1";
 
     public interface ReqValCodeState {
         public static final String SUCCESS = "0";
@@ -21,7 +22,12 @@ public interface Constants {
     public interface LoginState {
         String PASSWORD_ERROR = "401";
         String NETWORK_ERROR = "-1";
+    }
 
+    interface CheckAccState{
+        String PHONE_NOT_REGISTERED = "0";
+        String NUMB_NOT_PHONE = "1";
+        String ACC_REGISTERED = "2";
     }
 
     public interface PwdNewState {

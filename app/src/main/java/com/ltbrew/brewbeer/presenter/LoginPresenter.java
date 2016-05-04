@@ -7,7 +7,6 @@ import com.ltbrew.brewbeer.api.ssoApi.LoginApi;
 import com.ltbrew.brewbeer.interfaceviews.LoginView;
 
 import rx.Observable;
-import rx.Scheduler;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
@@ -25,7 +24,7 @@ public class LoginPresenter {
     }
 
     public void checkAccount(final String username){
-        Observable.create(new Observable.OnSubscribe<String>() {
+        RxUtil.create(new Observable.OnSubscribe<String>() {
             @Override
             public void call(Subscriber<? super String> subscriber) {
                 HttpResponse httpResponse = LoginApi.checkAccount(username);
@@ -38,7 +37,7 @@ public class LoginPresenter {
                     subscriber.onError(new Throwable(""+httpResponse.getCode()));
                 }
             }
-        }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(new Action1<String>() {
+        }).subscribe(new Action1<String>() {
             @Override
             public void call(String state) {
                 loginView.onCheckSuccess(state);
@@ -51,27 +50,27 @@ public class LoginPresenter {
         });
     }
 
-    public void loging(final String username, final String pwd){
-        Observable.create(new Observable.OnSubscribe<String>() {
+    public void signIn(final String username, final String pwd){
+        RxUtil.create(new Observable.OnSubscribe<String>() {
             @Override
             public void call(Subscriber<? super String> subscriber) {
                 HttpResponse httpResponse = LoginApi.loginAsync(username, pwd);
                 if(httpResponse.isSuccess()){
                     String content = httpResponse.getContent();
-
+                    subscriber.onNext(content);
                 }else{
-
+                    subscriber.onError(new Throwable(""+httpResponse.getCode()));
                 }
             }
-        }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(new Action1<String>() {
+        }).subscribe(new Action1<String>() {
             @Override
             public void call(String s) {
-
+                loginView.onLoginSuccess();
             }
         }, new Action1<Throwable>() {
             @Override
             public void call(Throwable throwable) {
-
+                loginView.onLoginFailed(throwable.getMessage());
             }
         });
     }

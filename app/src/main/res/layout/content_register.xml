@@ -11,6 +11,7 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="com.ltbrew.brewbeer.uis.activity.RegisterActivity"
     tools:showIn="@layout/activity_register">
+
     <LinearLayout
         android:id="@+id/LinearLayout01"
         android:layout_width="match_parent"
@@ -39,7 +40,7 @@
                 android:textSize="16sp" />
 
             <EditText
-                android:id="@+id/forget_pwd_phone_no_edt"
+                android:id="@+id/reg_phone_no_edt"
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
                 android:layout_gravity="center_vertical"
@@ -62,7 +63,7 @@
             android:orientation="horizontal" >
 
             <EditText
-                android:id="@+id/edit_forget_pwd_code"
+                android:id="@+id/edit_reg_code"
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
                 android:layout_gravity="center_vertical"
@@ -77,7 +78,7 @@
                 android:textSize="14sp" />
 
             <Button
-                android:id="@+id/btn_forget_pwd_req_code"
+                android:id="@+id/btn_req_code"
                 style="@style/style_bg_btn_white_corn"
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
@@ -118,7 +119,7 @@
             </RelativeLayout>
 
             <EditText
-                android:id="@+id/edt_forget_pwd"
+                android:id="@+id/edt_reg_pwd"
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
                 android:layout_gravity="center_vertical"
@@ -164,7 +165,7 @@
             </RelativeLayout>
 
             <EditText
-                android:id="@+id/forget_pwd_confirm_pwd_edt"
+                android:id="@+id/ed_psw_2"
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
                 android:layout_gravity="center_vertical"
@@ -182,14 +183,16 @@
     </LinearLayout>
 
     <Button
-        android:id="@+id/bt_forget_pwd_ok"
+        android:id="@+id/bt_regist_ok"
         style="@style/style_bg_btn_white_corn"
-        android:layout_below="@+id/LinearLayout01"
+        android:layout_below="@id/LinearLayout01"
         android:layout_width="match_parent"
         android:layout_height="40dp"
         android:layout_marginLeft="35dp"
         android:layout_marginRight="35dp"
         android:layout_marginTop="20dp"
-        android:text="完成"
+        android:text="注册"
         android:textSize="16sp" />
+
 </RelativeLayout>
+
