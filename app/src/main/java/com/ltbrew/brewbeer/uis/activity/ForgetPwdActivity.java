@@ -98,7 +98,7 @@ public class ForgetPwdActivity extends BaseActivity implements ForgetPwdView {
     }
 
 
-    @OnClick(R.id.register_btn)
+    @OnClick(R.id.bt_forget_pwd_ok)
     public void register(){
         String phone = forgetPwdPhoneNoEdt.getText().toString();
         String pwd = edtForgetPwd.getText().toString();

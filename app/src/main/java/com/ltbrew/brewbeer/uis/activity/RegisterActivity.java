@@ -100,7 +100,7 @@ public class RegisterActivity extends BaseActivity implements RegisterView {
     }
 
 
-    @OnClick(R.id.register_btn)
+    @OnClick(R.id.bt_regist_ok)
     public void register(){
         String phone = regPhoneNoEdt.getText().toString();
         String pwd = edtRegPwd.getText().toString();
