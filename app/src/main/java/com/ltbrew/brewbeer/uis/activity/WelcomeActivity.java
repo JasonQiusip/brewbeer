@@ -1,5 +1,6 @@
 package com.ltbrew.brewbeer.uis.activity;
 
+import android.content.Intent;
 import android.content.res.AssetManager;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -15,6 +16,11 @@ import android.widget.TextView;
 import com.ltbrew.brewbeer.BrewApp;
 import com.ltbrew.brewbeer.R;
 
+import java.util.concurrent.TimeUnit;
+
+import rx.Observable;
+import rx.functions.Action1;
+
 public class WelcomeActivity extends AppCompatActivity {
 
     @Override
@@ -22,7 +28,15 @@ public class WelcomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_welcome);
         TextView welcomeTv = (TextView)findViewById(R.id.welcomeTv);
-        welcomeTv.setTypeface(BrewApp.getInstance().textFont);
+        welcomeTv.setTypeface(Typeface.createFromAsset(getAssets(), "fonts/blesd.otf"));
+        Observable.timer(3000, TimeUnit.MILLISECONDS).subscribe(new Action1<Long>() {
+            @Override
+            public void call(Long aLong) {
+                Intent intent = new Intent();
+                intent.setClass(WelcomeActivity.this, LoginActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
 }

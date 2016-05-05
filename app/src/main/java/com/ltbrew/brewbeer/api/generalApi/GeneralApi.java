@@ -19,6 +19,8 @@ public class GeneralApi {
     public static final String device_type = "pt30";
 
     public static HttpResponse control(HttpReqParam httpReqParam, String devId, String operation){
+        if(httpReqParam == null)
+            httpReqParam = new HttpReqParam();
         String url = String.format(HostUtil.ctrlUrl, new Object[] {HostUtil.getApiHost(), device_type, devId, operation });
         httpReqParam.setUrlPath(url);
         httpReqParam.setType(HttpMethodType.Post);
@@ -26,6 +28,8 @@ public class GeneralApi {
     }
 
     public static HttpResponse res(HttpReqParam httpReqParam, String devId, String operation){
+        if(httpReqParam == null)
+            httpReqParam = new HttpReqParam();
         String url = String.format(HostUtil.resUrl, new Object[] {HostUtil.getApiHost(), device_type, devId, operation });
         httpReqParam.setUrlPath(url);
         httpReqParam.setType(HttpMethodType.Get);
@@ -33,20 +37,22 @@ public class GeneralApi {
     }
 
     public static HttpResponse dev(HttpReqParam httpReqParam, String operation){
+        if(httpReqParam == null)
+            httpReqParam = new HttpReqParam();
         String url = "http://" + HostUtil.getApiHost() + "/dev/" + operation;
         httpReqParam.setUrlPath(url);
         httpReqParam.setType(HttpMethodType.Get);
         return TokenDispatcher.delegateHttpReqWithToken(httpReqParam);
     }
 
-    public static HttpResponse downloadFile(String device_type, String deviceid, String receipt, String fn)
+    public static HttpResponse downloadFile(String deviceid, String fn, String ref)
     {
         HashMap<String, String> dict = new HashMap();
         dict.put("fn", fn);
         dict.put("share", ""+1);
         dict.put("m", "1");
-        dict.put("r", receipt);
-        String fileToken = getFileToken(device_type, deviceid, dict);
+        dict.put("r", ref);
+        String fileToken = getFileToken(deviceid, dict);
         if (fileToken == null) {
             return null;
         }
@@ -62,14 +68,14 @@ public class GeneralApi {
         if (fileToken != null)
         {
             String path = String.format(HostUtil.downUrl, new Object[] { HostUtil.getDownloadHost() });
-            path = path + "?tk=" + fileToken + "&r=" + receipt;
+            path = path + "?tk=" + fileToken + "&r=" + ref;
             HttpResponse httpResponse = HttpMethods.httpGet(path);
             return httpResponse;
         }
         return null;
     }
 
-    private static String getFileToken(String device_type, String deviceid, HashMap<String, String> dict)
+    private static String getFileToken(String deviceid, HashMap<String, String> dict)
     {
         HttpReqParam httpReqParam = new HttpReqParam();
         httpReqParam.setBody(dict);

@@ -1,5 +1,7 @@
 package com.ltbrew.brewbeer.api.cssApi;
 
+import android.text.TextUtils;
+
 import com.ltbrew.brewbeer.api.common.ApiConstants;
 import com.ltbrew.brewbeer.api.generalApi.GeneralApi;
 import com.ltbrew.brewbeer.api.model.HttpReqParam;
@@ -15,7 +17,9 @@ public class BrewApi {
 
     public static HttpResponse getBrewRecipes(String devId, String formula_id){
         HashMap body = new HashMap();
-        body.put("formula_id", formula_id);
+        if(!TextUtils.isEmpty(formula_id)) {
+            body.put("formula_id", formula_id);
+        }
         HttpReqParam httpReqParam = new HttpReqParam();
         httpReqParam.setBody(body);
         return GeneralApi.res(httpReqParam, devId, ApiConstants.BREW_LS_FORMULA);
@@ -38,5 +42,9 @@ public class BrewApi {
         HttpReqParam httpReqParam = new HttpReqParam();
         httpReqParam.setBody(body);
         return GeneralApi.res(httpReqParam, devId, ApiConstants.BREW_HISTORY);
+    }
+
+    public static HttpResponse downloadRecipe(String devId, String name, String ref){
+        return GeneralApi.downloadFile(devId, name, ref);
     }
 }

@@ -42,6 +42,8 @@ public interface ApiConstants {
     final String BIND = "bind";
     String UNBIND = "unbind";
     String PATCH_TID = "patch_tid";
+    String LIST = "list";
+
 
     final String ACC_SUFFIX = "@linktop.com";
 

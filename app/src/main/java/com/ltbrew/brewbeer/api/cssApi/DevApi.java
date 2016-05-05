@@ -12,7 +12,11 @@ import java.util.HashMap;
  */
 public class DevApi {
 
-    public HttpResponse bindDev(String qrCode){
+    public static HttpResponse getDevs(){
+        return GeneralApi.dev(null, ApiConstants.LIST);
+    }
+
+    public static HttpResponse bindDev(String qrCode){
         HashMap body = new HashMap();
         body.put("code", qrCode);
         HttpReqParam httpReqParam = new HttpReqParam();
@@ -20,7 +24,7 @@ public class DevApi {
         return GeneralApi.dev(httpReqParam, ApiConstants.BIND);
     }
 
-    public HttpResponse setPhoneNo2Dev(String phoneNo, String qr){
+    public static HttpResponse setPhoneNo2Dev(String phoneNo, String qr){
         HashMap body = new HashMap();
         body.put("no", phoneNo);
         body.put("qr", qr);
@@ -29,7 +33,7 @@ public class DevApi {
         return GeneralApi.dev(httpReqParam, ApiConstants.PATCH_TID);
     }
 
-    public HttpResponse unbindDev(String devId){
+    public static HttpResponse unbindDev(String devId){
         HashMap body = new HashMap();
         body.put("id", devId);
         HttpReqParam httpReqParam = new HttpReqParam();

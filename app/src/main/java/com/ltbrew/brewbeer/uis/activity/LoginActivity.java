@@ -87,7 +87,7 @@ public class LoginActivity extends BaseActivity implements LoginView {
         startBrewSessionActivity();
     }
     private void startBrewSessionActivity() {
-        startActivity(new Intent(this, BrewSessionActivity.class));
+        startActivity(new Intent(this, BrewHomeActivity.class));
     }
 
     @Override
