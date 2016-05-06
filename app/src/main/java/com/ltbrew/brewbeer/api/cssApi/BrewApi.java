@@ -36,9 +36,15 @@ public class BrewApi {
 
     public static HttpResponse getBrewHistory(String devId, String begin_date, String end_date, String state){
         HashMap body = new HashMap();
-        body.put("begin_date", begin_date);
-        body.put("end_date", end_date);
-        body.put("state", state);
+        if(TextUtils.isEmpty(begin_date)) {
+            body.put("begin_date", begin_date);
+        }
+        if(!TextUtils.isEmpty(end_date)) {
+            body.put("end_date", end_date);
+        }
+        if(!TextUtils.isEmpty(state)) {
+            body.put("state", state);
+        }
         HttpReqParam httpReqParam = new HttpReqParam();
         httpReqParam.setBody(body);
         return GeneralApi.res(httpReqParam, devId, ApiConstants.BREW_HISTORY);

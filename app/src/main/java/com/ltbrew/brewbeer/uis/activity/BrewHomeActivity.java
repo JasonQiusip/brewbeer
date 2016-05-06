@@ -1,16 +1,19 @@
 package com.ltbrew.brewbeer.uis.activity;
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.view.ViewPager;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.Fragment;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+import android.widget.RadioButton;
+import android.widget.TextView;
 
+import com.ltbrew.brewbeer.BrewApp;
 import com.ltbrew.brewbeer.R;
 import com.ltbrew.brewbeer.interfaceviews.BrewHomeView;
 import com.ltbrew.brewbeer.presenter.BrewHomePresenter;
@@ -21,8 +24,20 @@ import com.ltbrew.brewbeer.uis.fragment.RecipeFragment;
 
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 public class BrewHomeActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, BrewHomeView {
+
+    @BindView(R.id.homeCenterTitle)
+    TextView homeCenterTitle;
+    @BindView(R.id.homeCreateBrewSession)
+    TextView homeCreateBrewSession;
+    @BindView(R.id.brewRb)
+    RadioButton brewRb;
+    @BindView(R.id.recipeRb)
+    RadioButton recipeRb;
 
     private BrewSessionFragment brewSessionFragment = new BrewSessionFragment();
     private RecipeFragment recipeFragment = new RecipeFragment();
@@ -35,9 +50,10 @@ public class BrewHomeActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_brew_home);
+        ButterKnife.bind(this);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
+        homeCenterTitle.setTypeface(BrewApp.getInstance().textFont);
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
         mSectionsPagerAdapter.setFragments(fragments);
         mViewPager = (ViewPager) findViewById(R.id.brewHomeContainer);
@@ -96,7 +112,7 @@ public class BrewHomeActivity extends AppCompatActivity
 
     @Override
     public void onGetDevsSuccess(List<Device> devices) {
-
+        recipeFragment.getAllRecipes();
     }
 
     @Override

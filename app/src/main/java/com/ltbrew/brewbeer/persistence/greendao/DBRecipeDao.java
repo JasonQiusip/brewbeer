@@ -24,13 +24,14 @@ public class DBRecipeDao extends AbstractDao<DBRecipe, Long> {
     */
     public static class Properties {
         public final static Property Id = new Property(0, Long.class, "id", true, "_id");
-        public final static Property RecipeId = new Property(1, String.class, "recipeId", false, "RECIPE_ID");
+        public final static Property FormulaId = new Property(1, int.class, "formulaId", false, "FORMULA_ID");
         public final static Property Id_type = new Property(2, String.class, "id_type", false, "ID_TYPE");
         public final static Property Name = new Property(3, String.class, "name", false, "NAME");
-        public final static Property Ref = new Property(4, String.class, "ref", false, "REF");
-        public final static Property Cus = new Property(5, String.class, "cus", false, "CUS");
-        public final static Property Wr = new Property(6, String.class, "wr", false, "WR");
-        public final static Property Wq = new Property(7, String.class, "wq", false, "WQ");
+        public final static Property IdForFn = new Property(4, String.class, "idForFn", false, "ID_FOR_FN");
+        public final static Property Ref = new Property(5, String.class, "ref", false, "REF");
+        public final static Property Cus = new Property(6, String.class, "cus", false, "CUS");
+        public final static Property Wr = new Property(7, Integer.class, "wr", false, "WR");
+        public final static Property Wq = new Property(8, Integer.class, "wq", false, "WQ");
     };
 
     private DaoSession daoSession;
@@ -50,13 +51,14 @@ public class DBRecipeDao extends AbstractDao<DBRecipe, Long> {
         String constraint = ifNotExists? "IF NOT EXISTS ": "";
         db.execSQL("CREATE TABLE " + constraint + "\"DBRECIPE\" (" + //
                 "\"_id\" INTEGER PRIMARY KEY ," + // 0: id
-                "\"RECIPE_ID\" TEXT NOT NULL UNIQUE ," + // 1: recipeId
+                "\"FORMULA_ID\" INTEGER NOT NULL UNIQUE ," + // 1: formulaId
                 "\"ID_TYPE\" TEXT NOT NULL ," + // 2: id_type
                 "\"NAME\" TEXT," + // 3: name
-                "\"REF\" TEXT," + // 4: ref
-                "\"CUS\" TEXT," + // 5: cus
-                "\"WR\" TEXT," + // 6: wr
-                "\"WQ\" TEXT);"); // 7: wq
+                "\"ID_FOR_FN\" TEXT," + // 4: idForFn
+                "\"REF\" TEXT," + // 5: ref
+                "\"CUS\" TEXT," + // 6: cus
+                "\"WR\" INTEGER," + // 7: wr
+                "\"WQ\" INTEGER);"); // 8: wq
     }
 
     /** Drops the underlying database table. */
@@ -74,7 +76,7 @@ public class DBRecipeDao extends AbstractDao<DBRecipe, Long> {
         if (id != null) {
             stmt.bindLong(1, id);
         }
-        stmt.bindString(2, entity.getRecipeId());
+        stmt.bindLong(2, entity.getFormulaId());
         stmt.bindString(3, entity.getId_type());
  
         String name = entity.getName();
@@ -82,24 +84,29 @@ public class DBRecipeDao extends AbstractDao<DBRecipe, Long> {
             stmt.bindString(4, name);
         }
  
+        String idForFn = entity.getIdForFn();
+        if (idForFn != null) {
+            stmt.bindString(5, idForFn);
+        }
+ 
         String ref = entity.getRef();
         if (ref != null) {
-            stmt.bindString(5, ref);
+            stmt.bindString(6, ref);
         }
  
         String cus = entity.getCus();
         if (cus != null) {
-            stmt.bindString(6, cus);
+            stmt.bindString(7, cus);
         }
  
-        String wr = entity.getWr();
+        Integer wr = entity.getWr();
         if (wr != null) {
-            stmt.bindString(7, wr);
+            stmt.bindLong(8, wr);
         }
  
-        String wq = entity.getWq();
+        Integer wq = entity.getWq();
         if (wq != null) {
-            stmt.bindString(8, wq);
+            stmt.bindLong(9, wq);
         }
     }
 
@@ -120,13 +127,14 @@ public class DBRecipeDao extends AbstractDao<DBRecipe, Long> {
     public DBRecipe readEntity(Cursor cursor, int offset) {
         DBRecipe entity = new DBRecipe( //
             cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0), // id
-            cursor.getString(offset + 1), // recipeId
+            cursor.getInt(offset + 1), // formulaId
             cursor.getString(offset + 2), // id_type
             cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3), // name
-            cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4), // ref
-            cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5), // cus
-            cursor.isNull(offset + 6) ? null : cursor.getString(offset + 6), // wr
-            cursor.isNull(offset + 7) ? null : cursor.getString(offset + 7) // wq
+            cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4), // idForFn
+            cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5), // ref
+            cursor.isNull(offset + 6) ? null : cursor.getString(offset + 6), // cus
+            cursor.isNull(offset + 7) ? null : cursor.getInt(offset + 7), // wr
+            cursor.isNull(offset + 8) ? null : cursor.getInt(offset + 8) // wq
         );
         return entity;
     }
@@ -135,13 +143,14 @@ public class DBRecipeDao extends AbstractDao<DBRecipe, Long> {
     @Override
     public void readEntity(Cursor cursor, DBRecipe entity, int offset) {
         entity.setId(cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0));
-        entity.setRecipeId(cursor.getString(offset + 1));
+        entity.setFormulaId(cursor.getInt(offset + 1));
         entity.setId_type(cursor.getString(offset + 2));
         entity.setName(cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3));
-        entity.setRef(cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4));
-        entity.setCus(cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5));
-        entity.setWr(cursor.isNull(offset + 6) ? null : cursor.getString(offset + 6));
-        entity.setWq(cursor.isNull(offset + 7) ? null : cursor.getString(offset + 7));
+        entity.setIdForFn(cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4));
+        entity.setRef(cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5));
+        entity.setCus(cursor.isNull(offset + 6) ? null : cursor.getString(offset + 6));
+        entity.setWr(cursor.isNull(offset + 7) ? null : cursor.getInt(offset + 7));
+        entity.setWq(cursor.isNull(offset + 8) ? null : cursor.getInt(offset + 8));
      }
     
     /** @inheritdoc */

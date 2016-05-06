@@ -39,8 +39,7 @@ public class ForgetPwdActivity extends BaseActivity implements ForgetPwdView {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_forget_pwd);
         ButterKnife.bind(this);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        initToolbar();
         forgetPwdPresenter = new ForgetPwdPresenter(this);
     }
 

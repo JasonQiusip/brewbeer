@@ -1,13 +1,33 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="35dp"
     tools:context="com.ltbrew.brewbeer.uis.fragment.AddRecipeByIdFragment">
 
     <!-- TODO: Update blank fragment layout -->
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:layout_height="40dp"
+        android:layout_marginTop="20dp"
+        android:textSize="16sp"
+        android:text="输入原料包ID号以新建酿造任务" />
 
-</FrameLayout>
+    <EditText
+        android:id="@+id/edt_pack_id"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:paddingLeft="16dp"
+        android:background="@drawable/bg_round_tv"
+        android:hint="输入原料包ID"/>
+
+    <Button
+        android:id="@+id/btn_add_pack"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/bg_btn_white_corn"
+        android:text="确定"/>
+
+</LinearLayout>

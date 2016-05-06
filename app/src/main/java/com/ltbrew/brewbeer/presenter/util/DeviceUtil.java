@@ -14,7 +14,7 @@ public class DeviceUtil {
     public static final String DEVICE_SP = "DEVICE_SP";
 
     public static void storeCurrentDevId(String devId){
-        getSharedPreferences().edit().putString(CUR_DEV_ID, devId);
+        getSharedPreferences().edit().putString(CUR_DEV_ID, devId).commit();
     }
 
     public static String getCurrentDevId(){

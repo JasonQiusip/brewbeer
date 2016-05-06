@@ -152,7 +152,8 @@ public class MessageWindow {
 
 			@Override
 			public void onClick(View v) {
-				onCloseWindowListener.onCloseWindow();
+				if(onCloseWindowListener != null)
+					onCloseWindowListener.onCloseWindow();
 				hidePopupWindow();
 			}
 		});

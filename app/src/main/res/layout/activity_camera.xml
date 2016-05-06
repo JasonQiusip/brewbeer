@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <SurfaceView
+        android:id="@+id/preview_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center" />
+
+    <com.ltbrew.brewbeer.thirdpartylib.view.ViewfinderView
+        android:id="@+id/viewfinder_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:layout_gravity="top"
+        android:paddingTop="12dp"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:paddingBottom="0dp"
+        android:orientation="vertical" >
+        
+        <TextView
+            android:id="@+id/tv_back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top"
+            android:text="返回"
+            android:gravity="center"
+            android:drawablePadding="8dp"
+            android:textColor="@android:color/white"
+            android:drawableLeft="@mipmap/icon_left_wihte"
+            android:drawableStart="@mipmap/icon_left_wihte"
+            android:textSize="14sp" />
+        
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_gravity="bottom"
+            android:gravity="center|bottom"
+            android:layout_weight="1"
+            android:textColor="@android:color/white"
+            android:text="请将二维码置于识别框内"
+            android:textSize="18sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal"
+        android:paddingBottom="24dp" >
+
+        <TextView
+            android:id="@+id/tv_light"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:drawablePadding="8dp"
+            android:drawableTop="@mipmap/icon_light"
+            android:gravity="center"
+            android:text="@string/light"
+            android:textColor="@android:color/white" />
+        
+        <View android:layout_width="48dp"
+            android:layout_height="0dp"/>
+
+        <TextView
+            android:id="@+id/tv_img_document"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:drawablePadding="8dp"
+            android:drawableTop="@mipmap/icon_pic"
+            android:gravity="center"
+            android:onClick="openPicDocument"
+            android:text="@string/qr_img"
+            android:textColor="@android:color/white" />
+    </LinearLayout>
+
+</FrameLayout>

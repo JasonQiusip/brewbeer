@@ -23,7 +23,7 @@ public class BaseActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         if (toolbar != null) {
             TextView centerTitle = (TextView) toolbar.findViewById(R.id.centerTitle);
-            centerTitle.setTypeface(Typeface.createFromAsset(getAssets(), "fonts/cursive.TTF"));
+            centerTitle.setTypeface(BrewApp.getInstance().textFont);
         }
     }
 
@@ -37,7 +37,7 @@ public class BaseActivity extends AppCompatActivity {
             showSnackBar("网络错误，请检查您的网络！");
         }
         //服务错误
-        showSnackBar("服务器或APP出错，请联系客服，错误码：" + msg);
+        showSnackBar("服务器或APP出错，请联系客服，错误信息：" + msg);
     }
 
     public void showMsgWindow(String title, String msg, MessageWindow.OnCloseWindowListener onCloseWindowListener){

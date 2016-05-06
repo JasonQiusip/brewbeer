@@ -17,6 +17,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 import com.ltbrew.brewbeer.uis.Constants.*;
+import com.ltbrew.brewbeer.uis.utils.AccUtils;
 
 /**
  * A login screen that offers login via email/password.
@@ -46,6 +47,9 @@ public class LoginActivity extends BaseActivity implements LoginView {
         initToolbar();
         ButterKnife.bind(this);
         loginPresenter = new LoginPresenter(this);
+        if(!AccUtils.isAccEmpty()){
+            account.setText(AccUtils.getAcc());
+        }
     }
     //---------------------
     @OnClick(R.id.sign_in_button)
@@ -85,6 +89,7 @@ public class LoginActivity extends BaseActivity implements LoginView {
 
     @Override
     public void onLoginSuccess() {
+        AccUtils.storeAcc(account.getText().toString());
         startBrewSessionActivity();
     }
     private void startBrewSessionActivity() {

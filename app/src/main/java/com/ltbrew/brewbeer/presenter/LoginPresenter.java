@@ -71,6 +71,7 @@ public class LoginPresenter {
         }, new Action1<Throwable>() {
             @Override
             public void call(Throwable throwable) {
+                throwable.printStackTrace();
                 loginView.onLoginFailed(throwable.getMessage());
             }
         });

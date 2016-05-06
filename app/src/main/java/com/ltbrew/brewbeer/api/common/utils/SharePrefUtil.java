@@ -4,12 +4,14 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Base64;
 
+import com.ltbrew.brewbeer.BrewApp;
+
 /**
  * Created by qiusiping on 16/4/1.
  */
 public class SharePrefUtil {
 
-    private static final String KINZOL_SDK = "kinzol_sdk";
+    private static final String BREWBEER = "BrewBeer";
     private static SharePrefUtil sharePrefUtil;
     private static SharedPreferences sharedPreferences;
     private SharePrefUtil(){}
@@ -19,7 +21,7 @@ public class SharePrefUtil {
             sharePrefUtil = new SharePrefUtil();
         }
         if(sharedPreferences == null){
-            sharedPreferences = context.getSharedPreferences(KINZOL_SDK, Context.MODE_PRIVATE);
+            sharedPreferences = context.getSharedPreferences(BREWBEER, Context.MODE_PRIVATE);
         }
         return sharePrefUtil;
     }

@@ -11,15 +11,15 @@ import de.greenrobot.dao.DaoException;
 public class DBRecipe {
 
     private Long id;
-    /** Not-null value. */
-    private String recipeId;
+    private int formulaId;
     /** Not-null value. */
     private String id_type;
     private String name;
+    private String idForFn;
     private String ref;
     private String cus;
-    private String wr;
-    private String wq;
+    private Integer wr;
+    private Integer wq;
 
     /** Used to resolve relations */
     private transient DaoSession daoSession;
@@ -37,11 +37,12 @@ public class DBRecipe {
         this.id = id;
     }
 
-    public DBRecipe(Long id, String recipeId, String id_type, String name, String ref, String cus, String wr, String wq) {
+    public DBRecipe(Long id, int formulaId, String id_type, String name, String idForFn, String ref, String cus, Integer wr, Integer wq) {
         this.id = id;
-        this.recipeId = recipeId;
+        this.formulaId = formulaId;
         this.id_type = id_type;
         this.name = name;
+        this.idForFn = idForFn;
         this.ref = ref;
         this.cus = cus;
         this.wr = wr;
@@ -62,14 +63,12 @@ public class DBRecipe {
         this.id = id;
     }
 
-    /** Not-null value. */
-    public String getRecipeId() {
-        return recipeId;
+    public int getFormulaId() {
+        return formulaId;
     }
 
-    /** Not-null value; ensure this value is available before it is saved to the database. */
-    public void setRecipeId(String recipeId) {
-        this.recipeId = recipeId;
+    public void setFormulaId(int formulaId) {
+        this.formulaId = formulaId;
     }
 
     /** Not-null value. */
@@ -90,6 +89,14 @@ public class DBRecipe {
         this.name = name;
     }
 
+    public String getIdForFn() {
+        return idForFn;
+    }
+
+    public void setIdForFn(String idForFn) {
+        this.idForFn = idForFn;
+    }
+
     public String getRef() {
         return ref;
     }
@@ -106,19 +113,19 @@ public class DBRecipe {
         this.cus = cus;
     }
 
-    public String getWr() {
+    public Integer getWr() {
         return wr;
     }
 
-    public void setWr(String wr) {
+    public void setWr(Integer wr) {
         this.wr = wr;
     }
 
-    public String getWq() {
+    public Integer getWq() {
         return wq;
     }
 
-    public void setWq(String wq) {
+    public void setWq(Integer wq) {
         this.wq = wq;
     }
 

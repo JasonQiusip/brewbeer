@@ -36,5 +36,6 @@ dependencies {
     compile 'io.reactivex:rxandroid:1.1.0'
     compile 'com.android.support:support-v4:23.3.0'
     compile 'de.greenrobot:greendao:2.0.0'
-
+    compile files('libs/zxing_2015.jar')
+    compile 'cn.dreamtobe.percentsmoothhandler:library:0.1.1'
 }

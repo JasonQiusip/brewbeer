@@ -20,35 +20,36 @@ public class MyDaoGenerator {
 
         Entity recipe = schema.addEntity("DBRecipe");
         recipe.addIdProperty();
-        recipe.addStringProperty("recipeId").notNull().unique();
+        recipe.addIntProperty("formulaId").notNull().unique();
         recipe.addStringProperty("id_type").notNull();
         recipe.addStringProperty("name");
+        recipe.addStringProperty("idForFn");
         recipe.addStringProperty("ref");
         recipe.addStringProperty("cus");
-        recipe.addStringProperty("wr");
-        recipe.addStringProperty("wq");
+        recipe.addIntProperty("wr");
+        recipe.addIntProperty("wq");
 
         Entity brewStep = schema.addEntity("DBBrewStep");
         brewStep.addIdProperty();
         brewStep.addStringProperty("stepId").notNull().unique();
         brewStep.addStringProperty("act");
-        brewStep.addStringProperty("f");
-        brewStep.addStringProperty("pid");
+        brewStep.addIntProperty("f");
+        brewStep.addIntProperty("pid");
         brewStep.addStringProperty("i");
-        brewStep.addStringProperty("k");
-        brewStep.addStringProperty("t");
-        brewStep.addStringProperty("drn");
-        brewStep.addStringProperty("slot");
+        brewStep.addIntProperty("k");
+        brewStep.addIntProperty("t");
+        brewStep.addIntProperty("drn");
+        brewStep.addIntProperty("slot");
         Property recipeId = brewStep.addLongProperty("recipeId").notNull().getProperty();
-        brewStep.addToOne(recipe, recipeId);
+//        brewStep.addToOne(recipe, recipeId);
 
         Entity dbSlot = schema.addEntity("DBSlot");
         dbSlot.addIdProperty();
         dbSlot.addStringProperty("slotStepId");
-        dbSlot.addStringProperty("slotId");
+        dbSlot.addIntProperty("slotId");
         dbSlot.addStringProperty("name").notNull().unique();
         Property recipeId1 = dbSlot.addLongProperty("recipeId").notNull().getProperty();
-        dbSlot.addToOne(recipe, recipeId1);
+//        dbSlot.addToOne(recipe, recipeId1);
 
         ToMany recipeToBrewStep = recipe.addToMany(brewStep, recipeId);
         recipeToBrewStep.setName("brewSteps");

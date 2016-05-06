@@ -24,7 +24,7 @@ public class LoginApi {
     public static HttpResponse loginAsync(final String username, final String pwd) {
         HashMap<String, String> dict = new HashMap<String, String>();
         dict.put("api_key", ApiCommonParams.api_key);
-        dict.put("username", username);
+        dict.put("username", username + ApiConstants.ACC_SUFFIX);
         dict.put("pwd", pwd);
         HttpResponse login = HttpMethods.httpGet(ApiCommonParams.AUTHORIZE_URL + ApiConstants.GEN_TK, dict, null);
         if(login.isSuccess()){

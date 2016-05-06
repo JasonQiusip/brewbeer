@@ -1,14 +1,12 @@
 package com.ltbrew.brewbeer.persistence.greendao;
 
 import java.util.List;
-import java.util.ArrayList;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 
 import de.greenrobot.dao.AbstractDao;
 import de.greenrobot.dao.Property;
-import de.greenrobot.dao.internal.SqlUtils;
 import de.greenrobot.dao.internal.DaoConfig;
 import de.greenrobot.dao.query.Query;
 import de.greenrobot.dao.query.QueryBuilder;
@@ -31,17 +29,15 @@ public class DBBrewStepDao extends AbstractDao<DBBrewStep, Long> {
         public final static Property Id = new Property(0, Long.class, "id", true, "_id");
         public final static Property StepId = new Property(1, String.class, "stepId", false, "STEP_ID");
         public final static Property Act = new Property(2, String.class, "act", false, "ACT");
-        public final static Property F = new Property(3, String.class, "f", false, "F");
-        public final static Property Pid = new Property(4, String.class, "pid", false, "PID");
+        public final static Property F = new Property(3, Integer.class, "f", false, "F");
+        public final static Property Pid = new Property(4, Integer.class, "pid", false, "PID");
         public final static Property I = new Property(5, String.class, "i", false, "I");
-        public final static Property K = new Property(6, String.class, "k", false, "K");
-        public final static Property T = new Property(7, String.class, "t", false, "T");
-        public final static Property Drn = new Property(8, String.class, "drn", false, "DRN");
-        public final static Property Slot = new Property(9, String.class, "slot", false, "SLOT");
+        public final static Property K = new Property(6, Integer.class, "k", false, "K");
+        public final static Property T = new Property(7, Integer.class, "t", false, "T");
+        public final static Property Drn = new Property(8, Integer.class, "drn", false, "DRN");
+        public final static Property Slot = new Property(9, Integer.class, "slot", false, "SLOT");
         public final static Property RecipeId = new Property(10, long.class, "recipeId", false, "RECIPE_ID");
     };
-
-    private DaoSession daoSession;
 
     private Query<DBBrewStep> dBRecipe_BrewStepsQuery;
 
@@ -51,7 +47,6 @@ public class DBBrewStepDao extends AbstractDao<DBBrewStep, Long> {
     
     public DBBrewStepDao(DaoConfig config, DaoSession daoSession) {
         super(config, daoSession);
-        this.daoSession = daoSession;
     }
 
     /** Creates the underlying database table. */
@@ -61,13 +56,13 @@ public class DBBrewStepDao extends AbstractDao<DBBrewStep, Long> {
                 "\"_id\" INTEGER PRIMARY KEY ," + // 0: id
                 "\"STEP_ID\" TEXT NOT NULL UNIQUE ," + // 1: stepId
                 "\"ACT\" TEXT," + // 2: act
-                "\"F\" TEXT," + // 3: f
-                "\"PID\" TEXT," + // 4: pid
+                "\"F\" INTEGER," + // 3: f
+                "\"PID\" INTEGER," + // 4: pid
                 "\"I\" TEXT," + // 5: i
-                "\"K\" TEXT," + // 6: k
-                "\"T\" TEXT," + // 7: t
-                "\"DRN\" TEXT," + // 8: drn
-                "\"SLOT\" TEXT," + // 9: slot
+                "\"K\" INTEGER," + // 6: k
+                "\"T\" INTEGER," + // 7: t
+                "\"DRN\" INTEGER," + // 8: drn
+                "\"SLOT\" INTEGER," + // 9: slot
                 "\"RECIPE_ID\" INTEGER NOT NULL );"); // 10: recipeId
     }
 
@@ -93,14 +88,14 @@ public class DBBrewStepDao extends AbstractDao<DBBrewStep, Long> {
             stmt.bindString(3, act);
         }
  
-        String f = entity.getF();
+        Integer f = entity.getF();
         if (f != null) {
-            stmt.bindString(4, f);
+            stmt.bindLong(4, f);
         }
  
-        String pid = entity.getPid();
+        Integer pid = entity.getPid();
         if (pid != null) {
-            stmt.bindString(5, pid);
+            stmt.bindLong(5, pid);
         }
  
         String i = entity.getI();
@@ -108,32 +103,26 @@ public class DBBrewStepDao extends AbstractDao<DBBrewStep, Long> {
             stmt.bindString(6, i);
         }
  
-        String k = entity.getK();
+        Integer k = entity.getK();
         if (k != null) {
-            stmt.bindString(7, k);
+            stmt.bindLong(7, k);
         }
  
-        String t = entity.getT();
+        Integer t = entity.getT();
         if (t != null) {
-            stmt.bindString(8, t);
+            stmt.bindLong(8, t);
         }
  
-        String drn = entity.getDrn();
+        Integer drn = entity.getDrn();
         if (drn != null) {
-            stmt.bindString(9, drn);
+            stmt.bindLong(9, drn);
         }
  
-        String slot = entity.getSlot();
+        Integer slot = entity.getSlot();
         if (slot != null) {
-            stmt.bindString(10, slot);
+            stmt.bindLong(10, slot);
         }
         stmt.bindLong(11, entity.getRecipeId());
-    }
-
-    @Override
-    protected void attachEntity(DBBrewStep entity) {
-        super.attachEntity(entity);
-        entity.__setDaoSession(daoSession);
     }
 
     /** @inheritdoc */
@@ -149,13 +138,13 @@ public class DBBrewStepDao extends AbstractDao<DBBrewStep, Long> {
             cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0), // id
             cursor.getString(offset + 1), // stepId
             cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2), // act
-            cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3), // f
-            cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4), // pid
+            cursor.isNull(offset + 3) ? null : cursor.getInt(offset + 3), // f
+            cursor.isNull(offset + 4) ? null : cursor.getInt(offset + 4), // pid
             cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5), // i
-            cursor.isNull(offset + 6) ? null : cursor.getString(offset + 6), // k
-            cursor.isNull(offset + 7) ? null : cursor.getString(offset + 7), // t
-            cursor.isNull(offset + 8) ? null : cursor.getString(offset + 8), // drn
-            cursor.isNull(offset + 9) ? null : cursor.getString(offset + 9), // slot
+            cursor.isNull(offset + 6) ? null : cursor.getInt(offset + 6), // k
+            cursor.isNull(offset + 7) ? null : cursor.getInt(offset + 7), // t
+            cursor.isNull(offset + 8) ? null : cursor.getInt(offset + 8), // drn
+            cursor.isNull(offset + 9) ? null : cursor.getInt(offset + 9), // slot
             cursor.getLong(offset + 10) // recipeId
         );
         return entity;
@@ -167,13 +156,13 @@ public class DBBrewStepDao extends AbstractDao<DBBrewStep, Long> {
         entity.setId(cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0));
         entity.setStepId(cursor.getString(offset + 1));
         entity.setAct(cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2));
-        entity.setF(cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3));
-        entity.setPid(cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4));
+        entity.setF(cursor.isNull(offset + 3) ? null : cursor.getInt(offset + 3));
+        entity.setPid(cursor.isNull(offset + 4) ? null : cursor.getInt(offset + 4));
         entity.setI(cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5));
-        entity.setK(cursor.isNull(offset + 6) ? null : cursor.getString(offset + 6));
-        entity.setT(cursor.isNull(offset + 7) ? null : cursor.getString(offset + 7));
-        entity.setDrn(cursor.isNull(offset + 8) ? null : cursor.getString(offset + 8));
-        entity.setSlot(cursor.isNull(offset + 9) ? null : cursor.getString(offset + 9));
+        entity.setK(cursor.isNull(offset + 6) ? null : cursor.getInt(offset + 6));
+        entity.setT(cursor.isNull(offset + 7) ? null : cursor.getInt(offset + 7));
+        entity.setDrn(cursor.isNull(offset + 8) ? null : cursor.getInt(offset + 8));
+        entity.setSlot(cursor.isNull(offset + 9) ? null : cursor.getInt(offset + 9));
         entity.setRecipeId(cursor.getLong(offset + 10));
      }
     
@@ -214,97 +203,4 @@ public class DBBrewStepDao extends AbstractDao<DBBrewStep, Long> {
         return query.list();
     }
 
-    private String selectDeep;
-
-    protected String getSelectDeep() {
-        if (selectDeep == null) {
-            StringBuilder builder = new StringBuilder("SELECT ");
-            SqlUtils.appendColumns(builder, "T", getAllColumns());
-            builder.append(',');
-            SqlUtils.appendColumns(builder, "T0", daoSession.getDBRecipeDao().getAllColumns());
-            builder.append(" FROM DBBREW_STEP T");
-            builder.append(" LEFT JOIN DBRECIPE T0 ON T.\"RECIPE_ID\"=T0.\"_id\"");
-            builder.append(' ');
-            selectDeep = builder.toString();
-        }
-        return selectDeep;
-    }
-    
-    protected DBBrewStep loadCurrentDeep(Cursor cursor, boolean lock) {
-        DBBrewStep entity = loadCurrent(cursor, 0, lock);
-        int offset = getAllColumns().length;
-
-        DBRecipe dBRecipe = loadCurrentOther(daoSession.getDBRecipeDao(), cursor, offset);
-         if(dBRecipe != null) {
-            entity.setDBRecipe(dBRecipe);
-        }
-
-        return entity;    
-    }
-
-    public DBBrewStep loadDeep(Long key) {
-        assertSinglePk();
-        if (key == null) {
-            return null;
-        }
-
-        StringBuilder builder = new StringBuilder(getSelectDeep());
-        builder.append("WHERE ");
-        SqlUtils.appendColumnsEqValue(builder, "T", getPkColumns());
-        String sql = builder.toString();
-        
-        String[] keyArray = new String[] { key.toString() };
-        Cursor cursor = db.rawQuery(sql, keyArray);
-        
-        try {
-            boolean available = cursor.moveToFirst();
-            if (!available) {
-                return null;
-            } else if (!cursor.isLast()) {
-                throw new IllegalStateException("Expected unique result, but count was " + cursor.getCount());
-            }
-            return loadCurrentDeep(cursor, true);
-        } finally {
-            cursor.close();
-        }
-    }
-    
-    /** Reads all available rows from the given cursor and returns a list of new ImageTO objects. */
-    public List<DBBrewStep> loadAllDeepFromCursor(Cursor cursor) {
-        int count = cursor.getCount();
-        List<DBBrewStep> list = new ArrayList<DBBrewStep>(count);
-        
-        if (cursor.moveToFirst()) {
-            if (identityScope != null) {
-                identityScope.lock();
-                identityScope.reserveRoom(count);
-            }
-            try {
-                do {
-                    list.add(loadCurrentDeep(cursor, false));
-                } while (cursor.moveToNext());
-            } finally {
-                if (identityScope != null) {
-                    identityScope.unlock();
-                }
-            }
-        }
-        return list;
-    }
-    
-    protected List<DBBrewStep> loadDeepAllAndCloseCursor(Cursor cursor) {
-        try {
-            return loadAllDeepFromCursor(cursor);
-        } finally {
-            cursor.close();
-        }
-    }
-    
-
-    /** A raw-style query where you can pass any WHERE clause and arguments. */
-    public List<DBBrewStep> queryDeep(String where, String... selectionArg) {
-        Cursor cursor = db.rawQuery(getSelectDeep() + where, selectionArg);
-        return loadDeepAllAndCloseCursor(cursor);
-    }
- 
 }

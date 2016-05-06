@@ -1,12 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:background="@android:color/white"
+    android:layout_width="match_parent"
+    android:gravity="center_vertical"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    android:paddingTop="4dp"
+    android:paddingBottom="4dp"
+    android:layout_height="72dp">
 
     <TextView
         android:id="@+id/brewingSessionItemTv"
         android:layout_width="match_parent"
-        style="@style/itemStyle"
+        style="@style/brewingTvStyle"
         android:text="小麦酒"
-        android:drawableRight="@mipmap/ic_chevron_right_black"/>
-</LinearLayout>
+        />
+    <TextView
+        android:id="@+id/brewingState"
+        android:layout_width="wrap_content"
+        android:layout_toLeftOf="@+id/rightArrowIv"
+        style="@style/brewingTvStyle"
+        android:textColor="@color/colorAccent"
+        android:text="煮水15分钟"
+       />
+
+    <com.ltbrew.brewbeer.uis.view.MagicProgressBar
+        android:layout_below="@id/brewingSessionItemTv"
+        android:layout_toLeftOf="@+id/rightArrowIv"
+        android:layout_marginTop="8dp"
+        android:layout_width="match_parent"
+        android:layout_height="20dp"
+        app:mpb_background_color="#dddddd"
+        app:mpb_fill_color="#FF1CECBE"
+        app:mpb_flat="true"/>
+
+    <ImageView
+        android:id="@+id/rightArrowIv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="16dp"
+        android:layout_centerVertical="true"
+        android:layout_alignParentRight="true"
+        android:src="@mipmap/ic_chevron_right_black"/>
+</RelativeLayout>

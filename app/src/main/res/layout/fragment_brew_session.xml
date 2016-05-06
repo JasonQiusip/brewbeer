@@ -13,7 +13,7 @@
         android:id="@+id/brewStateRv"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minHeight="56dp"/>
+        android:minHeight="72dp"/>
     <TextView
         android:layout_width="match_parent"
         style="@style/subTitleStyle"

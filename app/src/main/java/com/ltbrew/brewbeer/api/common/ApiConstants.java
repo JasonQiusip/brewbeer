@@ -45,7 +45,7 @@ public interface ApiConstants {
     String LIST = "list";
 
 
-    final String ACC_SUFFIX = "@linktop.com";
+    final String ACC_SUFFIX = "@linktop.com.cn";
 
 
 }

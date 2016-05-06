@@ -41,7 +41,7 @@ public class GeneralApi {
             httpReqParam = new HttpReqParam();
         String url = "http://" + HostUtil.getApiHost() + "/dev/" + operation;
         httpReqParam.setUrlPath(url);
-        httpReqParam.setType(HttpMethodType.Get);
+        httpReqParam.setType(HttpMethodType.Post);
         return TokenDispatcher.delegateHttpReqWithToken(httpReqParam);
     }
 

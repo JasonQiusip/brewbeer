@@ -22,12 +22,12 @@ public class DBManager {
     private DBRecipeDao dbRecipeDao;
     private DBBrewStepDao dbBrewStepDao;
     private DBSlotDao dbSlotDao;
-    private DBManager dbManager;
+    private static DBManager dbManager;
 
     private DBManager(){
     }
 
-    public DBManager newInstance(){
+    public static DBManager getInstance(){
         if (dbManager == null) {
             dbManager = new DBManager();
         }

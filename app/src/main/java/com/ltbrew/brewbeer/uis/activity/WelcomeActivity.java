@@ -28,13 +28,14 @@ public class WelcomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_welcome);
         TextView welcomeTv = (TextView)findViewById(R.id.welcomeTv);
-        welcomeTv.setTypeface(Typeface.createFromAsset(getAssets(), "fonts/cursive.TTF"));
+        welcomeTv.setTypeface(BrewApp.getInstance().textFont);
         Observable.timer(3000, TimeUnit.MILLISECONDS).subscribe(new Action1<Long>() {
             @Override
             public void call(Long aLong) {
                 Intent intent = new Intent();
                 intent.setClass(WelcomeActivity.this, LoginActivity.class);
                 startActivity(intent);
+                finish();
             }
         });
     }

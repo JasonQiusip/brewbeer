@@ -2,9 +2,20 @@ package com.ltbrew.brewbeer.uis.adapter;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.TextView;
 
+import com.ltbrew.brewbeer.R;
+import com.ltbrew.brewbeer.presenter.model.Recipe;
 import com.ltbrew.brewbeer.uis.adapter.viewholder.RecipeVH;
+
+import java.util.Collections;
+import java.util.List;
+
+import butterknife.BindView;
 
 /**
  * Created by 151117a on 2016/5/4.
@@ -12,23 +23,31 @@ import com.ltbrew.brewbeer.uis.adapter.viewholder.RecipeVH;
 public class RecipeAdapter extends RecyclerView.Adapter<RecipeVH> {
 
     private final Context context;
+    private List<Recipe> recipes = Collections.EMPTY_LIST;
 
-    public RecipeAdapter(Context context){
+    public RecipeAdapter(Context context) {
         this.context = context;
     }
 
     @Override
     public RecipeVH onCreateViewHolder(ViewGroup parent, int viewType) {
-        return null;
+        View view = LayoutInflater.from(context).inflate(R.layout.item_recipe, parent, false);
+        RecipeVH recipeVH = new RecipeVH(view);
+        return recipeVH;
     }
 
     @Override
     public void onBindViewHolder(RecipeVH holder, int position) {
-
+        Recipe recipe = recipes.get(position);
+        holder.recipeNameTv.setText(recipe.getName());
     }
 
     @Override
     public int getItemCount() {
-        return 0;
+        return recipes.size();
+    }
+
+    public void setData(List<Recipe> recipes) {
+        this.recipes = recipes;
     }
 }

@@ -2,19 +2,21 @@ package com.ltbrew.brewbeer.uis.fragment;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.ltbrew.brewbeer.BrewApp;
 import com.ltbrew.brewbeer.R;
 import com.ltbrew.brewbeer.interfaceviews.RecipeView;
+import com.ltbrew.brewbeer.persistence.greendao.DBRecipe;
 import com.ltbrew.brewbeer.presenter.RecipePresenter;
-import com.ltbrew.brewbeer.uis.adapter.BrewingSessionAdapter;
-import com.ltbrew.brewbeer.uis.adapter.FinishedSessionAdapter;
+import com.ltbrew.brewbeer.presenter.model.Recipe;
 import com.ltbrew.brewbeer.uis.adapter.RecipeAdapter;
+
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -23,6 +25,8 @@ public class RecipeFragment extends Fragment implements RecipeView {
 
     @BindView(R.id.recipeRv)
     RecyclerView recipeRv;
+    @BindView(R.id.recipeRefreshLayout)
+    SwipeRefreshLayout recipeRefreshLayout;
     private RecipeAdapter recipeAdapter;
     private RecipePresenter recipePresenter;
 
@@ -41,18 +45,40 @@ public class RecipeFragment extends Fragment implements RecipeView {
         recipeAdapter = new RecipeAdapter(getContext());
         recipeRv.setAdapter(recipeAdapter);
         recipePresenter = new RecipePresenter(this);
-        recipePresenter.getAllRecipes(BrewApp.getInstance().getCurrentDev(), "");
+        recipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                getAllRecipes();
+            }
+        });
         return view;
+    }
+
+    public void getAllRecipes() {
+        recipeRefreshLayout.setRefreshing(true);
+        recipePresenter.getRecipes("");
     }
 
 
     @Override
-    public void onGetRecipeSuccess() {
-
+    public void onGetRecipeSuccess(List<Recipe> recipes) {
+        recipeRefreshLayout.setRefreshing(false);
+        recipeAdapter.setData(recipes);
+        recipeAdapter.notifyDataSetChanged();
     }
 
     @Override
     public void onGetRecipeFailed() {
+        recipeRefreshLayout.setRefreshing(false);
+    }
+
+    @Override
+    public void onDownloadRecipeSuccess(DBRecipe dbRecipe) {
+
+    }
+
+    @Override
+    public void onDownloadRecipeFailed() {
 
     }
 }

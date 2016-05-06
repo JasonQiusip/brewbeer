@@ -20,20 +20,23 @@
         android:layout_alignParentBottom="true"
         android:orientation="horizontal"
         android:layout_height="?attr/actionBarSize">
-        <RadioButton
+        <com.ltbrew.brewbeer.uis.view.CenterDrawableButton
             android:id="@+id/brewRb"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:gravity="center"
+            android:checked="true"
             android:layout_weight="1"
             android:layout_marginRight="2dp"
+            android:drawableLeft="@drawable/rb_brew_icon"
             android:button="@null"
+            android:drawablePadding="6dp"
             android:text="酿造"/>
-        <RadioButton
+        <com.ltbrew.brewbeer.uis.view.CenterDrawableButton
             android:id="@+id/recipeRb"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:gravity="center"
+            android:drawableLeft="@drawable/rb_recipe_icon"
+            android:drawablePadding="6dp"
             android:layout_weight="1"
             android:button="@null"
             android:text="配方"/>

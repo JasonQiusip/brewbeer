@@ -61,13 +61,13 @@
 
             <Button
                 android:id="@+id/sign_in_button"
-                style="?android:textAppearanceSmall"
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
-                android:background="@drawable/bg_round_btn"
+                android:background="@drawable/bg_btn_white_corn"
                 android:layout_marginTop="20dp"
                 android:text="@string/action_sign_in"
-                android:textSize="18sp"
+                android:textColor="#334858"
+                android:textSize="16sp"
                 android:textStyle="bold" />
 
             <LinearLayout
