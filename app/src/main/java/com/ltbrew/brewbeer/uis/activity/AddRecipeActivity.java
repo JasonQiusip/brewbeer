@@ -29,7 +29,7 @@ public class AddRecipeActivity extends BaseActivity implements OnAddActionListen
     private ViewPager mViewPager;
     private AddRecipeByIdFragment addRecipeByIdFragment = new AddRecipeByIdFragment();
     private AddRecipeByQrFragment addRecipeByQrFragment = new AddRecipeByQrFragment();
-    private Fragment[] fragments = new Fragment[]{addRecipeByIdFragment, addRecipeByQrFragment};
+    private Fragment[] fragments = new Fragment[]{ addRecipeByQrFragment,addRecipeByIdFragment};
     private AddPackPresenter addPackPresenter;
 
     @Override

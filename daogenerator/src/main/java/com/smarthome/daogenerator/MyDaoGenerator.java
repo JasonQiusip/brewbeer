@@ -21,7 +21,7 @@ public class MyDaoGenerator {
         Entity recipe = schema.addEntity("DBRecipe");
         recipe.addIdProperty();
         recipe.addIntProperty("formulaId").notNull().unique();
-        recipe.addStringProperty("id_type").notNull();
+        recipe.addStringProperty("id_type");
         recipe.addStringProperty("name");
         recipe.addStringProperty("idForFn");
         recipe.addStringProperty("ref");

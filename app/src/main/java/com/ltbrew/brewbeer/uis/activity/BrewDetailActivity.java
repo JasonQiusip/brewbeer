@@ -6,10 +6,18 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.ltbrew.brewbeer.R;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 public class BrewDetailActivity extends AppCompatActivity {
+
+    @BindView(R.id.brewDetailContainer)
+    LinearLayout brewDetailContainer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -17,6 +25,8 @@ public class BrewDetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_brew_detail);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        ButterKnife.bind(this);
+
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {

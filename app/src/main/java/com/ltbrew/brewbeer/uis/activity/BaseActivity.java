@@ -20,11 +20,20 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     public void initToolbar(){
+        initToolbarWithCustomMsg(null);
+    }
+
+    public void initToolbarWithCustomMsg(String msg){
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         if (toolbar != null) {
             TextView centerTitle = (TextView) toolbar.findViewById(R.id.centerTitle);
             centerTitle.setTypeface(BrewApp.getInstance().textFont);
+            if(msg != null) {
+                centerTitle.setTextSize(20);
+                centerTitle.setText(msg);
+            }
         }
+
     }
 
     public void showSnackBar(String msg){

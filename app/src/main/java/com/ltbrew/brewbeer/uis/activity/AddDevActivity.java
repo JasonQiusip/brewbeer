@@ -9,7 +9,7 @@ import android.view.View;
 
 import com.ltbrew.brewbeer.R;
 
-public class AddDevActivity extends AppCompatActivity {
+public class AddDevActivity extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

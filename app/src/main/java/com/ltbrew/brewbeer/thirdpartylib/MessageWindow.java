@@ -36,7 +36,6 @@ public class MessageWindow {
 
 	private final String TAG = "MessageWindow";
 	private boolean isShown = false;
-	private Context mContextApp = null;
 	private Context mContext = null;
 	private View mView = null;
 	private WindowManager mWindowManager = null;
@@ -67,10 +66,9 @@ public class MessageWindow {
 	 */
 	public MessageWindow(Context context) {
 		// 获取应用的Context
-		mContextApp = context.getApplicationContext();
 		mContext = context;
 		// 获取WindowManager
-		mWindowManager = (WindowManager) mContextApp.getSystemService(Context.WINDOW_SERVICE);
+		mWindowManager = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
 
 		params = new LayoutParams();
 
@@ -87,7 +85,7 @@ public class MessageWindow {
 		// 如果不设置WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE，弹出的View收不到Back键的事件
 		params.flags = flags;
 		// 不设置这个弹出框的透明遮罩显示为黑色
-		params.format = PixelFormat.TRANSLUCENT;
+//		params.format = PixelFormat.TRANSLUCENT;
 		// FLAG_NOT_TOUCH_MODAL不阻塞事件传递到后面的窗口
 		// 设置 FLAG_NOT_FOCUSABLE 悬浮窗口较小时，后面的应用图标由不可长按变为可长按
 		// 不设置这个flag的话，home页的划屏会有问题
@@ -112,7 +110,7 @@ public class MessageWindow {
 
 		mWindowManager.addView(mView, params);
 		viewMessage.setVisibility(View.VISIBLE);
-		Animation animation = AnimationUtils.loadAnimation(mContextApp, R.anim.anim_popup_open);
+		Animation animation = AnimationUtils.loadAnimation(mContext, R.anim.anim_popup_open);
 		viewMessage.startAnimation(animation);
 		return this;
 	}
@@ -122,7 +120,7 @@ public class MessageWindow {
 	 */
 	public void hidePopupWindow() {
 		if (isShown && null != mView) {
-			Animation animation = AnimationUtils.loadAnimation(mContextApp, R.anim.anim_popup_close);
+			Animation animation = AnimationUtils.loadAnimation(mContext, R.anim.anim_popup_close);
 			viewMessage.startAnimation(animation);
 			viewMessage.postDelayed(new Runnable() {
 
@@ -141,7 +139,7 @@ public class MessageWindow {
 
 	private View setUpView() {
 
-		View view = LayoutInflater.from(mContextApp).inflate(R.layout.layout_message_window, null);
+		View view = LayoutInflater.from(mContext).inflate(R.layout.layout_message_window, null);
 
 		viewMessage = view.findViewById(R.id.message_window);
 		TextView tvClose = (TextView) view.findViewById(R.id.tv_close);

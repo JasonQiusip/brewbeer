@@ -16,6 +16,7 @@ import com.ltbrew.brewbeer.presenter.RecipePresenter;
 import com.ltbrew.brewbeer.presenter.model.Recipe;
 import com.ltbrew.brewbeer.uis.adapter.RecipeAdapter;
 
+import java.util.HashMap;
 import java.util.List;
 
 import butterknife.BindView;
@@ -29,6 +30,7 @@ public class RecipeFragment extends Fragment implements RecipeView {
     SwipeRefreshLayout recipeRefreshLayout;
     private RecipeAdapter recipeAdapter;
     private RecipePresenter recipePresenter;
+    private HashMap<String, DBRecipe> dbRecipeHashMap = new HashMap<>();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -74,7 +76,7 @@ public class RecipeFragment extends Fragment implements RecipeView {
 
     @Override
     public void onDownloadRecipeSuccess(DBRecipe dbRecipe) {
-
+        dbRecipeHashMap.put(dbRecipe.getIdForFn(), dbRecipe);
     }
 
     @Override

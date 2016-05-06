@@ -17,29 +17,32 @@
     <RadioGroup
         android:id="@+id/tabs"
         android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
         android:layout_alignParentBottom="true"
-        android:orientation="horizontal"
-        android:layout_height="?attr/actionBarSize">
+        android:orientation="horizontal">
+
         <com.ltbrew.brewbeer.uis.view.CenterDrawableButton
             android:id="@+id/brewRb"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:checked="true"
-            android:layout_weight="1"
             android:layout_marginRight="2dp"
-            android:drawableLeft="@drawable/rb_brew_icon"
+            android:layout_marginEnd="2dp"
+            android:layout_weight="1"
             android:button="@null"
+            android:checked="true"
+            android:drawableLeft="@drawable/rb_brew_icon"
             android:drawablePadding="6dp"
-            android:text="酿造"/>
+            android:text="酿造" />
+
         <com.ltbrew.brewbeer.uis.view.CenterDrawableButton
             android:id="@+id/recipeRb"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:drawableLeft="@drawable/rb_recipe_icon"
-            android:drawablePadding="6dp"
             android:layout_weight="1"
             android:button="@null"
-            android:text="配方"/>
+            android:drawableLeft="@drawable/rb_recipe_icon"
+            android:drawablePadding="6dp"
+            android:text="配方" />
     </RadioGroup>
 
 </RelativeLayout>

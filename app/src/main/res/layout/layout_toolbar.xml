@@ -24,7 +24,7 @@
             android:layout_height="match_parent"
             android:layout_gravity="center"
             android:textColor="#334858"
-            android:gravity="center"
+            android:gravity="center_vertical"
             android:textSize="25dp"
             android:textStyle="bold"
             android:text="LinkBrew"/>

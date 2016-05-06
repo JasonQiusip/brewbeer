@@ -52,7 +52,7 @@ public class DBRecipeDao extends AbstractDao<DBRecipe, Long> {
         db.execSQL("CREATE TABLE " + constraint + "\"DBRECIPE\" (" + //
                 "\"_id\" INTEGER PRIMARY KEY ," + // 0: id
                 "\"FORMULA_ID\" INTEGER NOT NULL UNIQUE ," + // 1: formulaId
-                "\"ID_TYPE\" TEXT NOT NULL ," + // 2: id_type
+                "\"ID_TYPE\" TEXT," + // 2: id_type
                 "\"NAME\" TEXT," + // 3: name
                 "\"ID_FOR_FN\" TEXT," + // 4: idForFn
                 "\"REF\" TEXT," + // 5: ref
@@ -77,7 +77,11 @@ public class DBRecipeDao extends AbstractDao<DBRecipe, Long> {
             stmt.bindLong(1, id);
         }
         stmt.bindLong(2, entity.getFormulaId());
-        stmt.bindString(3, entity.getId_type());
+ 
+        String id_type = entity.getId_type();
+        if (id_type != null) {
+            stmt.bindString(3, id_type);
+        }
  
         String name = entity.getName();
         if (name != null) {
@@ -128,7 +132,7 @@ public class DBRecipeDao extends AbstractDao<DBRecipe, Long> {
         DBRecipe entity = new DBRecipe( //
             cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0), // id
             cursor.getInt(offset + 1), // formulaId
-            cursor.getString(offset + 2), // id_type
+            cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2), // id_type
             cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3), // name
             cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4), // idForFn
             cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5), // ref
@@ -144,7 +148,7 @@ public class DBRecipeDao extends AbstractDao<DBRecipe, Long> {
     public void readEntity(Cursor cursor, DBRecipe entity, int offset) {
         entity.setId(cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0));
         entity.setFormulaId(cursor.getInt(offset + 1));
-        entity.setId_type(cursor.getString(offset + 2));
+        entity.setId_type(cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2));
         entity.setName(cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3));
         entity.setIdForFn(cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4));
         entity.setRef(cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5));

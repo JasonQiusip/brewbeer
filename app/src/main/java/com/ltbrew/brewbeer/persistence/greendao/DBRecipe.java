@@ -12,7 +12,6 @@ public class DBRecipe {
 
     private Long id;
     private int formulaId;
-    /** Not-null value. */
     private String id_type;
     private String name;
     private String idForFn;
@@ -71,12 +70,10 @@ public class DBRecipe {
         this.formulaId = formulaId;
     }
 
-    /** Not-null value. */
     public String getId_type() {
         return id_type;
     }
 
-    /** Not-null value; ensure this value is available before it is saved to the database. */
     public void setId_type(String id_type) {
         this.id_type = id_type;
     }

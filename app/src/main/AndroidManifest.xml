@@ -27,7 +27,7 @@
         </activity>
         <activity
             android:name=".uis.activity.LoginActivity"
-            android:label="@string/title_activity_login" />
+            android:label="" />
         <activity
             android:name=".uis.activity.RegisterActivity"
             android:label=""
@@ -38,15 +38,15 @@
           />
         <activity
             android:name=".uis.activity.BrewDetailActivity"
-            android:label="@string/title_activity_brew_detail"
+            android:label=""
              />
         <activity
             android:name=".uis.activity.AddDevActivity"
-            android:label="@string/title_activity_add_dev"
+            android:label=""
              />
         <activity
             android:name=".uis.activity.AddRecipeActivity"
-            android:label="@string/title_activity_add_recipe"
+            android:label=""
              />
         <activity
             android:name=".uis.activity.BrewHomeActivity"

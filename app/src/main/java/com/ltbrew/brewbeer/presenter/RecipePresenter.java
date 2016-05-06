@@ -84,39 +84,20 @@ public class RecipePresenter {
             String ref = jsonObject.getString("ref");
             Recipe recipe = new Recipe();
             recipe.setId(id);
-            recipe.setId_type(id_type+"");
+            recipe.setId_type(id_type + "");
+            recipe.setName(name);
             recipe.setCus(cus);
             recipe.setRef(ref);
             recipesList.add(recipe);
+            downloadSingleRecipe(devId, recipe);
         }
-        downloadRecipe(devId, recipesList);
         return recipesList;
-    }
-
-    private void downloadRecipe(final String devId, List<Recipe> recipes) {
-        Observable.from(recipes).flatMap(new Func1<Recipe, Observable<DBRecipe>>() {
-            @Override
-            public Observable<DBRecipe> call(Recipe recipe) {
-                return downloadSingleRecipe(devId, recipe);
-            }
-        }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(new Action1<DBRecipe>() {
-            @Override
-            public void call(DBRecipe dbRecipe) {
-                recipeView.onDownloadRecipeSuccess(dbRecipe);
-            }
-        }, new Action1<Throwable>() {
-            @Override
-            public void call(Throwable throwable) {
-                throwable.printStackTrace();
-
-            }
-        });
     }
 
     private static final String STEP_PREFIX = "s_";
 
-    private Observable<DBRecipe> downloadSingleRecipe(final String devId, final Recipe recipe){
-        return Observable.create(new Observable.OnSubscribe<DBRecipe>() {
+    private void downloadSingleRecipe(final String devId, final Recipe recipe){
+        Observable.create(new Observable.OnSubscribe<DBRecipe>() {
             @Override
             public void call(Subscriber<? super DBRecipe> subscriber) {
                 String fn = recipe.getId();
@@ -156,7 +137,17 @@ public class RecipePresenter {
                     subscriber.onCompleted();
                 }
             }
-        }).subscribeOn(Schedulers.io());
+        }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(new Action1<DBRecipe>() {
+            @Override
+            public void call(DBRecipe dbRecipe) {
+                recipeView.onDownloadRecipeSuccess(dbRecipe);
+            }
+        }, new Action1<Throwable>() {
+            @Override
+            public void call(Throwable throwable) {
+                recipeView.onGetRecipeFailed();
+            }
+        });
 
     }
 
