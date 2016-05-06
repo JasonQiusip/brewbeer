@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.ltbrew.brewbeer.api.model.HttpResponse;
 import com.ltbrew.brewbeer.api.ssoApi.LoginApi;
 import com.ltbrew.brewbeer.interfaceviews.LoginView;
+import com.ltbrew.brewbeer.presenter.util.RxUtil;
 
 import rx.Observable;
 import rx.Subscriber;
@@ -28,13 +29,13 @@ public class LoginPresenter {
             @Override
             public void call(Subscriber<? super String> subscriber) {
                 HttpResponse httpResponse = LoginApi.checkAccount(username);
-                if(httpResponse.isSuccess()){
+                if (httpResponse.isSuccess()) {
                     String content = httpResponse.getContent();
                     JSONObject stateJson = JSON.parseObject(content);
                     String state = stateJson.getString("state");
                     subscriber.onNext(state);
-                }else{
-                    subscriber.onError(new Throwable(""+httpResponse.getCode()));
+                } else {
+                    subscriber.onError(new Throwable("" + httpResponse.getCode()));
                 }
             }
         }).subscribe(new Action1<String>() {

@@ -29,11 +29,11 @@
             android:label="@string/title_activity_login" />
         <activity
             android:name=".uis.activity.RegisterActivity"
-            android:label="@string/title_activity_register"
+            android:label=""
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".uis.activity.ForgetPwdActivity"
-            android:label="@string/title_activity_forget_pwd"
+            android:label=""
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".uis.activity.BrewDetailActivity"

@@ -1,5 +1,6 @@
 package com.ltbrew.brewbeer.uis.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.support.v7.widget.Toolbar;
@@ -133,6 +134,8 @@ public class RegisterActivity extends BaseActivity implements RegisterView {
     public void onRegReqSuccess(String state) {
         cancelTimer();
         if (Constants.RegisterState.SUCCESS.equals(state)) {
+            showSnackBar("注册成功");
+            startLoginActivity();
         } else if (Constants.RegisterState.APIKEY_NO_NEED_TO_ACTIVE.equals(state)) {
             showSnackBar("该apikey无需激活");
         } else if (Constants.RegisterState.CODE_ERROR.equals(state)) {
@@ -148,6 +151,13 @@ public class RegisterActivity extends BaseActivity implements RegisterView {
         }
 
     }
+
+    private void startLoginActivity() {
+        Intent intent = new Intent(this, LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+    }
+
     @Override
     public void onRegFailed(String message) {
         cancelTimer();

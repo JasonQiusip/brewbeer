@@ -11,14 +11,12 @@ import com.ltbrew.brewbeer.presenter.util.DBManager;
 public class BrewApp extends Application {
 
     private static BrewApp app;
-    public Typeface textFont;
 
     @Override
     public void onCreate() {
         super.onCreate();
         app = this;
         DBManager.initDB(this);
-        textFont = Typeface.createFromAsset(getAssets(), "fonts/blesd.otf");
     }
 
     public static BrewApp getInstance(){

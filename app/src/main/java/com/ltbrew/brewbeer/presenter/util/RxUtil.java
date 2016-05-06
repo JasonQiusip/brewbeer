@@ -1,4 +1,4 @@
-package com.ltbrew.brewbeer.presenter;
+package com.ltbrew.brewbeer.presenter.util;
 
 import rx.Observable;
 import rx.Scheduler;

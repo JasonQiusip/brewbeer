@@ -167,7 +167,7 @@ public class HttpMethods {
 
     public static HttpResponse httpPost(String url, byte[] file)
     {
-        System.out.println(url);
+        Log.e("httpPost", url);
         HttpResponse httpResponse = new HttpResponse();
         try {
             URL urlPath = new URL(url);
@@ -180,19 +180,11 @@ public class HttpMethods {
             urlConnection.setDoInput(true);
             urlConnection.setDoOutput(true);
             urlConnection.setRequestProperty("Content-Length", file.length+"");
-            urlConnection.setRequestProperty("content-type", "text/html");
             urlConnection.connect();
             OutputStream out = urlConnection.getOutputStream();
-            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(file);
-            byte[] bytes=new byte[1024];
-            int numReadByte=0;
-            while((numReadByte=byteArrayInputStream.read(bytes,0,1024))>0){
-                out.write(bytes,0,numReadByte);
-            }
+            out.write(file, 0, file.length);
             out.flush();
-            byteArrayInputStream.close();
             out.close();
-
             int responseCode = urlConnection.getResponseCode();
             httpResponse.setCode(responseCode);
             if(responseCode != 200) {
@@ -200,10 +192,8 @@ public class HttpMethods {
             }
             InputStream inputStream = urlConnection.getInputStream();
 
-            System.out.print(responseCode+"");
-
             BufferedReader reader = null;
-//			Log.e("responseCode ", responseCode+"  responseCode");
+			Log.e("responseCode ", responseCode+"  responseCode");
             if (responseCode == 200) {
                 reader = new BufferedReader(new InputStreamReader(inputStream));
             } else {

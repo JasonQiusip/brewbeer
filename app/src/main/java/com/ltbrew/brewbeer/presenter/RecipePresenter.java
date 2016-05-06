@@ -9,6 +9,7 @@ import com.ltbrew.brewbeer.api.cssApi.BrewApi;
 import com.ltbrew.brewbeer.api.generalApi.GeneralApi;
 import com.ltbrew.brewbeer.api.model.HttpResponse;
 import com.ltbrew.brewbeer.interfaceviews.RecipeView;
+import com.ltbrew.brewbeer.presenter.util.RxUtil;
 
 import rx.Observable;
 import rx.Subscriber;
@@ -30,10 +31,10 @@ public class RecipePresenter {
             @Override
             public void call(Subscriber<? super String> subscriber) {
                 HttpResponse brewRecipes = BrewApi.getBrewRecipes(devId, formula_id);
-                if(brewRecipes.isSuccess()){
+                if (brewRecipes.isSuccess()) {
                     String content = brewRecipes.getContent();
                     parseFormula(devId, content);
-                }else{
+                } else {
 
                 }
             }
