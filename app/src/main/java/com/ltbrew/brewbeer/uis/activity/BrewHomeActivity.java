@@ -19,6 +19,8 @@ import com.ltbrew.brewbeer.interfaceviews.BrewHomeView;
 import com.ltbrew.brewbeer.presenter.BrewHomePresenter;
 import com.ltbrew.brewbeer.presenter.model.Device;
 import com.ltbrew.brewbeer.presenter.util.DeviceUtil;
+import com.ltbrew.brewbeer.service.LtPushService;
+import com.ltbrew.brewbeer.uis.Constants;
 import com.ltbrew.brewbeer.uis.adapter.SectionsPagerAdapter;
 import com.ltbrew.brewbeer.uis.fragment.BrewSessionFragment;
 import com.ltbrew.brewbeer.uis.fragment.RecipeFragment;
@@ -28,6 +30,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnCheckedChanged;
 import butterknife.OnClick;
 
 public class BrewHomeActivity extends BaseActivity
@@ -65,6 +68,24 @@ public class BrewHomeActivity extends BaseActivity
             mViewPager.setAdapter(mSectionsPagerAdapter);
         }
         mViewPager.setOffscreenPageLimit(2);
+        mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                if(position == 0){
+                    brewRb.setChecked(true);
+                }else{
+                    recipeRb.setChecked(true);
+                }
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+            }
+        });
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -101,7 +122,7 @@ public class BrewHomeActivity extends BaseActivity
         } else if (id == R.id.nav_about) {
 
         } else if (id == R.id.nav_exit) {
-
+            startLoginActivity();
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -109,6 +130,14 @@ public class BrewHomeActivity extends BaseActivity
             drawer.closeDrawer(GravityCompat.START);
         }
         return true;
+    }
+
+    private void startLoginActivity() {
+        Intent intent = new Intent();
+        intent.setClass(this, LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+        startActivity(intent);
     }
 
     void startAddDevActivity(){
@@ -135,11 +164,38 @@ public class BrewHomeActivity extends BaseActivity
     @Override
     public void onGetDevsSuccess(List<Device> devices) {
         this.devices = devices;
+        brewSessionFragment.getBrewHistory();
         recipeFragment.getAllRecipes();
+        startPushService();
+    }
+
+    private void startPushService() {
+        Intent intent = new Intent(this, LtPushService.class);
+        startService(intent);
     }
 
     @Override
     public void onGetDevsFailed(String message) {
+        if(Constants.NETWORK_ERROR.equals(message)) {
+            showSnackBar("设备获取失败，请确认网络");
+            return;
+        }
+        showSnackBar("获取设备失败，服务器或APP出错， 请联系客服");
 
+    }
+
+
+    @OnCheckedChanged(R.id.brewRb)
+    public void brewRb(boolean checked){
+        if(!checked)
+            return;
+        mViewPager.setCurrentItem(0);
+    }
+
+    @OnCheckedChanged(R.id.recipeRb)
+    public void recipeRb(boolean checked){
+        if(!checked)
+            return;
+        mViewPager.setCurrentItem(1);
     }
 }

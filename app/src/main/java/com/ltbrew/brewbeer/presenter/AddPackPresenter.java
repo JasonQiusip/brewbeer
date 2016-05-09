@@ -40,14 +40,14 @@ public class AddPackPresenter {
 //    1	原料包已经被使用，无效
 //    2	is_open参数错误
 
-    public void addPackToDev(final String pack_id){
+    public void addPackToDev(final String pack_id, final String is_open){
         final String devId = DeviceUtil.getCurrentDevId();
         if(TextUtils.isEmpty(devId))
             return;
         RxUtil.create(new Observable.OnSubscribe<String>() {
             @Override
             public void call(Subscriber<? super String> subscriber) {
-                HttpResponse httpResponse = BrewApi.beginBrew(devId, pack_id, "1");
+                HttpResponse httpResponse = BrewApi.beginBrew(devId, pack_id, is_open);
                 if(httpResponse.isSuccess()){
                     String content = httpResponse.getContent();
                     subscriber.onNext(content);

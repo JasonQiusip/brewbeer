@@ -10,9 +10,11 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.ltbrew.brewbeer.R;
+import com.ltbrew.brewbeer.uis.OnAddActionListener;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 public class AddRecipeByIdFragment extends Fragment {
 
@@ -20,6 +22,7 @@ public class AddRecipeByIdFragment extends Fragment {
     EditText edtPackId;
     @BindView(R.id.btn_add_pack)
     Button btnAddPack;
+    private OnAddActionListener onAddActionListener;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -36,9 +39,15 @@ public class AddRecipeByIdFragment extends Fragment {
         return view;
     }
 
+    @OnClick(R.id.btn_add_pack)
+    public void addPack(){
+        onAddActionListener.onClickAddPackByIdBtn(edtPackId.getText().toString());
+    }
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+        onAddActionListener = (OnAddActionListener) context;
 
     }
 

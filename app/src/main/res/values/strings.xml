@@ -34,4 +34,6 @@
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="title_activity_brew_session_control">BrewSessionControlActivity</string>
+    <string name="title_activity_recipe_detail">RecipeDetailActivity</string>
 </resources>

@@ -13,6 +13,7 @@ import com.ltbrew.brewbeer.R;
 import com.ltbrew.brewbeer.interfaceviews.RegisterView;
 import com.ltbrew.brewbeer.presenter.RegisterPresenter;
 import com.ltbrew.brewbeer.uis.Constants;
+import com.ltbrew.brewbeer.uis.utils.KeyboardUtil;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -43,6 +44,7 @@ public class RegisterActivity extends BaseActivity implements RegisterView {
         ButterKnife.bind(this);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        initToolbar();
         registerPresenter = new RegisterPresenter(this);
     }
 
@@ -126,13 +128,15 @@ public class RegisterActivity extends BaseActivity implements RegisterView {
             showSnackBar("验证码为空, 请确认");
             return;
         }
-
+        showDialog("正在进行注册...");
+        KeyboardUtil.hideKeyboard(this, btRegistOk);
         registerPresenter.register(phone, pwd, regCode);
     }
 
     @Override
     public void onRegReqSuccess(String state) {
         cancelTimer();
+        hideDialog();
         if (Constants.RegisterState.SUCCESS.equals(state)) {
             showSnackBar("注册成功");
             startLoginActivity();
@@ -160,6 +164,7 @@ public class RegisterActivity extends BaseActivity implements RegisterView {
 
     @Override
     public void onRegFailed(String message) {
+        hideDialog();
         cancelTimer();
         showErrorMsg(message);
     }

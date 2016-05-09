@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_content"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="com.ltbrew.brewbeer.uis.activity.AddRecipeActivity"
+    tools:showIn="@layout/activity_add_recipe"
+    >
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/brewHomeContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/bottomTabRg"
+        android:layout_below="@+id/toolbar" />
+
+
+    <RadioGroup
+        android:id="@+id/bottomTabRg"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:layout_alignParentBottom="true"
+        android:background="@android:color/white"
+        android:orientation="horizontal">
+
+        <com.ltbrew.brewbeer.uis.view.CenterDrawableButton
+            android:id="@+id/scanRb"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginRight="2dp"
+            android:layout_weight="1"
+            android:button="@null"
+            android:checked="true"
+            android:drawablePadding="6dp"
+            android:gravity="center"
+            android:textColor="@drawable/text_color"
+            android:text="通过二维码"
+            android:textSize="16dp" />
+
+        <com.ltbrew.brewbeer.uis.view.CenterDrawableButton
+            android:id="@+id/byIdRb"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:button="@null"
+            android:drawablePadding="6dp"
+            android:gravity="center"
+            android:textColor="@drawable/text_color"
+            android:text="通过原料ID号"
+            android:textSize="16dp" />
+    </RadioGroup>
+</RelativeLayout>

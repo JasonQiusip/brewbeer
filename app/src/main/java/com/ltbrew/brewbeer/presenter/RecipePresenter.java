@@ -1,6 +1,7 @@
 package com.ltbrew.brewbeer.presenter;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -110,7 +111,11 @@ public class RecipePresenter {
                 HttpResponse httpResponse = BrewApi.downloadRecipe(devId, fn, ref);
                 if(httpResponse.isSuccess()){
                     byte[] file = httpResponse.getFile();
+                    if(file == null)
+                        return;
                     String recipe = new String(file);
+                    System.out.println(recipe);
+
                     if(TextUtils.isEmpty(recipe))
                         return;
                     JSONObject jsonObject = JSON.parseObject(recipe);
@@ -178,22 +183,25 @@ public class RecipePresenter {
             dbSlot.setName(name);
             dbSlot.setSlotId(id);
             dbSlot.setRecipeId(dbRecipe.getId());
+            dbSlot.setDBRecipe(dbRecipe);
             DBManager.getInstance().getDbSlotDao().insertOrReplace(dbSlot);
             dbSlots.add(dbSlot);
         }
-        return dbSlots;
+        dbRecipe.__setDaoSession(DBManager.getInstance().getDaoSession());
+        return dbRecipe.getSlots();
     }
 
     private List<DBBrewStep> parseSteps(JSONObject formula, DBRecipe dbRecipe) {
         List<DBBrewStep> dbBrewSteps = new ArrayList<>();
         int stepCount = formula.getInteger("sc");
+        Log.e("parseSteps", "sc =======> " + stepCount + "  "+dbRecipe.getId());
         for (int i = 0; i < stepCount; i++) {
             String stepId = STEP_PREFIX + String.format("%02d", i);
             JSONObject step = formula.getJSONObject(stepId);
             String act = step.getString("act");
 
             DBBrewStep dbBrewStep = new DBBrewStep();
-            dbBrewStep.setStepId(stepId);
+            dbBrewStep.setStepId(dbRecipe.getIdForFn()+stepId);
             dbBrewStep.setAct(act);
             if("boil".equals(act)){
                 Integer f = step.getInteger("f");
@@ -213,10 +221,13 @@ public class RecipePresenter {
                 dbBrewStep.setSlot(s);
             }
             dbBrewStep.setRecipeId(dbRecipe.getId());
-            DBManager.getInstance().getDBBrewStepDao().insertOrReplace(dbBrewStep);
+            dbBrewStep.setDBRecipe(dbRecipe);
             dbBrewSteps.add(dbBrewStep);
         }
-        return dbBrewSteps;
+        DBManager.getInstance().getDBBrewStepDao().insertOrReplaceInTx(dbBrewSteps);
+
+        dbRecipe.__setDaoSession(DBManager.getInstance().getDaoSession());
+        return dbRecipe.getBrewSteps();
     }
     //{"formula":
     // {"slot": {"sc": 3, "s_02": {"id": 1044975, "name": "material_02"}, "s_00": {"id": 975310, "name": "material_01"}, "s_01": {"id": 1044975, "name": "material_02"}},

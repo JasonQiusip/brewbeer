@@ -107,8 +107,12 @@ public abstract class SocketCustomWriter {
                         }
                         Thread.sleep(300000);
                     } catch (IOException e) {
+                        excute = false;
+                        socketWriteCb.onWriteHbFailed();
                         e.printStackTrace();
                     } catch (InterruptedException e) {
+                        excute = false;
+                        socketWriteCb.onWriteHbFailed();
                         e.printStackTrace();
                     }
                 }

@@ -203,8 +203,8 @@ public class SocketRead implements Runnable {
                         locker.notifyAll();
                     }
                     String endQueueNo = listResult.get(2);
-                    List<String> pushLish = listResult.subList(3, listResult.size());
-                    socketReadCallback.hasPush(pushLish, seqNo, endQueueNo, timeMsg);
+                    List<String> pushList = listResult.subList(3, listResult.size());
+                    socketReadCallback.hasPush(pushList, seqNo, endQueueNo, timeMsg);
                     break;
                 case file_ul_begin:
                     synchronized (locker) {

@@ -6,15 +6,18 @@
     android:paddingRight="16dp"
     android:background="@drawable/bg_bottom_line"
     android:layout_width="match_parent"
-    android:layout_height="56dp">
+    android:layout_height="wrap_content"
+    android:minHeight="56dp">
 
     <TextView
+        android:id="@+id/brewDetailTitleTv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="18sp"
         android:text="配方名称"/>
 
     <TextView
+        android:id="@+id/brewDetailContentTv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_weight="1"

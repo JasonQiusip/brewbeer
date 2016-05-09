@@ -103,6 +103,11 @@ public class TransmitCmdService {
             public void onMaximumFileLen(int len) {
                 fileSocketReadyCallback.onMaximumFileLength(len);
             }
+
+            @Override
+            public void onWriteHbFailed() {
+
+            }
         });
         cmdRead = newSocketRead(socket);
         //读操作设置和写操作一样的锁
@@ -124,12 +129,12 @@ public class TransmitCmdService {
                     String[] splitedIp = ipsigle.split(":");
                     String ipaddr = splitedIp[0];
                     String host = splitedIp[1];
-                    if (transmitFileService != null) {
-                        if (transmitFileService.initializeFileLongConn(ipaddr, Integer.parseInt(host))) {
-                            initFileSocket = true;
-                            break;
-                        }
-                    }
+//                    if (transmitFileService != null) {
+//                        if (transmitFileService.initializeFileLongConn(ipaddr, Integer.parseInt(host))) {
+//                            initFileSocket = true;
+//                            break;
+//                        }
+//                    }
                 }
                 if (!initFileSocket) {
                     if (fileSocketReadyCallback != null)
@@ -146,12 +151,13 @@ public class TransmitCmdService {
                     fileSocketReadyCallback.onOAuthFailed();
                 }
                 fileSocketReadyCallback.onCmdSocketReconnect();
-                if (transmitFileService != null && transmitFileService.isFileSocketAvailable()) {
-                    newPool();
-                    transmitFileService.closeFileSocketConnection();
-                    transmitFileService = new TransmitFileService(authorizeToken, pool, fileSocketReadyCallback);
-                    initializeCmdLongConn();
-                }
+//                initializeCmdLongConn();
+
+//                if (transmitFileService != null && transmitFileService.isFileSocketAvailable()) {
+//                    newPool();
+//                    transmitFileService.closeFileSocketConnection();
+//                    transmitFileService = new TransmitFileService(authorizeToken, pool, fileSocketReadyCallback);
+//                }
 
             }
 
@@ -265,5 +271,6 @@ public class TransmitCmdService {
 
     public interface SocketWriteCallback {
         void onMaximumFileLen(int len);
+        void onWriteHbFailed();
     }
 }

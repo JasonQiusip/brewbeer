@@ -54,7 +54,7 @@ public class DBRecipeDao extends AbstractDao<DBRecipe, Long> {
                 "\"FORMULA_ID\" INTEGER NOT NULL UNIQUE ," + // 1: formulaId
                 "\"ID_TYPE\" TEXT," + // 2: id_type
                 "\"NAME\" TEXT," + // 3: name
-                "\"ID_FOR_FN\" TEXT," + // 4: idForFn
+                "\"ID_FOR_FN\" TEXT UNIQUE ," + // 4: idForFn
                 "\"REF\" TEXT," + // 5: ref
                 "\"CUS\" TEXT," + // 6: cus
                 "\"WR\" INTEGER," + // 7: wr

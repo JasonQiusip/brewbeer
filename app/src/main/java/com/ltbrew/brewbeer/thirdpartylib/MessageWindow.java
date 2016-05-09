@@ -57,7 +57,8 @@ public class MessageWindow {
 			hidePopupWindow();
 		}
 	};
-	private OnCloseWindowListener onCloseWindowListener;
+	private OnMsgWindowActionListener onCloseWindowListener;
+	private TextView tv_detail;
 
 	/**
 	 * 显示弹出框
@@ -85,7 +86,7 @@ public class MessageWindow {
 		// 如果不设置WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE，弹出的View收不到Back键的事件
 		params.flags = flags;
 		// 不设置这个弹出框的透明遮罩显示为黑色
-//		params.format = PixelFormat.TRANSLUCENT;
+		params.format = PixelFormat.TRANSLUCENT;
 		// FLAG_NOT_TOUCH_MODAL不阻塞事件传递到后面的窗口
 		// 设置 FLAG_NOT_FOCUSABLE 悬浮窗口较小时，后面的应用图标由不可长按变为可长按
 		// 不设置这个flag的话，home页的划屏会有问题
@@ -143,9 +144,17 @@ public class MessageWindow {
 
 		viewMessage = view.findViewById(R.id.message_window);
 		TextView tvClose = (TextView) view.findViewById(R.id.tv_close);
+		tv_detail = (TextView) view.findViewById(R.id.tv_detail);
 		tvTitle = (TextView) view.findViewById(R.id.tv_title);
 		tvMessage = (TextView) view.findViewById(R.id.tv_message);
-
+		tv_detail.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				if(onCloseWindowListener != null)
+					onCloseWindowListener.onClickDetail();
+				hidePopupWindow();
+			}
+		});
 		tvClose.setOnClickListener(new OnClickListener() {
 
 			@Override
@@ -158,6 +167,11 @@ public class MessageWindow {
 		// 可滑动删除
 		setTouchEvent(view);
 		return view;
+	}
+
+	public void showTvDetail(){
+		if(tv_detail != null)
+		tv_detail.setVisibility(View.VISIBLE);
 	}
 
 	private void setTouchEvent(View view) {
@@ -211,14 +225,15 @@ public class MessageWindow {
 		return this;
 	}
 
-	public MessageWindow setOnCloseWindowListener(OnCloseWindowListener onCloseWindowListener){
+	public MessageWindow setOnMsgWindowActionListener(OnMsgWindowActionListener onCloseWindowListener){
 		this.onCloseWindowListener = onCloseWindowListener;
 		return this;
 	}
 
 
-	public interface OnCloseWindowListener{
+	public interface OnMsgWindowActionListener {
 		void onCloseWindow();
+		void onClickDetail();
 	}
 
 }

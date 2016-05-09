@@ -31,12 +31,12 @@ public class BrewApi {
         body.put("is_open", is_open);
         HttpReqParam httpReqParam = new HttpReqParam();
         httpReqParam.setBody(body);
-        return GeneralApi.res(httpReqParam, devId, ApiConstants.BREW_BEGIN);
+        return GeneralApi.control(httpReqParam, devId, ApiConstants.BREW_BEGIN);
     }
 
     public static HttpResponse getBrewHistory(String devId, String begin_date, String end_date, String state){
         HashMap body = new HashMap();
-        if(TextUtils.isEmpty(begin_date)) {
+        if(!TextUtils.isEmpty(begin_date)) {
             body.put("begin_date", begin_date);
         }
         if(!TextUtils.isEmpty(end_date)) {

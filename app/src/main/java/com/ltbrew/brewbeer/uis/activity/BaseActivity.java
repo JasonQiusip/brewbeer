@@ -1,10 +1,12 @@
 package com.ltbrew.brewbeer.uis.activity;
 
-import android.graphics.Typeface;
+import android.app.ProgressDialog;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.ltbrew.brewbeer.BrewApp;
@@ -13,6 +15,9 @@ import com.ltbrew.brewbeer.thirdpartylib.MessageWindow;
 import com.ltbrew.brewbeer.uis.Constants;
 
 public class BaseActivity extends AppCompatActivity {
+
+    private ImageView backIv;
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,8 +37,22 @@ public class BaseActivity extends AppCompatActivity {
                 centerTitle.setTextSize(20);
                 centerTitle.setText(msg);
             }
+
+            backIv = (ImageView) toolbar.findViewById(R.id.backIv);
+            backIv.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    finish();
+                }
+            });
         }
 
+    }
+
+    public void hideBackIv(){
+        if(backIv != null){
+            backIv.setVisibility(View.GONE);
+        }
     }
 
     public void showSnackBar(String msg){
@@ -44,13 +63,29 @@ public class BaseActivity extends AppCompatActivity {
         if(Constants.NETWORK_ERROR.equals(msg)){
             //网络错误
             showSnackBar("网络错误，请检查您的网络！");
+            return;
+        }else if(Constants.PASSWORD_ERROR.equals(msg)){
+            showSnackBar("用户名或密码出错，请重试！");
+            return;
         }
         //服务错误
         showSnackBar("服务器或APP出错，请联系客服，错误信息：" + msg);
     }
 
-    public void showMsgWindow(String title, String msg, MessageWindow.OnCloseWindowListener onCloseWindowListener){
+    public MessageWindow showMsgWindow(String title, String msg, MessageWindow.OnMsgWindowActionListener onCloseWindowListener){
         MessageWindow messageWindow = new MessageWindow(this);
-        messageWindow.setupWindow().setOnCloseWindowListener(onCloseWindowListener).showMessageWindow(title, msg);
+        messageWindow.setupWindow().setOnMsgWindowActionListener(onCloseWindowListener).showMessageWindow(title, msg);
+        return messageWindow;
+    }
+
+    public void showDialog(String msg){
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage(msg);
+        progressDialog.show();
+    }
+
+    public void hideDialog(){
+        if(progressDialog != null && progressDialog.isShowing())
+            progressDialog.dismiss();
     }
 }

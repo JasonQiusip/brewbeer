@@ -9,6 +9,9 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.RadioButton;
 
 import com.ltbrew.brewbeer.R;
 import com.ltbrew.brewbeer.interfaceviews.AddPackView;
@@ -20,7 +23,18 @@ import com.ltbrew.brewbeer.uis.fragment.AddRecipeByIdFragment;
 import com.ltbrew.brewbeer.uis.fragment.AddRecipeByQrFragment;
 import com.ltbrew.brewbeer.uis.fragment.BrewSessionFragment;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnCheckedChanged;
+
 public class AddRecipeActivity extends BaseActivity implements OnAddActionListener,AddPackView {
+
+    public static final String PACK_ID_EXTRA = "packId";
+    public static final String CHECK_RECIPE = "0";
+    @BindView(R.id.scanRb)
+    RadioButton scanRb;
+    @BindView(R.id.byIdRb)
+    RadioButton byIdRb;
 
     private static final int REQUEST_CODE_SCAN_QR = 10;
     public static final String FORMULA_ID_EXTRA = "formulat_id";
@@ -31,17 +45,47 @@ public class AddRecipeActivity extends BaseActivity implements OnAddActionListen
     private AddRecipeByQrFragment addRecipeByQrFragment = new AddRecipeByQrFragment();
     private Fragment[] fragments = new Fragment[]{ addRecipeByQrFragment,addRecipeByIdFragment};
     private AddPackPresenter addPackPresenter;
+    private ImageView backIv;
+    private String packId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_recipe);
+        ButterKnife.bind(this);
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
+        backIv = (ImageView) toolbar.findViewById(R.id.backIv);
+        backIv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
         mViewPager = (ViewPager) findViewById(R.id.brewHomeContainer);
         mViewPager.setAdapter(mSectionsPagerAdapter);
+        mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                if(position == 0){
+                    scanRb.setChecked(true);
+                }else{
+                    byIdRb.setChecked(true);
+                }
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
         addPackPresenter = new AddPackPresenter(this);
     }
 
@@ -60,7 +104,9 @@ public class AddRecipeActivity extends BaseActivity implements OnAddActionListen
         if (requestCode == REQUEST_CODE_SCAN_QR) {
             if (resultCode == RESULT_OK) {
                 String scanQrCode = data.getStringExtra("result");
-                addPackPresenter.addPackToDev(scanQrCode);
+                this.packId = scanQrCode;
+                showMsgWindow("提醒", "同步原料包数据并获取酿造配方", null);
+                addPackPresenter.addPackToDev(scanQrCode, CHECK_RECIPE);
             }
         }
     }
@@ -71,7 +117,8 @@ public class AddRecipeActivity extends BaseActivity implements OnAddActionListen
             showSnackBar("原料包ID不能为空");
             return;
         }
-        addPackPresenter.addPackToDev(pack_id);
+        this.packId = pack_id;
+        addPackPresenter.addPackToDev(pack_id, CHECK_RECIPE);
     }
 
     @Override
@@ -81,12 +128,18 @@ public class AddRecipeActivity extends BaseActivity implements OnAddActionListen
             intent.putExtra(FORMULA_ID_EXTRA, formula_id);
             intent.putExtra(RECIPE_NAME_EXTRA, name);
             sendBroadcast(intent);
-            showMsgWindow("提醒", name + " 已创建成功", new MessageWindow.OnCloseWindowListener() {
+            showMsgWindow("提醒", name + " 已同步 正在获取配方", new MessageWindow.OnMsgWindowActionListener() {
                 @Override
                 public void onCloseWindow() {
                     finish();
                 }
-            });
+
+                @Override
+                public void onClickDetail() {
+                    startRecipeDetail();
+                    finish();
+                }
+            }).showTvDetail();
         }else if(state == 1){
             showMsgWindow("提醒", "原料包无效已被使用", null);
         }else if(state == 2){
@@ -95,10 +148,18 @@ public class AddRecipeActivity extends BaseActivity implements OnAddActionListen
         }
     }
 
+    void startRecipeDetail(){
+        Intent intent = new Intent();
+        intent.putExtra(PACK_ID_EXTRA, packId);
+        intent.setClass(this, RecipeDetailActivity.class);
+        startActivity(intent);
+    }
+
     @Override
     public void onAddRecipeToDevFailed(String message) {
         showErrorMsg(message);
     }
+
 
 
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
@@ -114,6 +175,21 @@ public class AddRecipeActivity extends BaseActivity implements OnAddActionListen
         public int getCount() {
             return fragments.length;
         }
+    }
+
+
+    @OnCheckedChanged(R.id.scanRb)
+    public void scanRb(boolean checked){
+        if(!checked)
+            return;
+        mViewPager.setCurrentItem(0);
+    }
+
+    @OnCheckedChanged(R.id.byIdRb)
+    public void byIdRb(boolean checked){
+        if(!checked)
+            return;
+        mViewPager.setCurrentItem(1);
     }
 
 }

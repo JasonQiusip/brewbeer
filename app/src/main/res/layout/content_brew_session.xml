@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context=".uis.activity.BrewHomeActivity"
     tools:showIn="@layout/app_bar_brew_session">
 
@@ -11,9 +12,15 @@
         android:id="@+id/brewHomeContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/tabs"
+        android:layout_above="@+id/divider"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
+    <View
+        android:id="@+id/divider"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray"
+        android:layout_above="@+id/tabs"/>
     <RadioGroup
         android:id="@+id/tabs"
         android:layout_width="match_parent"
@@ -31,16 +38,20 @@
             android:button="@null"
             android:checked="true"
             android:drawableLeft="@drawable/rb_brew_icon"
+            android:background="@android:color/white"
             android:drawablePadding="6dp"
+            android:textColor="@drawable/text_color"
             android:text="酿造" />
 
         <com.ltbrew.brewbeer.uis.view.CenterDrawableButton
             android:id="@+id/recipeRb"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
+            android:background="@android:color/white"
             android:layout_weight="1"
             android:button="@null"
             android:drawableLeft="@drawable/rb_recipe_icon"
+            android:textColor="@drawable/text_color"
             android:drawablePadding="6dp"
             android:text="配方" />
     </RadioGroup>

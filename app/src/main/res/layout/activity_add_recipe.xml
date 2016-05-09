@@ -1,70 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main_content"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
-    android:orientation="vertical"
-    tools:context="com.ltbrew.brewbeer.uis.activity.AddRecipeActivity">
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:app="http://schemas.android.com/apk/res-auto"
+xmlns:tools="http://schemas.android.com/tools"
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+android:fitsSystemWindows="true"
+tools:context="com.ltbrew.brewbeer.uis.activity.AddRecipeActivity">
 
+<android.support.design.widget.AppBarLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:theme="@style/AppTheme.AppBarOverlay">
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="@android:color/white"
-        app:layout_scrollFlags="scroll|enterAlways"
-        app:popupTheme="@style/AppTheme.PopupOverlay">
-
+        app:popupTheme="@style/AppTheme.PopupOverlay" >
+        <ImageView
+            android:id="@+id/backIv"
+            android:layout_width="48dp"
+            android:layout_height="match_parent"
+            android:background="@null"
+            android:padding="12dp"
+            android:src="@mipmap/left_arrow"/>
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
+            android:textSize="20dp"
             android:text="创建酿酒"
-            android:textColor="#000000"
-            android:textSize="20dp" />
+            android:textColor="#000000"/>
     </android.support.v7.widget.Toolbar>
 
+</android.support.design.widget.AppBarLayout>
 
-    <android.support.v4.view.ViewPager
-        android:id="@+id/brewHomeContainer"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_above="@+id/bottomTabRg"
-        android:layout_below="@+id/toolbar" />
+<include layout="@layout/content_add_recipe" />
 
+</android.support.design.widget.CoordinatorLayout>
 
-    <RadioGroup
-        android:id="@+id/bottomTabRg"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:layout_alignParentBottom="true"
-        android:orientation="horizontal">
-
-        <com.ltbrew.brewbeer.uis.view.CenterDrawableButton
-            android:id="@+id/scanRb"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_marginRight="2dp"
-            android:layout_weight="1"
-            android:button="@null"
-            android:checked="true"
-            android:drawablePadding="6dp"
-            android:gravity="center"
-            android:text="通过二维码"
-            android:textSize="16dp" />
-
-        <com.ltbrew.brewbeer.uis.view.CenterDrawableButton
-            android:id="@+id/byIdRb"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:button="@null"
-            android:drawablePadding="6dp"
-            android:gravity="center"
-            android:text="通过原料ID号"
-            android:textSize="16dp" />
-    </RadioGroup>
-</RelativeLayout>
