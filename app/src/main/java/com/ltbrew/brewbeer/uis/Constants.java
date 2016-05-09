@@ -3,6 +3,7 @@ package com.ltbrew.brewbeer.uis;
 public interface Constants {
 
     String NETWORK_ERROR = "-1";
+    String PASSWORD_ERROR = "401";
 
     public interface ReqValCodeState {
         public static final String SUCCESS = "0";

@@ -2,7 +2,6 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="#00000000"
     android:gravity="center_horizontal"
     android:orientation="vertical" >
 
@@ -10,6 +9,7 @@
         android:id="@+id/message_window"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="#ffffff"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp" >
 
@@ -22,6 +22,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
+                android:layout_marginTop="8dp"
                 android:orientation="horizontal" >
 
                 <TextView
@@ -37,7 +38,7 @@
             </LinearLayout>
 
 
-                <LinearLayout
+                <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="1.5"
@@ -50,30 +51,53 @@
                     <TextView
                         android:id="@+id/tv_message"
                         android:layout_width="match_parent"
-                        android:layout_height="40dp"
+                        android:layout_height="wrap_content"
+                        android:minHeight="25dp"
                         android:gravity="center"
                         android:maxLines="2"
-                        android:text="您的宝贝发来一段录音。"
+                        android:text="您有一个消息提醒"
                         android:textColor="#404040"
                         android:textSize="14sp" />
-
                     <TextView
-                        android:id="@+id/tv_close"
+                        android:id="@+id/tv_detail"
+                        android:layout_below="@id/tv_message"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_gravity="right"
                         android:layout_marginBottom="5dp"
                         android:layout_marginRight="5dp"
                         android:layout_marginTop="5dp"
                         android:clickable="true"
                         android:paddingBottom="3dp"
-                        android:paddingLeft="25dp"
-                        android:paddingRight="25dp"
+                        android:paddingLeft="10dp"
+                        android:paddingRight="10dp"
+                        android:paddingTop="3dp"
+                        android:text="详情"
+                        android:visibility="gone"
+                        android:layout_toLeftOf="@+id/tv_close"
+                        android:textColor="#000000"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:id="@+id/tv_close"
+                        android:layout_below="@id/tv_message"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="right"
+                        android:layout_alignParentRight="true"
+                        android:layout_marginBottom="5dp"
+                        android:layout_marginRight="5dp"
+                        android:layout_marginTop="5dp"
+                        android:clickable="true"
+                        android:paddingBottom="3dp"
+                        android:paddingLeft="10dp"
+                        android:paddingRight="10dp"
                         android:paddingTop="3dp"
                         android:text="关闭"
                         android:textColor="#000000"
                         android:textSize="12sp" />
-                </LinearLayout>
+
+
+                </RelativeLayout>
         </LinearLayout>
 
         <ImageView

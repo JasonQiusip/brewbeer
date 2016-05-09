@@ -1,5 +1,6 @@
 package com.ltbrew.brewbeer.uis.activity;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -18,6 +19,7 @@ import butterknife.OnClick;
 
 import com.ltbrew.brewbeer.uis.Constants.*;
 import com.ltbrew.brewbeer.uis.utils.AccUtils;
+import com.ltbrew.brewbeer.uis.utils.KeyboardUtil;
 
 /**
  * A login screen that offers login via email/password.
@@ -39,12 +41,14 @@ public class LoginActivity extends BaseActivity implements LoginView {
     @BindView(R.id.login_form)
     ScrollView loginForm;
     private LoginPresenter loginPresenter;
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         initToolbar();
+        hideBackIv();
         ButterKnife.bind(this);
         loginPresenter = new LoginPresenter(this);
         if(!AccUtils.isAccEmpty()){
@@ -68,14 +72,26 @@ public class LoginActivity extends BaseActivity implements LoginView {
             showSnackBar("密码不能少于6位");
             return;
         }
+        showDialog();
+        KeyboardUtil.hideKeyboard(this, signInButton);
         loginPresenter.checkAccount(acc);
+    }
+
+    public void showDialog(){
+        super.showDialog("正在登录， 请稍后...");
+    }
+
+    public void hideDialog(){
+       super.hideDialog();
     }
 
     @Override
     public void onCheckSuccess(String state) {
         if(CheckAccState.PHONE_NOT_REGISTERED.equals(state)){
+            hideDialog();
             showSnackBar("帐号未注册");
         }else if(CheckAccState.NUMB_NOT_PHONE.equals(state)){
+            hideDialog();
             showSnackBar("帐号非正确的手机号码");
         }else if(CheckAccState.ACC_REGISTERED.equals(state)){
             loginPresenter.signIn(account.getText().toString(), password.getText().toString());
@@ -84,11 +100,13 @@ public class LoginActivity extends BaseActivity implements LoginView {
 
     @Override
     public void onCheckFailed(String msg) {
+        hideDialog();
         showErrorMsg(msg);
     }
 
     @Override
     public void onLoginSuccess() {
+        hideDialog();
         AccUtils.storeAcc(account.getText().toString());
         startBrewSessionActivity();
     }
@@ -98,6 +116,7 @@ public class LoginActivity extends BaseActivity implements LoginView {
 
     @Override
     public void onLoginFailed(String msg) {
+        hideDialog();
         showErrorMsg(msg);
     }
 

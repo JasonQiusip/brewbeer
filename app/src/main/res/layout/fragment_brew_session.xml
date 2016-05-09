@@ -13,7 +13,19 @@
         android:id="@+id/brewStateRv"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minHeight="72dp"/>
+        android:background="@android:color/white"
+        android:minHeight="56dp"
+        />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:textSize="16sp"
+        android:gravity="center_vertical"
+        android:paddingLeft="16dp"
+        android:visibility="gone"
+        android:background="@android:color/white"
+        android:text="没有正在进行酿造任务"
+        android:id="@+id/noBrewingTaskTv" />
     <TextView
         android:layout_width="match_parent"
         style="@style/subTitleStyle"
@@ -22,5 +34,17 @@
         android:id="@+id/finishedBrewRv"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minHeight="56dp"/>
+        android:background="@android:color/white"
+        android:minHeight="56dp"
+        />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:textSize="16sp"
+        android:gravity="center_vertical"
+        android:paddingLeft="16dp"
+        android:visibility="gone"
+        android:background="@android:color/white"
+        android:text="无完成的酿造任务"
+        android:id="@+id/noFinishedTaskTv" />
 </LinearLayout>

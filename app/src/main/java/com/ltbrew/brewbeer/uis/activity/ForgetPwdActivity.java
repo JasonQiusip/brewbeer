@@ -12,6 +12,7 @@ import com.ltbrew.brewbeer.R;
 import com.ltbrew.brewbeer.interfaceviews.ForgetPwdView;
 import com.ltbrew.brewbeer.presenter.ForgetPwdPresenter;
 import com.ltbrew.brewbeer.uis.Constants;
+import com.ltbrew.brewbeer.uis.utils.KeyboardUtil;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -98,7 +99,7 @@ public class ForgetPwdActivity extends BaseActivity implements ForgetPwdView {
 
 
     @OnClick(R.id.bt_forget_pwd_ok)
-    public void register(){
+    public void resetPwd(){
         String phone = forgetPwdPhoneNoEdt.getText().toString();
         String pwd = edtForgetPwd.getText().toString();
         String regCode = editForgetPwdCode.getText().toString();
@@ -122,7 +123,8 @@ public class ForgetPwdActivity extends BaseActivity implements ForgetPwdView {
             showSnackBar("验证码为空, 请确认");
             return;
         }
-
+        showDialog("正在重设密码...");
+        KeyboardUtil.hideKeyboard(this, btForgetPwdOk);
         forgetPwdPresenter.setNewPwd(phone, pwd, regCode);
     }
 
@@ -135,6 +137,7 @@ public class ForgetPwdActivity extends BaseActivity implements ForgetPwdView {
 
     @Override
     public void onSetNewPwdSuccess(String state) {
+        hideDialog();
         cancelTimer();
         if (Constants.PwdNewState.SUCCESS.equals(state)) {
             startLoginActivity();
@@ -157,6 +160,7 @@ public class ForgetPwdActivity extends BaseActivity implements ForgetPwdView {
 
     @Override
     public void onSetNewPwdFailed(String message) {
+        hideDialog();
         cancelTimer();
         showErrorMsg(message);
     }

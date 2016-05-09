@@ -8,7 +8,14 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.ltbrew.brewbeer.R;
+import com.ltbrew.brewbeer.persistence.greendao.DBRecipe;
+import com.ltbrew.brewbeer.uis.adapter.viewholder.BaseViewHolder;
 import com.ltbrew.brewbeer.uis.adapter.viewholder.BrewingVH;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.TreeMap;
 
 import butterknife.BindView;
 
@@ -18,6 +25,8 @@ import butterknife.BindView;
 public class BrewingSessionAdapter extends RecyclerView.Adapter<BrewingVH> {
 
     private final Context context;
+    private TreeMap<String, DBRecipe> recipeMap = new TreeMap<>();
+    private BaseViewHolder.OnRvItemClickListener onRvItemClickListener;
 
     public BrewingSessionAdapter(Context context) {
         this.context = context;
@@ -27,16 +36,30 @@ public class BrewingSessionAdapter extends RecyclerView.Adapter<BrewingVH> {
     public BrewingVH onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context).inflate(R.layout.item_brewing_session, parent, false);
         BrewingVH brewingVH = new BrewingVH(view);
+        brewingVH.setOnRvItemClickListener(onRvItemClickListener);
         return brewingVH;
     }
 
     @Override
     public void onBindViewHolder(BrewingVH holder, int position) {
-
+        Collection<DBRecipe> values = recipeMap.values();
+        DBRecipe[] dbRecipes = new DBRecipe[values.size()];
+        DBRecipe[] recipes = values.toArray(dbRecipes);
+        DBRecipe recipe = recipes[position];
+        holder.brewingSessionItemTv.setText(recipe.getName());
+        holder.brewingState.setText(recipe.getBrewSteps().get(0).getI());
     }
 
     @Override
     public int getItemCount() {
-        return 1;
+        return recipeMap.size();
+    }
+
+    public void setData(TreeMap<String, DBRecipe> recipeMap) {
+        this.recipeMap = recipeMap;
+    }
+
+    public void setOnItemClickListener(BaseViewHolder.OnRvItemClickListener onRvItemClickListener){
+        this.onRvItemClickListener = onRvItemClickListener;
     }
 }

@@ -12,11 +12,11 @@
         app:popupTheme="@style/AppTheme.PopupOverlay" >
 
         <ImageView
+            android:id="@+id/backIv"
             android:layout_width="48dp"
             android:layout_height="match_parent"
             android:background="@null"
             android:padding="12dp"
-            android:visibility="gone"
             android:src="@mipmap/left_arrow"/>
         <TextView
             android:id="@+id/centerTitle"
@@ -24,7 +24,7 @@
             android:layout_height="match_parent"
             android:layout_gravity="center"
             android:textColor="#334858"
-            android:gravity="center"
+            android:gravity="center_vertical"
             android:textSize="25dp"
             android:textStyle="bold"
             android:text="LinkBrew"/>

@@ -21,9 +21,9 @@ public class MyDaoGenerator {
         Entity recipe = schema.addEntity("DBRecipe");
         recipe.addIdProperty();
         recipe.addIntProperty("formulaId").notNull().unique();
-        recipe.addStringProperty("id_type").notNull();
+        recipe.addStringProperty("id_type");
         recipe.addStringProperty("name");
-        recipe.addStringProperty("idForFn");
+        recipe.addStringProperty("idForFn").unique();
         recipe.addStringProperty("ref");
         recipe.addStringProperty("cus");
         recipe.addIntProperty("wr");
@@ -41,7 +41,7 @@ public class MyDaoGenerator {
         brewStep.addIntProperty("drn");
         brewStep.addIntProperty("slot");
         Property recipeId = brewStep.addLongProperty("recipeId").notNull().getProperty();
-//        brewStep.addToOne(recipe, recipeId);
+        brewStep.addToOne(recipe, recipeId);
 
         Entity dbSlot = schema.addEntity("DBSlot");
         dbSlot.addIdProperty();
@@ -49,7 +49,7 @@ public class MyDaoGenerator {
         dbSlot.addIntProperty("slotId");
         dbSlot.addStringProperty("name").notNull().unique();
         Property recipeId1 = dbSlot.addLongProperty("recipeId").notNull().getProperty();
-//        dbSlot.addToOne(recipe, recipeId1);
+        dbSlot.addToOne(recipe, recipeId1);
 
         ToMany recipeToBrewStep = recipe.addToMany(brewStep, recipeId);
         recipeToBrewStep.setName("brewSteps");

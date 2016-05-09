@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context=".uis.activity.BrewHomeActivity"
     tools:showIn="@layout/app_bar_brew_session">
 
@@ -11,35 +12,48 @@
         android:id="@+id/brewHomeContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/tabs"
+        android:layout_above="@+id/divider"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
+    <View
+        android:id="@+id/divider"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray"
+        android:layout_above="@+id/tabs"/>
     <RadioGroup
         android:id="@+id/tabs"
         android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
         android:layout_alignParentBottom="true"
-        android:orientation="horizontal"
-        android:layout_height="?attr/actionBarSize">
+        android:orientation="horizontal">
+
         <com.ltbrew.brewbeer.uis.view.CenterDrawableButton
             android:id="@+id/brewRb"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:checked="true"
-            android:layout_weight="1"
             android:layout_marginRight="2dp"
-            android:drawableLeft="@drawable/rb_brew_icon"
+            android:layout_marginEnd="2dp"
+            android:layout_weight="1"
             android:button="@null"
+            android:checked="true"
+            android:drawableLeft="@drawable/rb_brew_icon"
+            android:background="@android:color/white"
             android:drawablePadding="6dp"
-            android:text="酿造"/>
+            android:textColor="@drawable/text_color"
+            android:text="酿造" />
+
         <com.ltbrew.brewbeer.uis.view.CenterDrawableButton
             android:id="@+id/recipeRb"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:drawableLeft="@drawable/rb_recipe_icon"
-            android:drawablePadding="6dp"
+            android:background="@android:color/white"
             android:layout_weight="1"
             android:button="@null"
-            android:text="配方"/>
+            android:drawableLeft="@drawable/rb_recipe_icon"
+            android:textColor="@drawable/text_color"
+            android:drawablePadding="6dp"
+            android:text="配方" />
     </RadioGroup>
 
 </RelativeLayout>

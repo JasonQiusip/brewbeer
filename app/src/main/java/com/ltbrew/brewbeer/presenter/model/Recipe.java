@@ -20,7 +20,6 @@ public class Recipe {
     }
 
     String cus;
-    DBRecipe dbRecipe;
 
     public String getId() {
         return id;
@@ -54,11 +53,4 @@ public class Recipe {
         this.ref = ref;
     }
 
-    public DBRecipe getDbRecipe() {
-        return dbRecipe;
-    }
-
-    public void setDbRecipe(DBRecipe dbRecipe) {
-        this.dbRecipe = dbRecipe;
-    }
 }

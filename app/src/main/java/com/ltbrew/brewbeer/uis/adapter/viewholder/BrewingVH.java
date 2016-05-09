@@ -13,7 +13,10 @@ import butterknife.ButterKnife;
  */
 public class BrewingVH extends BaseViewHolder {
     @BindView(R.id.brewingSessionItemTv)
-    TextView brewingSessionItemTv;
+    public TextView brewingSessionItemTv;
+    @BindView(R.id.brewingState)
+    public TextView brewingState;
+
     public BrewingVH(View itemView) {
         super(itemView);
     }

@@ -18,7 +18,7 @@ public class BrewApp extends Application {
     public void onCreate() {
         super.onCreate();
         app = this;
-        textFont = Typeface.createFromAsset(getAssets(), "fonts/intriqueScript.ttf");
+        textFont = Typeface.createFromAsset(getAssets(), "fonts/DancingScript-Regular.otf");
         DBManager.initDB(this);
         ConfigApi.init(this);
         ConfigApi.api_key = "840ebe7c2bfe4d529181063433ece0ef";
@@ -28,6 +28,5 @@ public class BrewApp extends Application {
     public static BrewApp getInstance(){
         return app;
     }
-
 
 }

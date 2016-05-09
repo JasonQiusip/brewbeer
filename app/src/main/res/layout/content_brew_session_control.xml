@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="com.ltbrew.brewbeer.uis.activity.BrewSessionControlActivity"
+    tools:showIn="@layout/activity_brew_session_control">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="5L小麦酒"
+        android:textSize="20dp"
+        android:layout_marginTop="16dp"
+        android:id="@+id/recipeName"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:textSize="25sp"
+        android:textColor="@color/colorAccent"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="正在加热， 当前温度45度"
+        android:gravity="center"
+        android:id="@+id/curState"
+        android:layout_below="@+id/recipeName"
+        android:layout_centerHorizontal="true" />
+    <LinearLayout
+        android:id="@+id/stepsContainer"
+        android:layout_marginTop="16dp"
+        android:layout_below="@id/curState"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+    </LinearLayout>
+</RelativeLayout>

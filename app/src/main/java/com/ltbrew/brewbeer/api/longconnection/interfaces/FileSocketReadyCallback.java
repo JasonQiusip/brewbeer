@@ -8,6 +8,8 @@ import java.util.List;
  * Created by Jason on 2015/6/11.
  */
 public interface FileSocketReadyCallback {
+    void onGetOauthTokenFailed();
+
     void onOAuthFailed();
 
     void onCmdSocketReady();
@@ -16,7 +18,6 @@ public interface FileSocketReadyCallback {
 
     void onInitializeLongConnFailed();
 
-    void onGetOauthTokenFailed();
 
     void onInitFileSocketFailed();
 

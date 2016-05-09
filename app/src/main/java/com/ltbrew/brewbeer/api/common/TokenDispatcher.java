@@ -46,12 +46,24 @@ public class TokenDispatcher {
         SharePrefUtil.getInstance(context).storeToken(null);
     }
 
+    public String getToken(){
+        return SharePrefUtil.getInstance(context).getToken();
+    }
+
     public void setPwd(String pwd){
         SharePrefUtil.getInstance(context).storePwd(pwd);
     }
 
     public void setToken(String token){
         SharePrefUtil.getInstance(context).storeToken(token);
+    }
+
+    public String getPwd(){
+        return SharePrefUtil.getInstance(context).getPwd();
+    }
+
+    public String getUsername(){
+        return SharePrefUtil.getInstance(context).getAcc();
     }
 
     public synchronized static HttpResponse delegateHttpReqWithToken(HttpReqParam request) {

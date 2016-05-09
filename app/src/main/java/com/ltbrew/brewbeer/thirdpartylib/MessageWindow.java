@@ -36,7 +36,6 @@ public class MessageWindow {
 
 	private final String TAG = "MessageWindow";
 	private boolean isShown = false;
-	private Context mContextApp = null;
 	private Context mContext = null;
 	private View mView = null;
 	private WindowManager mWindowManager = null;
@@ -58,7 +57,8 @@ public class MessageWindow {
 			hidePopupWindow();
 		}
 	};
-	private OnCloseWindowListener onCloseWindowListener;
+	private OnMsgWindowActionListener onCloseWindowListener;
+	private TextView tv_detail;
 
 	/**
 	 * 显示弹出框
@@ -67,10 +67,9 @@ public class MessageWindow {
 	 */
 	public MessageWindow(Context context) {
 		// 获取应用的Context
-		mContextApp = context.getApplicationContext();
 		mContext = context;
 		// 获取WindowManager
-		mWindowManager = (WindowManager) mContextApp.getSystemService(Context.WINDOW_SERVICE);
+		mWindowManager = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
 
 		params = new LayoutParams();
 
@@ -112,7 +111,7 @@ public class MessageWindow {
 
 		mWindowManager.addView(mView, params);
 		viewMessage.setVisibility(View.VISIBLE);
-		Animation animation = AnimationUtils.loadAnimation(mContextApp, R.anim.anim_popup_open);
+		Animation animation = AnimationUtils.loadAnimation(mContext, R.anim.anim_popup_open);
 		viewMessage.startAnimation(animation);
 		return this;
 	}
@@ -122,7 +121,7 @@ public class MessageWindow {
 	 */
 	public void hidePopupWindow() {
 		if (isShown && null != mView) {
-			Animation animation = AnimationUtils.loadAnimation(mContextApp, R.anim.anim_popup_close);
+			Animation animation = AnimationUtils.loadAnimation(mContext, R.anim.anim_popup_close);
 			viewMessage.startAnimation(animation);
 			viewMessage.postDelayed(new Runnable() {
 
@@ -141,13 +140,21 @@ public class MessageWindow {
 
 	private View setUpView() {
 
-		View view = LayoutInflater.from(mContextApp).inflate(R.layout.layout_message_window, null);
+		View view = LayoutInflater.from(mContext).inflate(R.layout.layout_message_window, null);
 
 		viewMessage = view.findViewById(R.id.message_window);
 		TextView tvClose = (TextView) view.findViewById(R.id.tv_close);
+		tv_detail = (TextView) view.findViewById(R.id.tv_detail);
 		tvTitle = (TextView) view.findViewById(R.id.tv_title);
 		tvMessage = (TextView) view.findViewById(R.id.tv_message);
-
+		tv_detail.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				if(onCloseWindowListener != null)
+					onCloseWindowListener.onClickDetail();
+				hidePopupWindow();
+			}
+		});
 		tvClose.setOnClickListener(new OnClickListener() {
 
 			@Override
@@ -160,6 +167,11 @@ public class MessageWindow {
 		// 可滑动删除
 		setTouchEvent(view);
 		return view;
+	}
+
+	public void showTvDetail(){
+		if(tv_detail != null)
+		tv_detail.setVisibility(View.VISIBLE);
 	}
 
 	private void setTouchEvent(View view) {
@@ -213,14 +225,15 @@ public class MessageWindow {
 		return this;
 	}
 
-	public MessageWindow setOnCloseWindowListener(OnCloseWindowListener onCloseWindowListener){
+	public MessageWindow setOnMsgWindowActionListener(OnMsgWindowActionListener onCloseWindowListener){
 		this.onCloseWindowListener = onCloseWindowListener;
 		return this;
 	}
 
 
-	public interface OnCloseWindowListener{
+	public interface OnMsgWindowActionListener {
 		void onCloseWindow();
+		void onClickDetail();
 	}
 
 }

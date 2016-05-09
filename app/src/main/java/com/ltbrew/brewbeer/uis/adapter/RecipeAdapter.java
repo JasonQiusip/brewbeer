@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.ltbrew.brewbeer.R;
 import com.ltbrew.brewbeer.presenter.model.Recipe;
+import com.ltbrew.brewbeer.uis.adapter.viewholder.BaseViewHolder;
 import com.ltbrew.brewbeer.uis.adapter.viewholder.RecipeVH;
 
 import java.util.Collections;
@@ -24,6 +25,7 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeVH> {
 
     private final Context context;
     private List<Recipe> recipes = Collections.EMPTY_LIST;
+    private BaseViewHolder.OnRvItemClickListener onRvItemClickListener;
 
     public RecipeAdapter(Context context) {
         this.context = context;
@@ -33,6 +35,7 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeVH> {
     public RecipeVH onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context).inflate(R.layout.item_recipe, parent, false);
         RecipeVH recipeVH = new RecipeVH(view);
+        recipeVH.setOnRvItemClickListener(onRvItemClickListener);
         return recipeVH;
     }
 
@@ -49,5 +52,9 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeVH> {
 
     public void setData(List<Recipe> recipes) {
         this.recipes = recipes;
+    }
+
+    public void setOnItemClickListener(BaseViewHolder.OnRvItemClickListener onRvItemClickListener){
+        this.onRvItemClickListener = onRvItemClickListener;
     }
 }
