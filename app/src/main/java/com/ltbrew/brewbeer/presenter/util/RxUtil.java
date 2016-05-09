@@ -13,4 +13,8 @@ public class RxUtil {
     public static Observable<String> create(Observable.OnSubscribe<String> onSubscribe){
         return Observable.create(onSubscribe).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
     }
+
+    public static Observable<Integer> createWithIntResp(Observable.OnSubscribe<Integer> onSubscribe){
+        return Observable.create(onSubscribe).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
+    }
 }

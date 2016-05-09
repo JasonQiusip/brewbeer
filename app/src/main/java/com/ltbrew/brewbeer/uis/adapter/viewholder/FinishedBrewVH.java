@@ -6,6 +6,7 @@ import android.widget.TextView;
 import com.ltbrew.brewbeer.R;
 
 import butterknife.BindView;
+import butterknife.ButterKnife;
 
 /**
  * Created by 151117a on 2016/5/4.
@@ -13,9 +14,10 @@ import butterknife.BindView;
 public class FinishedBrewVH extends BaseViewHolder {
 
     @BindView(R.id.finishedSessionItemTv)
-    TextView finishedSessionItemTv;
+    public TextView finishedSessionItemTv;
 
     public FinishedBrewVH(View itemView) {
         super(itemView);
+        ButterKnife.bind(this, itemView);
     }
 }

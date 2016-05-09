@@ -17,15 +17,18 @@
         android:layout_height="48dp"
         android:padding="8dp"
         android:paddingTop="@dimen/nav_header_vertical_spacing"
+        android:background="@drawable/bg_btn"
         android:src="@mipmap/prev_white" />
 
     <TextView
+        android:id="@+id/devIdTv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
         android:gravity="center"
-        android:text="c240023d"
+        android:textColor="#000000"
+        android:text="没有设备"
         android:textSize="20sp"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
 
@@ -34,7 +37,7 @@
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:padding="8dp"
-
+        android:background="@drawable/bg_btn"
         android:paddingTop="@dimen/nav_header_vertical_spacing"
         android:src="@mipmap/next_white" />
 

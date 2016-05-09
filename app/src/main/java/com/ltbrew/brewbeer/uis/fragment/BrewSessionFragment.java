@@ -5,9 +5,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +21,8 @@ import com.ltbrew.brewbeer.persistence.greendao.DBRecipe;
 import com.ltbrew.brewbeer.presenter.BrewSessionsPresenter;
 import com.ltbrew.brewbeer.presenter.model.BrewHistory;
 import com.ltbrew.brewbeer.presenter.model.Recipe;
+import com.ltbrew.brewbeer.service.LtPushService;
+import com.ltbrew.brewbeer.service.PushMsg;
 import com.ltbrew.brewbeer.uis.activity.AddRecipeActivity;
 import com.ltbrew.brewbeer.uis.activity.BrewSessionControlActivity;
 import com.ltbrew.brewbeer.uis.adapter.BrewingSessionAdapter;
@@ -47,7 +51,6 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
     private BrewingSessionAdapter brewingSessionAdapter;
     private FinishedSessionAdapter finishedSessionAdapter;
     private BrewSessionsPresenter brewSessionsPresenter;
-    private TreeMap<String, DBRecipe> idToRecipeMap = new TreeMap<>();
     private HashMap<String, Integer> brewingFormulaIdToPosition = new HashMap<>();
     private HashMap<String, Integer> finishedFormulaIdToPosition = new HashMap<>();
 
@@ -56,14 +59,34 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            String formula_id = intent.getStringExtra(AddRecipeActivity.FORMULA_ID_EXTRA);
-            String recipeName = intent.getStringExtra(AddRecipeActivity.RECIPE_NAME_EXTRA);
-            if(brewSessionsPresenter != null)
-                brewSessionsPresenter.getRecipeInfo(formula_id);
+            String action = intent.getAction();
+            if(PACK_IS_SENT.equals(action)) {
+                String formula_id = intent.getStringExtra(AddRecipeActivity.FORMULA_ID_EXTRA);
+                String recipeName = intent.getStringExtra(AddRecipeActivity.RECIPE_NAME_EXTRA);
+                if (brewSessionsPresenter != null) {
+                    brewSessionsPresenter.getRecipeAfterBrewBegin(formula_id);
+                }
+            }else if(LtPushService.CMN_PRGS_PUSH_ACTION.equals(action)){
+                PushMsg pushMsgObj = intent.getParcelableExtra(LtPushService.PUSH_MSG_EXTRA);
+                BrewHistory brewHistory = brewingHistoryList.get(0);
+                brewHistory.setBrewingState(pushMsgObj.body);
+                brewingSessionAdapter.notifyDataSetChanged();
+            }else if(LtPushService.CMD_RPT_ACTION.equals(action)){
+                BrewHistory brewHistory = brewingHistoryList.get(0);
+                brewHistory.setBrewingState("设备已开始酿酒");
+                brewingSessionAdapter.notifyDataSetChanged();
+            }
         }
     };
     private List<BrewHistory> brewingHistoryList;
     private List<BrewHistory> finishedHistoryList;
+    private BrewSessionFragment.onBrewingSessionClickListener onBrewingSessionClickListener;
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        onBrewingSessionClickListener = (BrewSessionFragment.onBrewingSessionClickListener) context;
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -80,8 +103,9 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
         brewingSessionAdapter.setOnItemClickListener(new BaseViewHolder.OnRvItemClickListener() {
             @Override
             public void onRvItemClick(View v, int layoutPosition) {
-                DBRecipe dbRecipe = (DBRecipe)idToRecipeMap.values().toArray()[layoutPosition];
-                ParamStoreUtil.getInstance().setDbRecipe(dbRecipe); //store data to local cache
+                onBrewingSessionClickListener.onBrewingSessionClick();
+                BrewHistory brewHistory = brewingHistoryList.get(layoutPosition);
+                ParamStoreUtil.getInstance().setBrewHistory(brewHistory); //store data to local cache
                 startBrewControlActivity();
             }
         });
@@ -99,6 +123,8 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
         brewSessionsPresenter = new BrewSessionsPresenter(this);
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(PACK_IS_SENT);
+        intentFilter.addAction(LtPushService.CMN_PRGS_PUSH_ACTION);
+        intentFilter.addAction(LtPushService.CMD_RPT_ACTION);
         this.getActivity().registerReceiver(broadcastReceiver, intentFilter);
         return view;
     }
@@ -121,34 +147,34 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
 
     @Override
     public void onGetBrewSessionSuccess(List<BrewHistory> brewingHistoryList, List<BrewHistory> finishedHistoryList) {
+        Log.e("onGetBrewSessionSuccess", "brewingHistoryList "+brewingHistoryList+"finishedHistoryList "+finishedHistoryList);
         this.brewingHistoryList = brewingHistoryList;
         this.finishedHistoryList = finishedHistoryList;
         for (int i = 0, size = brewingHistoryList.size(); i < size; i++) {
             Long formula_id = brewingHistoryList.get(i).getFormula_id();
-            brewingFormulaIdToPosition.put(formula_id+"", i);
-            brewSessionsPresenter.getRecipeInfo(formula_id+"");
+            String formulaId = Long.toHexString(formula_id);
+            brewingFormulaIdToPosition.put(formulaId, i);
+            brewSessionsPresenter.getRecipeInfo(formulaId);
         }
 
         for (int i = 0, size = finishedHistoryList.size(); i < size; i++) {
             Long formula_id = finishedHistoryList.get(i).getFormula_id();
-            finishedFormulaIdToPosition.put(formula_id+"", i);
-            brewSessionsPresenter.getRecipeInfo(formula_id+"");
+            String formulaId = Long.toHexString(formula_id);
+            finishedFormulaIdToPosition.put(formulaId, i);
+            brewSessionsPresenter.getRecipeInfo(formulaId);
         }
     }
 
     @Override
     public void onGetBrewSessionFailed(int code) {
-
     }
 
     @Override
     public void onGetRecipeSuccess(List<Recipe> recipes) {
-
     }
 
     @Override
     public void onGetRecipeFailed() {
-
     }
 
     @Override
@@ -157,25 +183,33 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
         if(position != null && brewingHistoryList != null && brewingHistoryList.size() > position){
             BrewHistory brewHistory = brewingHistoryList.get(position);
             brewHistory.setDbRecipe(dbRecipe);
+            brewingSessionAdapter.setData(brewingHistoryList);
             brewingSessionAdapter.notifyItemChanged(position);
         }
-
         Integer position1 = finishedFormulaIdToPosition.get(dbRecipe.getFormulaId());
         if(position != null && finishedHistoryList != null && finishedHistoryList.size() > position){
             BrewHistory brewHistory = finishedHistoryList.get(position1);
             brewHistory.setDbRecipe(dbRecipe);
+            finishedSessionAdapter.setData(finishedHistoryList);
             finishedSessionAdapter.notifyItemChanged(position);
-
         }
-
-        ParamStoreUtil.getInstance().setCurrentCreatingRecipe(dbRecipe);
-        idToRecipeMap.put(dbRecipe.getFormulaId()+"", dbRecipe);
-        brewingSessionAdapter.setData(idToRecipeMap);
-        brewingSessionAdapter.notifyDataSetChanged();
     }
 
     @Override
     public void onDownloadRecipeFailed() {
         ParamStoreUtil.getInstance().setCurrentCreatingRecipe(null);
+    }
+
+    @Override
+    public void onDownLoadRecipeAfterBrewBegin(DBRecipe dbRecipe) {
+        ParamStoreUtil.getInstance().setCurrentCreatingRecipe(dbRecipe);
+        BrewHistory brewHistory = new BrewHistory();
+        brewHistory.setDbRecipe(dbRecipe);
+        brewingHistoryList.add(0, brewHistory);
+        brewingSessionAdapter.notifyDataSetChanged();
+    }
+
+    public interface onBrewingSessionClickListener{
+        void onBrewingSessionClick();
     }
 }

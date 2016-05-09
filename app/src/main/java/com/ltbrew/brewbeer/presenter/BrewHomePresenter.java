@@ -33,20 +33,7 @@ public class BrewHomePresenter {
     }
 
     public void getDevs(){
-        Observable.create(new Observable.OnSubscribe<List<Device>>() {
-            @Override
-            public void call(Subscriber<? super List<Device>> subscriber) {
-                HttpResponse devsResp = DevApi.getDevs();
-                if(devsResp.isSuccess()){
-                    String content = devsResp.getContent();
-                    ArrayList<Device> devices = new ArrayList();
-                    parseDevsResp(content, devices);
-                    subscriber.onNext(devices);
-                }else{
-                    subscriber.onError(new Throwable(""+devsResp.getCode()));
-                }
-            }
-        }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(new Action1<List<Device>>() {
+        getDevsOnce().observeOn(AndroidSchedulers.mainThread()).subscribe(new Action1<List<Device>>() {
             @Override
             public void call(List<Device> devices) {
                 brewHomeView.onGetDevsSuccess(devices);
@@ -57,6 +44,27 @@ public class BrewHomePresenter {
                 brewHomeView.onGetDevsFailed(throwable.getMessage());
             }
         });
+    }
+
+    public Observable<List<Device>> getDevsOnce() {
+        return Observable.create(new Observable.OnSubscribe<List<Device>>() {
+            @Override
+            public void call(Subscriber<? super List<Device>> subscriber) {
+                HttpResponse devsResp = DevApi.getDevs();
+                if(devsResp.isSuccess()){
+                    String content = devsResp.getContent();
+                    if(content.equals("[]")) {
+                        DeviceUtil.storeCurrentDevId("");
+                        return;
+                    }
+                    ArrayList<Device> devices = new ArrayList();
+                    parseDevsResp(content, devices);
+                    subscriber.onNext(devices);
+                }else{
+                    subscriber.onError(new Throwable(""+devsResp.getCode()));
+                }
+            }
+        }).subscribeOn(Schedulers.io());
     }
 
     private void parseDevsResp(String content, ArrayList<Device> devices) {

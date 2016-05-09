@@ -1,5 +1,7 @@
 package com.ltbrew.brewbeer.api.longconnection.process;
 
+import android.util.Log;
+
 import com.ltbrew.brewbeer.api.common.CSSLog;
 
 import java.util.ArrayList;
@@ -319,7 +321,7 @@ public class ParsePackKits {
         char third = (char) ((requestStr.length() >> 16) & 0xff);
         char fourth = (char) ((requestStr.length() >> 24) & 0xff);
         String pack = "*1" + fourth + third + second + first + requestStr;
-        System.out.println(new Date().toString() + " PARSEPACKKITS" + "SEND-----------------------" + pack + "\n");
+        Log.e(new Date().toString(), " PARSEPACKKITS" + "SEND-----------------------" + pack + "\n");
         return pack;
     }
 

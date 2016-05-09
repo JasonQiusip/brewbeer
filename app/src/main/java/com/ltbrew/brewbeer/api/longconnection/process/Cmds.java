@@ -48,6 +48,22 @@ public class Cmds {
         return buildRequestString;
     }
 
+    static String buildCmnPrgsCmd(long seqNo, ParsePackKits pushServiceKits) {
+        List<String> list = new ArrayList<String>();
+        list.add("cmn_prgs");
+        list.add(seqNo + "");
+        String buildRequestString = pushServiceKits.buildRequestString(list);
+        return buildRequestString;
+    }
+
+    static String buildBrewSessionCmd(long seqNo, ParsePackKits pushServiceKits) {
+        List<String> list = new ArrayList<String>();
+        list.add("brew_session");
+        list.add(seqNo + "");
+        String buildRequestString = pushServiceKits.buildRequestString(list);
+        return buildRequestString;
+    }
+
     //build pok
 
 }

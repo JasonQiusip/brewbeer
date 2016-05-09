@@ -255,6 +255,18 @@ public class TransmitCmdService {
         transmitFileService.getPidHearHistory(id,endIndex, whats6day, isZip);
     }
 
+    public void sendCmnPrgsCmd(){
+        if(cmdsWrite != null){
+            cmdsWrite.sendCmnPrgsCmd();
+        }
+    }
+
+    public void sendBrewSessionCmd(){
+        if(cmdsWrite != null){
+            cmdsWrite.sendBrewSessionCmd();
+        }
+    }
+
     public interface SocketReadCallback {
         void onIPHostReceived(String[] ip);
 

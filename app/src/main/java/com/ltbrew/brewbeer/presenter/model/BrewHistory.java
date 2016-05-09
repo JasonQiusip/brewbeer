@@ -13,6 +13,7 @@ public class BrewHistory {
     Long package_id;
     Long pid;
     Integer state;
+    String brewingState;
     DBRecipe dbRecipe;
 
     public DBRecipe getDbRecipe() {
@@ -69,5 +70,27 @@ public class BrewHistory {
 
     public void setState(Integer state) {
         this.state = state;
+    }
+
+    public String getBrewingState() {
+        return brewingState;
+    }
+
+    public void setBrewingState(String brewingState) {
+        this.brewingState = brewingState;
+    }
+
+    @Override
+    public String toString() {
+        return "BrewHistory{" +
+                "formula_id=" + formula_id +
+                ", begin_time='" + begin_time + '\'' +
+                ", end_time='" + end_time + '\'' +
+                ", package_id=" + package_id +
+                ", pid=" + pid +
+                ", state=" + state +
+                ", brewingState='" + brewingState + '\'' +
+                ", dbRecipe=" + dbRecipe +
+                '}';
     }
 }

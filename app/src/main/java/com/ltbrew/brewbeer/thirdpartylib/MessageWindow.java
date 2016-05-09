@@ -116,6 +116,12 @@ public class MessageWindow {
 		return this;
 	}
 
+	public void setMessage(String msg){
+		if(tvMessage == null)
+			return;
+		tvMessage.setText(msg);
+	}
+
 	/**
 	 * 隐藏对话框
 	 */

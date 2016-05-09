@@ -17,6 +17,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -100,6 +101,8 @@ public class SocketRead implements Runnable {
             if (isRemain()) {
                 resp = decodeResp.finalResult.remain + resp;
             }
+            System.out.println(new Date().toString()+" PARSEPACKKITS" + "RESP-----------------------" + resp + "\n");
+
             decodeResp = pushServiceKits.decodeResp(resp);
             boolean decodeOK = decodeResp.finalResult.decodeOK;
             if (!decodeOK) {
@@ -120,13 +123,18 @@ public class SocketRead implements Runnable {
     private boolean checkRespPack(List<String> listResult, long timeMsg) throws IOException {
         String commandWord = listResult.get(0);
         String seqNo = listResult.get(1);
-        System.out.println("commandWord = " + commandWord);
+        System.out.println("commandWord = " + listResult);
         if (handlerError(listResult)) return false;
         try {
+            Object obj = CmdsConstant.CMDSTR.lookup.get(commandWord);
+            if(obj == null) {
+                System.out.println("未识别的指令");
+                return false;
+            }
             CmdsConstant.CMDSTR cmdstr = CmdsConstant.CMDSTR.valueOf(commandWord);
             if (cmdstr != CmdsConstant.CMDSTR.hb) {
                 synchronized (locker) {
-                    locker.notify();
+                    locker.notify();  //收到服务器回包之后才能解锁写操作
                 }
             }
             switch (cmdstr) {

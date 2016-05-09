@@ -5,10 +5,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,7 +21,9 @@ import com.ltbrew.brewbeer.interfaceviews.RecipeView;
 import com.ltbrew.brewbeer.persistence.greendao.DBRecipe;
 import com.ltbrew.brewbeer.presenter.RecipePresenter;
 import com.ltbrew.brewbeer.presenter.model.Recipe;
+import com.ltbrew.brewbeer.presenter.util.DeviceUtil;
 import com.ltbrew.brewbeer.thirdpartylib.MessageWindow;
+import com.ltbrew.brewbeer.uis.Constants;
 import com.ltbrew.brewbeer.uis.activity.BrewDetailActivity;
 import com.ltbrew.brewbeer.uis.adapter.RecipeAdapter;
 import com.ltbrew.brewbeer.uis.adapter.viewholder.BaseViewHolder;
@@ -49,11 +53,11 @@ public class RecipeFragment extends Fragment implements RecipeView, BaseViewHold
     private List<Recipe> recipes = new ArrayList<>();
     private MessageWindow messageWindow;
     private Handler handler = new Handler();
+    private View view;
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-
     }
 
     @Override
@@ -65,7 +69,7 @@ public class RecipeFragment extends Fragment implements RecipeView, BaseViewHold
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_recipe, container, false);
+        view = inflater.inflate(R.layout.fragment_recipe, container, false);
         ButterKnife.bind(this, view);
         fab.setOnClickListener(new View.OnClickListener(){
 
@@ -90,6 +94,11 @@ public class RecipeFragment extends Fragment implements RecipeView, BaseViewHold
 
     public void getAllRecipes() {
         recipeRefreshLayout.setRefreshing(true);
+        final String devId = DeviceUtil.getCurrentDevId();
+        if(TextUtils.isEmpty(devId)){
+            recipeRefreshLayout.setRefreshing(false);
+            return;
+        }
         recipePresenter.getRecipes("");
     }
 
@@ -105,6 +114,24 @@ public class RecipeFragment extends Fragment implements RecipeView, BaseViewHold
     @Override
     public void onGetRecipeFailed() {
         recipeRefreshLayout.setRefreshing(false);
+        showErrorMsg("获取配方列表失败:");
+    }
+
+    protected void showErrorMsg(String msg) {
+        if(Constants.NETWORK_ERROR.equals(msg)){
+            //网络错误
+            showSnackBar(msg+"网络错误，请检查您的网络！");
+            return;
+        }else if(Constants.PASSWORD_ERROR.equals(msg)){
+            showSnackBar(msg+"用户名或密码出错，请重试！");
+            return;
+        }
+        //服务错误
+        showSnackBar(msg+"服务器或APP出错，请联系客服");
+    }
+
+    public void showSnackBar(String msg){
+        Snackbar.make(view, msg, Snackbar.LENGTH_SHORT).show();
     }
 
     @Override
@@ -116,6 +143,11 @@ public class RecipeFragment extends Fragment implements RecipeView, BaseViewHold
 
     @Override
     public void onDownloadRecipeFailed() {
+
+    }
+
+    @Override
+    public void onDownLoadRecipeAfterBrewBegin(DBRecipe dbRecipe) {
 
     }
 

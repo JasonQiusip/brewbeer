@@ -8,8 +8,13 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.ltbrew.brewbeer.R;
+import com.ltbrew.brewbeer.persistence.greendao.DBRecipe;
+import com.ltbrew.brewbeer.presenter.model.BrewHistory;
 import com.ltbrew.brewbeer.uis.adapter.viewholder.BaseViewHolder;
 import com.ltbrew.brewbeer.uis.adapter.viewholder.FinishedBrewVH;
+
+import java.util.Collections;
+import java.util.List;
 
 import butterknife.BindView;
 
@@ -19,7 +24,9 @@ import butterknife.BindView;
 public class FinishedSessionAdapter extends RecyclerView.Adapter<FinishedBrewVH> {
 
     private final Context context;
+
     private BaseViewHolder.OnRvItemClickListener onRvItemClickListener;
+    private List<BrewHistory> finishedHistoryList = Collections.EMPTY_LIST;
 
 
     public FinishedSessionAdapter(Context context) {
@@ -36,15 +43,23 @@ public class FinishedSessionAdapter extends RecyclerView.Adapter<FinishedBrewVH>
 
     @Override
     public void onBindViewHolder(FinishedBrewVH holder, int position) {
-
+        BrewHistory brewHistory = finishedHistoryList.get(position);
+        DBRecipe recipe = brewHistory.getDbRecipe();
+        if (recipe != null) {
+            holder.finishedSessionItemTv.setText(recipe.getName());
+        }
     }
 
     @Override
     public int getItemCount() {
-        return 0;
+        return finishedHistoryList.size();
     }
 
-    public void setOnItemClickListener(BaseViewHolder.OnRvItemClickListener onRvItemClickListener){
+    public void setOnItemClickListener(BaseViewHolder.OnRvItemClickListener onRvItemClickListener) {
         this.onRvItemClickListener = onRvItemClickListener;
+    }
+
+    public void setData(List<BrewHistory> finishedHistoryList) {
+        this.finishedHistoryList = finishedHistoryList;
     }
 }

@@ -12,6 +12,7 @@ import com.ltbrew.brewbeer.api.model.HttpResponse;
 import com.ltbrew.brewbeer.interfaceviews.RecipeView;
 import com.ltbrew.brewbeer.persistence.greendao.DBBrewStep;
 import com.ltbrew.brewbeer.persistence.greendao.DBRecipe;
+import com.ltbrew.brewbeer.persistence.greendao.DBRecipeDao;
 import com.ltbrew.brewbeer.persistence.greendao.DBSlot;
 import com.ltbrew.brewbeer.presenter.model.Recipe;
 import com.ltbrew.brewbeer.presenter.util.DBManager;
@@ -36,12 +37,15 @@ import rx.schedulers.Schedulers;
 public class RecipePresenter {
 
     private final RecipeView recipeView;
+    private boolean mShowResultOnSeperateCb;
 
     public RecipePresenter(RecipeView recipeView){
         this.recipeView = recipeView;
     }
 
     public void getRecipes(final String formula_id){
+
+
         final String devId = DeviceUtil.getCurrentDevId();
         if(TextUtils.isEmpty(devId)){
             return;
@@ -94,14 +98,29 @@ public class RecipePresenter {
         }
         return recipesList;
     }
-
+    //数据结构：
+    //{"formula":
+    // {"slot": {"sc": 3, "s_02": {"id": 1044975, "name": "material_02"}, "s_00": {"id": 975310, "name": "material_01"}, "s_01": {"id": 1044975, "name": "material_02"}},
+    // "s_04": {"f": 1275, "k": 6000, "act": "boil", "pid": 0, "t": 1270, "drn": 0},
+    // "cus": "",
+    // "name": "\u6d4b\u8bd5\u5564\u9152\u914d\u65b9",
+    // "s_02": {"f": 1275, "k": "", "act": "boil", "pid": 0, "t": 400, "drn": 0},
+    // "s_03": {"s": 1, "act": "drop"}, "s_00": {"f": 1275, "k": "", "act": "boil", "pid": 0, "t": 300, "drn": 0},
+    // "s_01": {"s": 0, "act": "drop"},
+    // "wr": 5,
+    // "wq": 5,
+    // "s_05": {"s": 2, "act": "drop"},
+    // "sc": 6,
+    // "id": 67615779}}
     private static final String STEP_PREFIX = "s_";
-
     private void downloadSingleRecipe(final String devId, final Recipe recipe){
         Observable.create(new Observable.OnSubscribe<DBRecipe>() {
             @Override
             public void call(Subscriber<? super DBRecipe> subscriber) {
                 String fn = recipe.getId();
+
+                if (checkLocalDb(subscriber, fn)) return;
+
                 String ref = recipe.getRef();
                 if(TextUtils.isEmpty(ref)){
                     subscriber.onCompleted();
@@ -145,7 +164,11 @@ public class RecipePresenter {
         }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(new Action1<DBRecipe>() {
             @Override
             public void call(DBRecipe dbRecipe) {
-                recipeView.onDownloadRecipeSuccess(dbRecipe);
+                if(mShowResultOnSeperateCb){
+                    recipeView.onDownLoadRecipeAfterBrewBegin(dbRecipe);
+                }else{
+                    recipeView.onDownloadRecipeSuccess(dbRecipe);
+                }
             }
         }, new Action1<Throwable>() {
             @Override
@@ -154,6 +177,17 @@ public class RecipePresenter {
             }
         });
 
+    }
+
+    private boolean checkLocalDb(Subscriber<? super DBRecipe> subscriber, String fn) {
+        List<DBRecipe> list = DBManager.getInstance().getDBRecipeDao().queryBuilder().where(DBRecipeDao.Properties.IdForFn.eq(fn)).list();
+        Log.e("recipePresenter", list.size()+"");
+        if(list != null && list.size() != 0) {
+            DBRecipe dbRecipe = list.get(0);
+            subscriber.onNext(dbRecipe);
+            return true;
+        }
+        return false;
     }
 
     private void parseRecipeProperties(DBRecipe dbRecipe, JSONObject formula) {
@@ -229,19 +263,9 @@ public class RecipePresenter {
         dbRecipe.__setDaoSession(DBManager.getInstance().getDaoSession());
         return dbRecipe.getBrewSteps();
     }
-    //{"formula":
-    // {"slot": {"sc": 3, "s_02": {"id": 1044975, "name": "material_02"}, "s_00": {"id": 975310, "name": "material_01"}, "s_01": {"id": 1044975, "name": "material_02"}},
 
-    // "s_04": {"f": 1275, "k": 6000, "act": "boil", "pid": 0, "t": 1270, "drn": 0},
-    // "cus": "",
-    // "name": "\u6d4b\u8bd5\u5564\u9152\u914d\u65b9",
-    // "s_02": {"f": 1275, "k": "", "act": "boil", "pid": 0, "t": 400, "drn": 0},
-    // "s_03": {"s": 1, "act": "drop"}, "s_00": {"f": 1275, "k": "", "act": "boil", "pid": 0, "t": 300, "drn": 0},
-    // "s_01": {"s": 0, "act": "drop"},
-    // "wr": 5,
-    // "wq": 5,
-    // "s_05": {"s": 2, "act": "drop"},
-    // "sc": 6,
-    // "id": 67615779}}
 
+    public void setShowResultOnSeperateCb(boolean mShowResultOnSeperateCb) {
+        this.mShowResultOnSeperateCb = mShowResultOnSeperateCb;
+    }
 }

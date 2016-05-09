@@ -1,13 +1,17 @@
 package com.ltbrew.brewbeer.api.longconnection.process;
 
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Created by Jason on 2015/6/9.
  */
 public interface CmdsConstant {
-    public static final int MSSMAX = 1460;
-    public static final int DECREASERATE = 10;
+    int MSSMAX = 1460;
+    int DECREASERATE = 10;
 
-    enum CMDSTR{
+   enum CMDSTR{
         auth,
         mss,
         hb,
@@ -22,6 +26,17 @@ public interface CmdsConstant {
         re_push,
         r_hrr,
         r_hrh,
-        kick
+        kick,
+        cmn_prgs,
+        brew_session;
+
+        public static final Map lookup = new HashMap();
+        static {
+            for (CMDSTR mCMDSTR : EnumSet.allOf(CMDSTR.class)) {
+                lookup.put(mCMDSTR.name(), mCMDSTR);
+            }
+        }
     }
+
+
 }

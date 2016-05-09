@@ -44,6 +44,7 @@
             android:label="" />
         <activity
             android:name=".uis.activity.BrewHomeActivity"
+            android:launchMode="singleTask"
             android:label="" />
         <activity android:name=".uis.activity.BaseActivity" />
         <activity

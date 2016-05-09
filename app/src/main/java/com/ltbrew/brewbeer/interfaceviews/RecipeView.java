@@ -16,4 +16,6 @@ public interface RecipeView {
 
     void onDownloadRecipeSuccess(DBRecipe dbRecipe);
     void onDownloadRecipeFailed();
+
+    void onDownLoadRecipeAfterBrewBegin(DBRecipe dbRecipe);
 }

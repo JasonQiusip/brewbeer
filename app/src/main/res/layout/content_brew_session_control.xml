@@ -27,7 +27,7 @@
         android:textSize="25sp"
         android:textColor="@color/colorAccent"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="正在加热， 当前温度45度"
+        android:text="没有状态信息"
         android:gravity="center"
         android:id="@+id/curState"
         android:layout_below="@+id/recipeName"

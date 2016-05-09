@@ -76,7 +76,7 @@ public abstract class SocketCustomWriter {
     void writeAuthorizePack() throws IOException {
         locker.seqNo++;
         String authorizePack = ParsePackKits.buildPack(Cmds.buildAuthorizeCmd(authorizeToken, locker.seqNo, this.pushServiceKits));
-        CSSLog.showLog("writeAuthorizePack", "authorizePack = " + authorizePack);
+        System.out.println("writeAuthorizePack： "+ authorizePack);
         outputStream.write(toByteArr(authorizePack));
     }
 
@@ -138,9 +138,6 @@ public abstract class SocketCustomWriter {
     public void sendFileReqPacks() {
     }
 
-    public void writeProbeMss() {
-    }
-
     //
     public void sendCmdReqPacks() {
     }
@@ -148,10 +145,14 @@ public abstract class SocketCustomWriter {
     // push
     public void changeCmdToSendPok(String ackSeqNo, String endQueueNo) throws IOException, InterruptedException {
     }
-
+    public void changeCmdToSendCmnPrgs() {
+    }
+    public void changeCmdToSendBrewSession() {
+    }
+    
     public void sendheartreal(String id, String bTime, int linkIndex, int testBindex) throws IOException {
     }
-
     public void senHeartHistory(String pid, int endIndex, int whatsday, boolean isZip)throws IOException {
     }
+
 }

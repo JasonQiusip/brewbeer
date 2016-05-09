@@ -12,13 +12,58 @@ public class SocketCmdWriter extends SocketCustomWriter {
     private String ackSeqNo;
     private String endQueueNo;
 
+
+
     @Override
-    public void changeCmdToSendPok(String ackSeqNo, String endQueueNo) throws IOException, InterruptedException {
-        super.changeCmdToSendPok(ackSeqNo, endQueueNo);
-        cmdType = CmdsConstant.CMDSTR.sendPok;
-        this.ackSeqNo = ackSeqNo;
-        this.endQueueNo = endQueueNo;
-//        writeCmdPacks();
+    public void sendCmdReqPacks() {
+        while (excute) {
+            try {
+                if (cmdType == CmdsConstant.CMDSTR.idle) {
+                    //实时 关注pushservice是不是关掉了
+                    System.out.println("空转好吗？？？？？？");
+                    continue;
+                }
+                writeCmdPacks();
+                System.out.println("sendCmdReqPacks lock");
+                synchronized (locker) {
+                    locker.wait();
+                }
+                System.out.println("sendCmdReqPacks unlocked");
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void writeCmdPacks() throws IOException, InterruptedException {
+        switch (cmdType) {
+            case auth:
+                writeAuthorizePack();
+                cmdType = CmdsConstant.CMDSTR.hb;
+                break;
+//            case mss:
+//                writeProbeMss();
+//                cmdType = CmdsConstant.CMDSTR.hb;
+//                break;
+            case hb:
+                writeHeartbeat();
+                cmdType = CmdsConstant.CMDSTR.idle;
+                break;
+            case sendPok:
+                writePok();
+                cmdType = CmdsConstant.CMDSTR.idle;
+                break;
+            case cmn_prgs:
+                sendCmdTogetCmnPrgs();
+                cmdType = CmdsConstant.CMDSTR.idle;
+                break;
+            case brew_session:
+                sendCmdToCheckBrewSession();
+                cmdType = CmdsConstant.CMDSTR.idle;
+                break;
+        }
     }
 
     @Override
@@ -26,9 +71,7 @@ public class SocketCmdWriter extends SocketCustomWriter {
         super.writeAuthorizePack();
     }
 
-    @Override
-    public void writeProbeMss() {
-        super.writeProbeMss();
+    private void writeProbeMss() {
         int reduceCount = 0;
         do {
             locker.seqNo++;
@@ -51,40 +94,7 @@ public class SocketCmdWriter extends SocketCustomWriter {
         super.writeHeartbeat();
     }
 
-    @Override
-    public void sendheartreal(String id, String bTime, int linkIndex, int testBindex) throws IOException {
-        super.sendheartreal(id, bTime, linkIndex, testBindex);
-
-    }
-
-    @Override
-    public void senHeartHistory(String pid, int endIndex, int whatsday, boolean isZip) throws IOException {
-        super.senHeartHistory(pid,endIndex,whatsday,isZip);
-    }
-
-    @Override
-    public void sendCmdReqPacks() {
-        while (excute) {
-            try {
-                if (cmdType == CmdsConstant.CMDSTR.idle) {
-                    //实时 关注pushservice是不是关掉了
-                    continue;
-                }
-                writeCmdPacks();
-                System.out.println("sendCmdReqPacks lock");
-                synchronized (locker) {
-                    locker.wait();
-                }
-                System.out.println("sendCmdReqPacks unlocked");
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public void writePushMsgBack() {
+    private void writePok() {
         locker.seqNo++;
         try {
             String requestStr = Cmds.buildPockCmd(locker.seqNo, ackSeqNo, endQueueNo, this.pushServiceKits);
@@ -92,29 +102,44 @@ public class SocketCmdWriter extends SocketCustomWriter {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
-    private void writeCmdPacks() throws IOException, InterruptedException {
-        switch (cmdType) {
-            case auth:
-                writeAuthorizePack();
-                cmdType = CmdsConstant.CMDSTR.hb;
-                break;
-            case mss:
-                writeProbeMss();
-                cmdType = CmdsConstant.CMDSTR.hb;
-                break;
-            case hb:
-                writeHeartbeat();
-                cmdType = CmdsConstant.CMDSTR.idle;
-                break;
-            case sendPok:
-                writePushMsgBack();
-                cmdType = CmdsConstant.CMDSTR.hb;
-                break;
+    private void sendCmdTogetCmnPrgs() {
+        locker.seqNo++;
+        try {
+            String requestStr = Cmds.buildCmnPrgsCmd(locker.seqNo, this.pushServiceKits);
+            outputStream.write(toByteArr(ParsePackKits.buildPack(requestStr)));
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
+    private void sendCmdToCheckBrewSession() {
+        locker.seqNo++;
+        try {
+            String requestStr = Cmds.buildBrewSessionCmd(locker.seqNo,this.pushServiceKits);
+            outputStream.write(toByteArr(ParsePackKits.buildPack(requestStr)));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
+    //******************************************************** 外部控制修改命令******************************************//
+    //外部修改命令类型， 内部更加命令类型执行命令
+    @Override
+    public void changeCmdToSendPok(String ackSeqNo, String endQueueNo) throws IOException, InterruptedException {
+        super.changeCmdToSendPok(ackSeqNo, endQueueNo);
+        cmdType = CmdsConstant.CMDSTR.sendPok;
+        this.ackSeqNo = ackSeqNo;
+        this.endQueueNo = endQueueNo;
+    }
+
+    @Override
+    public void changeCmdToSendCmnPrgs(){
+        cmdType = CmdsConstant.CMDSTR.cmn_prgs;
+    }
+    @Override
+    public void changeCmdToSendBrewSession(){
+        cmdType = CmdsConstant.CMDSTR.brew_session;
+    }
 }

@@ -13,6 +13,7 @@ import com.ltbrew.brewbeer.R;
 import com.ltbrew.brewbeer.persistence.greendao.DBBrewStep;
 import com.ltbrew.brewbeer.persistence.greendao.DBRecipe;
 import com.ltbrew.brewbeer.persistence.greendao.DBSlot;
+import com.ltbrew.brewbeer.presenter.model.BrewHistory;
 import com.ltbrew.brewbeer.uis.utils.ParamStoreUtil;
 
 import java.util.List;
@@ -30,6 +31,7 @@ public class BrewSessionControlActivity extends AppCompatActivity {
     LinearLayout stepsContainer;
     private DBRecipe dbRecipe;
     private ImageView backIv;
+    private BrewHistory brewHistory;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,10 +51,14 @@ public class BrewSessionControlActivity extends AppCompatActivity {
     }
 
     private void showRecipe() {
-        dbRecipe = ParamStoreUtil.getInstance().getCurrentCreatingRecipe();
+        brewHistory = ParamStoreUtil.getInstance().getBrewHistory();
+        dbRecipe = brewHistory.getDbRecipe();
         if(dbRecipe == null)
             return;
         recipeName.setText(dbRecipe.getName());
+        if(brewHistory.getBrewingState() != null) {
+            curState.setText(brewHistory.getBrewingState());
+        }
         List<DBSlot> slots = dbRecipe.getSlots();
         List<DBBrewStep> brewSteps = dbRecipe.getBrewSteps();
         int i = 0;
@@ -70,10 +76,6 @@ public class BrewSessionControlActivity extends AppCompatActivity {
                 DBSlot dbSlot = slots.get(slot);
                 String addMaterialToSlot = "投放" + dbSlot.getName() + "到槽" + slot;
                 addItemToContainer(addMaterialToSlot, "");
-                if(i == 0)
-                {
-                    curState.setText(addMaterialToSlot);
-                }
             }
             i++;
         }

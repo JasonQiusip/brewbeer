@@ -112,6 +112,7 @@ public class LoginActivity extends BaseActivity implements LoginView {
     }
     private void startBrewSessionActivity() {
         startActivity(new Intent(this, BrewHomeActivity.class));
+        finish();
     }
 
     @Override

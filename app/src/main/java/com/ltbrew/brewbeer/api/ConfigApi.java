@@ -22,7 +22,7 @@ public class ConfigApi {
         TokenDispatcher.getInstance().init(context);
     }
 
-    public static void startLongConnection(FileSocketReadyCallback cb){
+    public static TransmitCmdService startLongConnection(FileSocketReadyCallback cb){
         String token = TokenDispatcher.getInstance().getToken();
         if(TextUtils.isEmpty(token)){
             String pwd = TokenDispatcher.getInstance().getPwd();
@@ -34,6 +34,8 @@ public class ConfigApi {
                 cb.onGetOauthTokenFailed();
             }
         }
-       TransmitCmdService.newInstance(token, cb).initializeCmdLongConn();
+        TransmitCmdService transmitCmdService = TransmitCmdService.newInstance(token, cb);
+        transmitCmdService.initializeCmdLongConn();
+        return transmitCmdService;
     }
 }

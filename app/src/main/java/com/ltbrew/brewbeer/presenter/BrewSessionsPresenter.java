@@ -1,6 +1,7 @@
 package com.ltbrew.brewbeer.presenter;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -8,7 +9,10 @@ import com.alibaba.fastjson.JSONObject;
 import com.ltbrew.brewbeer.api.cssApi.BrewApi;
 import com.ltbrew.brewbeer.api.model.HttpResponse;
 import com.ltbrew.brewbeer.interfaceviews.BrewSessionVeiw;
+import com.ltbrew.brewbeer.persistence.greendao.DBRecipe;
+import com.ltbrew.brewbeer.persistence.greendao.DBRecipeDao;
 import com.ltbrew.brewbeer.presenter.model.BrewHistory;
+import com.ltbrew.brewbeer.presenter.util.DBManager;
 import com.ltbrew.brewbeer.presenter.util.DeviceUtil;
 
 import java.text.ParseException;
@@ -74,9 +78,9 @@ public class BrewSessionsPresenter {
                         brewHistoryModel.setPackage_id(package_id);
                         brewHistoryModel.setPid(pid);
                         brewHistoryModel.setState(state);
-                        if(state == 1) {
+                        if(state == 0) {
                             brewingHistoryList.add(brewHistoryModel);
-                        }else if(state == 2){
+                        }else if(state == 1){
                             finishedHistoryList.add(brewHistoryModel);
                         }else{
 
@@ -109,7 +113,26 @@ public class BrewSessionsPresenter {
 
     }
 
-    public void getRecipeInfo(String formula_id){
+    public void getRecipeAfterBrewBegin(String formula_id){
         recipePresenter.getRecipes(formula_id);
+        recipePresenter.setShowResultOnSeperateCb(true);
+    }
+
+    public void getRecipeInfo(String formula_id){
+        if(checkLocalDb(formula_id)){
+            return;
+        }
+        recipePresenter.getRecipes(formula_id);
+    }
+
+    private boolean checkLocalDb( String fn) {
+        List<DBRecipe> list = DBManager.getInstance().getDBRecipeDao().queryBuilder().where(DBRecipeDao.Properties.IdForFn.eq(fn)).list();
+        Log.e("recipePresenter", list.size()+"");
+        if(list != null && list.size() != 0) {
+            DBRecipe dbRecipe = list.get(0);
+            brewSessionView.onDownloadRecipeSuccess(dbRecipe);
+            return true;
+        }
+        return false;
     }
 }

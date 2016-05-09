@@ -24,10 +24,10 @@ public class DevApi {
         return GeneralApi.dev(httpReqParam, ApiConstants.BIND);
     }
 
-    public static HttpResponse setPhoneNo2Dev(String phoneNo, String qr){
+    public static HttpResponse setPhoneNo2Dev( String qr, String phoneNo){
         HashMap body = new HashMap();
-        body.put("no", phoneNo);
         body.put("qr", qr);
+        body.put("no", phoneNo);
         HttpReqParam httpReqParam = new HttpReqParam();
         httpReqParam.setBody(body);
         return GeneralApi.dev(httpReqParam, ApiConstants.PATCH_TID);

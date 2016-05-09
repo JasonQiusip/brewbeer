@@ -9,10 +9,12 @@ import android.widget.TextView;
 
 import com.ltbrew.brewbeer.R;
 import com.ltbrew.brewbeer.persistence.greendao.DBRecipe;
+import com.ltbrew.brewbeer.presenter.model.BrewHistory;
 import com.ltbrew.brewbeer.uis.adapter.viewholder.BaseViewHolder;
 import com.ltbrew.brewbeer.uis.adapter.viewholder.BrewingVH;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.TreeMap;
@@ -25,8 +27,8 @@ import butterknife.BindView;
 public class BrewingSessionAdapter extends RecyclerView.Adapter<BrewingVH> {
 
     private final Context context;
-    private TreeMap<String, DBRecipe> recipeMap = new TreeMap<>();
     private BaseViewHolder.OnRvItemClickListener onRvItemClickListener;
+    private List<BrewHistory> brewingHitories = Collections.EMPTY_LIST;
 
     public BrewingSessionAdapter(Context context) {
         this.context = context;
@@ -42,21 +44,23 @@ public class BrewingSessionAdapter extends RecyclerView.Adapter<BrewingVH> {
 
     @Override
     public void onBindViewHolder(BrewingVH holder, int position) {
-        Collection<DBRecipe> values = recipeMap.values();
-        DBRecipe[] dbRecipes = new DBRecipe[values.size()];
-        DBRecipe[] recipes = values.toArray(dbRecipes);
-        DBRecipe recipe = recipes[position];
-        holder.brewingSessionItemTv.setText(recipe.getName());
-        holder.brewingState.setText(recipe.getBrewSteps().get(0).getI());
+
+        BrewHistory brewHistory = brewingHitories.get(position);
+        DBRecipe recipe = brewHistory.getDbRecipe();
+        if(recipe != null) {
+            holder.brewingSessionItemTv.setText(recipe.getName());
+        }
+        holder.brewingState.setText(brewHistory.getBrewingState());
+
     }
 
     @Override
     public int getItemCount() {
-        return recipeMap.size();
+        return brewingHitories.size();
     }
 
-    public void setData(TreeMap<String, DBRecipe> recipeMap) {
-        this.recipeMap = recipeMap;
+    public void setData(List<BrewHistory> brewingHitories) {
+        this.brewingHitories = brewingHitories;
     }
 
     public void setOnItemClickListener(BaseViewHolder.OnRvItemClickListener onRvItemClickListener){
