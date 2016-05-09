@@ -19,6 +19,5 @@ public class RecipeVH extends BaseViewHolder {
     public TextView recipeNameTv;
     public RecipeVH(View itemView) {
         super(itemView);
-        ButterKnife.bind(this, itemView);
     }
 }

@@ -245,20 +245,21 @@ public class BrewHomeActivity extends BaseActivity
 
     private void startPushService() {
         Intent intent = new Intent(this, LtPushService.class);
-        bindService(intent, new ServiceConnection() {
-            @Override
-            public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-                ltPushService = ((LtPushService.ServiceBinder) iBinder).getService();
-            }
-
-            @Override
-            public void onServiceDisconnected(ComponentName componentName) {
-                ltPushService = null;
-            }
-        }, Context.BIND_AUTO_CREATE);
+        bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
         startService(intent);
     }
 
+    ServiceConnection mServiceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            ltPushService = ((LtPushService.ServiceBinder) iBinder).getService();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            ltPushService = null;
+        }
+    };
     public int findWhereIsCurrentDevInDevices(){
         for(int i = 0, size = devices.size(); i < size; i++){
             String currentDevId = DeviceUtil.getCurrentDevId();
@@ -283,6 +284,7 @@ public class BrewHomeActivity extends BaseActivity
     protected void onDestroy() {
         super.onDestroy();
         unregisterReceiver(broadcastReceiver);
+        unbindService(mServiceConnection);
     }
 
     @Override

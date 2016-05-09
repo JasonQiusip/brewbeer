@@ -146,24 +146,36 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
     }
 
     @Override
-    public void onGetBrewSessionSuccess(List<BrewHistory> brewingHistoryList, List<BrewHistory> finishedHistoryList) {
-        Log.e("onGetBrewSessionSuccess", "brewingHistoryList "+brewingHistoryList+"finishedHistoryList "+finishedHistoryList);
-        this.brewingHistoryList = brewingHistoryList;
-        this.finishedHistoryList = finishedHistoryList;
-        for (int i = 0, size = brewingHistoryList.size(); i < size; i++) {
-            Long formula_id = brewingHistoryList.get(i).getFormula_id();
-            String formulaId = Long.toHexString(formula_id);
-            brewingFormulaIdToPosition.put(formulaId, i);
-            brewSessionsPresenter.getRecipeInfo(formulaId);
-        }
+    public void onGetBrewSessionSuccess(List<BrewHistory> brewingHistories, List<BrewHistory> finishedHistories) {
+        Log.e("onGetBrewSessionSuccess", "brewingHistoryList "+brewingHistories+"finishedHistoryList "+finishedHistories);
+        this.brewingHistoryList = brewingHistories;
+        this.finishedHistoryList = finishedHistories;
+        this.getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                brewingSessionAdapter.setData(brewingHistoryList);
+                brewingSessionAdapter.notifyDataSetChanged();
 
-        for (int i = 0, size = finishedHistoryList.size(); i < size; i++) {
-            Long formula_id = finishedHistoryList.get(i).getFormula_id();
-            String formulaId = Long.toHexString(formula_id);
-            finishedFormulaIdToPosition.put(formulaId, i);
-            brewSessionsPresenter.getRecipeInfo(formulaId);
-        }
+                finishedSessionAdapter.setData(finishedHistoryList);
+                finishedSessionAdapter.notifyDataSetChanged();
+                for (int i = 0, size = brewingHistoryList.size(); i < size; i++) {
+                    Long formula_id = brewingHistoryList.get(i).getFormula_id();
+                    String formulaId = String.format("%08x", formula_id);
+                    brewingFormulaIdToPosition.put(formulaId, i);
+                    brewSessionsPresenter.getRecipeInfo(formulaId);
+                }
+
+                for (int i = 0, size = finishedHistoryList.size(); i < size; i++) {
+                    Long formula_id = finishedHistoryList.get(i).getFormula_id();
+                    String formulaId = String.format("%08x", formula_id);
+                    finishedFormulaIdToPosition.put(formulaId, i);
+                    brewSessionsPresenter.getRecipeInfo(formulaId);
+                }
+            }
+        });
+
     }
+
 
     @Override
     public void onGetBrewSessionFailed(int code) {
@@ -179,19 +191,22 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
 
     @Override
     public void onDownloadRecipeSuccess(DBRecipe dbRecipe) {
-        Integer position = brewingFormulaIdToPosition.get(dbRecipe.getFormulaId());
+        Log.e("onDownloadRecipeSuccess", dbRecipe.getIdForFn());
+        Integer position = brewingFormulaIdToPosition.get(dbRecipe.getIdForFn());
         if(position != null && brewingHistoryList != null && brewingHistoryList.size() > position){
             BrewHistory brewHistory = brewingHistoryList.get(position);
             brewHistory.setDbRecipe(dbRecipe);
             brewingSessionAdapter.setData(brewingHistoryList);
             brewingSessionAdapter.notifyItemChanged(position);
         }
-        Integer position1 = finishedFormulaIdToPosition.get(dbRecipe.getFormulaId());
-        if(position != null && finishedHistoryList != null && finishedHistoryList.size() > position){
-            BrewHistory brewHistory = finishedHistoryList.get(position1);
+        Integer positionForFinishedSession = finishedFormulaIdToPosition.get(dbRecipe.getIdForFn());
+        if(positionForFinishedSession != null && finishedHistoryList != null && finishedHistoryList.size() > positionForFinishedSession){
+
+            BrewHistory brewHistory = finishedHistoryList.get(positionForFinishedSession);
             brewHistory.setDbRecipe(dbRecipe);
             finishedSessionAdapter.setData(finishedHistoryList);
-            finishedSessionAdapter.notifyItemChanged(position);
+            brewingSessionAdapter.notifyItemChanged(positionForFinishedSession);
+
         }
     }
 

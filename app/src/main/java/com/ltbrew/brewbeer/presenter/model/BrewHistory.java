@@ -13,6 +13,8 @@ public class BrewHistory {
     Long package_id;
     Long pid;
     Integer state;
+    Integer ratio;
+    Integer st;
     String brewingState;
     DBRecipe dbRecipe;
 
@@ -78,6 +80,22 @@ public class BrewHistory {
 
     public void setBrewingState(String brewingState) {
         this.brewingState = brewingState;
+    }
+
+    public Integer getRatio() {
+        return ratio;
+    }
+
+    public void setRatio(Integer ratio) {
+        this.ratio = ratio;
+    }
+
+    public Integer getSt() {
+        return st;
+    }
+
+    public void setSt(Integer st) {
+        this.st = st;
     }
 
     @Override

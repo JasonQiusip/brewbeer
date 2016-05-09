@@ -5,19 +5,16 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import com.ltbrew.brewbeer.R;
 import com.ltbrew.brewbeer.persistence.greendao.DBRecipe;
 import com.ltbrew.brewbeer.presenter.model.BrewHistory;
 import com.ltbrew.brewbeer.uis.adapter.viewholder.BaseViewHolder;
 import com.ltbrew.brewbeer.uis.adapter.viewholder.BrewingVH;
+import com.ltbrew.brewbeer.uis.view.MagicProgressBar;
 
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.TreeMap;
 
 import butterknife.BindView;
 
@@ -27,6 +24,7 @@ import butterknife.BindView;
 public class BrewingSessionAdapter extends RecyclerView.Adapter<BrewingVH> {
 
     private final Context context;
+
     private BaseViewHolder.OnRvItemClickListener onRvItemClickListener;
     private List<BrewHistory> brewingHitories = Collections.EMPTY_LIST;
 
@@ -47,11 +45,14 @@ public class BrewingSessionAdapter extends RecyclerView.Adapter<BrewingVH> {
 
         BrewHistory brewHistory = brewingHitories.get(position);
         DBRecipe recipe = brewHistory.getDbRecipe();
-        if(recipe != null) {
+        if (recipe != null) {
             holder.brewingSessionItemTv.setText(recipe.getName());
         }
         holder.brewingState.setText(brewHistory.getBrewingState());
-
+        Integer ratio = brewHistory.getRatio();
+        if(ratio != null) {
+            holder.magicPb.setPercent(20 / 100f);
+        }
     }
 
     @Override
@@ -63,7 +64,7 @@ public class BrewingSessionAdapter extends RecyclerView.Adapter<BrewingVH> {
         this.brewingHitories = brewingHitories;
     }
 
-    public void setOnItemClickListener(BaseViewHolder.OnRvItemClickListener onRvItemClickListener){
+    public void setOnItemClickListener(BaseViewHolder.OnRvItemClickListener onRvItemClickListener) {
         this.onRvItemClickListener = onRvItemClickListener;
     }
 }

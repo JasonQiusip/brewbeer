@@ -20,7 +20,7 @@ public class SocketCmdWriter extends SocketCustomWriter {
             try {
                 if (cmdType == CmdsConstant.CMDSTR.idle) {
                     //实时 关注pushservice是不是关掉了
-                    System.out.println("空转好吗？？？？？？");
+//                    System.out.println("空转好吗？？？？？？");
                     continue;
                 }
                 writeCmdPacks();

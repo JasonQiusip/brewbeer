@@ -27,6 +27,7 @@
        />
 
     <com.ltbrew.brewbeer.uis.view.MagicProgressBar
+        android:id="@+id/magicPb"
         android:layout_below="@id/brewingSessionItemTv"
         android:layout_toLeftOf="@+id/rightArrowIv"
         android:layout_marginTop="8dp"

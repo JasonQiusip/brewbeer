@@ -18,6 +18,5 @@ public class FinishedBrewVH extends BaseViewHolder {
 
     public FinishedBrewVH(View itemView) {
         super(itemView);
-        ButterKnife.bind(this, itemView);
     }
 }
