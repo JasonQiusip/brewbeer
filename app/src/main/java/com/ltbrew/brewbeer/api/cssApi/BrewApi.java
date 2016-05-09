@@ -50,7 +50,7 @@ public class BrewApi {
         return GeneralApi.res(httpReqParam, devId, ApiConstants.BREW_HISTORY);
     }
 
-    public static HttpResponse downloadRecipe(String devId, String name, String ref){
+    public synchronized static HttpResponse downloadRecipe(String devId, String name, String ref){
         return GeneralApi.downloadFile(devId, name, ref);
     }
 }

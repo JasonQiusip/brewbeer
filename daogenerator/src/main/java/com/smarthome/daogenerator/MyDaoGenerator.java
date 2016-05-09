@@ -9,7 +9,7 @@ import de.greenrobot.daogenerator.ToMany;
 public class MyDaoGenerator {
 
     public static void main(String[] args) throws Exception {
-        Schema schema = new Schema(1000, "com.ltbrew.brewbeer.persistence.greendao");
+        Schema schema = new Schema(1001, "com.ltbrew.brewbeer.persistence.greendao");
 
         addRecipe(schema);
 

@@ -45,7 +45,7 @@ public class GeneralApi {
         return TokenDispatcher.delegateHttpReqWithToken(httpReqParam);
     }
 
-    public static HttpResponse downloadFile(String deviceid, String fn, String ref)
+    public synchronized static HttpResponse downloadFile(String deviceid, String fn, String ref)
     {
         HashMap<String, String> dict = new HashMap();
         dict.put("fn", fn);
