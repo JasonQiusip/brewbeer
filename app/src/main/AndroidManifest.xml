@@ -53,8 +53,8 @@
             android:label="" />
         <activity
             android:name=".uis.activity.BrewHomeActivity"
-            android:launchMode="singleTask"
-            android:label="" />
+            android:label=""
+            android:launchMode="singleTask" />
         <activity android:name=".uis.activity.BaseActivity" />
         <activity
             android:name=".uis.activity.BrewSessionControlActivity"
@@ -66,7 +66,8 @@
         <activity
             android:name=".uis.activity.RecipeDetailActivity"
             android:label=""
-            android:theme="@style/AppTheme"></activity>
+            android:theme="@style/AppTheme" />
+        <activity android:name=".uis.activity.AboutActivity"></activity>
     </application>
 
 </manifest>

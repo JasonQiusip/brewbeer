@@ -1,48 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.ltbrew.brewbeer.uis.view.SwipeRevealLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
-    android:background="@drawable/bg_bottom_line"
+    android:id="@+id/swipe_layout"
     android:layout_width="match_parent"
-    android:gravity="center_vertical"
-    android:paddingLeft="16dp"
-    android:paddingRight="16dp"
-    android:paddingTop="4dp"
-    android:paddingBottom="4dp"
-    android:layout_height="72dp">
+    android:layout_height="wrap_content"
+    app:dragEdge="right"
+    app:mode="same_level">
 
-    <TextView
-        android:id="@+id/brewingSessionItemTv"
-        android:layout_width="match_parent"
-        style="@style/brewingTvStyle"
-        android:text="小麦酒"
-        />
-    <TextView
-        android:id="@+id/brewingState"
+    <FrameLayout
+        android:id="@+id/delete_layout"
         android:layout_width="wrap_content"
-        android:layout_toLeftOf="@+id/rightArrowIv"
-        style="@style/brewingTvStyle"
-        android:textColor="@color/colorAccent"
-        android:text="煮水15分钟"
-       />
+        android:layout_height="72dp"
+        android:background="#CD3700">
 
-    <com.ltbrew.brewbeer.uis.view.MagicProgressBar
-        android:id="@+id/magicPb"
-        android:layout_below="@id/brewingSessionItemTv"
-        android:layout_toLeftOf="@+id/rightArrowIv"
-        android:layout_marginTop="8dp"
+        <TextView
+            android:id="@+id/deleteTv"
+            android:layout_width="80dp"
+            android:layout_height="72dp"
+            android:background="#CD3700"
+            android:gravity="center"
+            android:text="删除"
+            android:textColor="@android:color/white" />
+    </FrameLayout>
+
+    <RelativeLayout
+        android:id="@+id/contentRL"
         android:layout_width="match_parent"
-        android:layout_height="20dp"
-        app:mpb_background_color="#dddddd"
-        app:mpb_fill_color="#FF1CECBE"
-        app:mpb_flat="true"/>
+        android:layout_height="72dp"
+        android:background="@drawable/bg_bottom_line"
+        android:gravity="center_vertical"
+        android:orientation="vertical"
+        android:paddingBottom="4dp"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:paddingTop="4dp">
 
-    <ImageView
-        android:id="@+id/rightArrowIv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="16dp"
-        android:layout_centerVertical="true"
-        android:layout_alignParentRight="true"
-        android:src="@mipmap/ic_chevron_right_black"/>
-</RelativeLayout>
+        <TextView
+            android:id="@+id/brewingSessionItemTv"
+            style="@style/brewingTvStyle"
+            android:layout_width="match_parent"
+            android:text="小麦酒" />
+
+        <TextView
+            android:id="@+id/brewingState"
+            style="@style/brewingTvStyle"
+            android:layout_width="wrap_content"
+            android:layout_toLeftOf="@+id/rightArrowIv"
+            android:text="煮水15分钟"
+            android:textColor="@color/colorAccent" />
+
+        <com.ltbrew.brewbeer.uis.view.MagicProgressBar
+            android:id="@+id/magicPb"
+            android:layout_width="match_parent"
+            android:layout_height="20dp"
+            android:layout_below="@id/brewingSessionItemTv"
+            android:layout_marginTop="8dp"
+            android:layout_toLeftOf="@+id/rightArrowIv"
+            app:mpb_background_color="#dddddd"
+            app:mpb_fill_color="#4876FF"
+            app:mpb_flat="true" />
+
+        <ImageView
+            android:id="@+id/rightArrowIv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="16dp"
+            android:src="@mipmap/ic_chevron_right_black" />
+    </RelativeLayout>
+</com.ltbrew.brewbeer.uis.view.SwipeRevealLayout>

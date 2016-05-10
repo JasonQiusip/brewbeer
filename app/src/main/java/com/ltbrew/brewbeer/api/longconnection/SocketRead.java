@@ -109,6 +109,11 @@ public class SocketRead implements Runnable {
                 continue;
             }
             List<String> listResult = decodeResp.finalResult.resultList;
+            if (handlerError(listResult)) {
+                socketReadCallback.onServerRespError();
+                decodeResp.finalResult.remain = "";
+                continue;
+            }
             boolean checkPack = !checkRespPack(listResult, timeMsg);
             if (checkPack) {
                 inputStream.close();
@@ -124,17 +129,15 @@ public class SocketRead implements Runnable {
         String commandWord = listResult.get(0);
         String seqNo = listResult.get(1);
         System.out.println("commandWord = " + listResult);
-        if (handlerError(listResult)) return false;
+
         try {
-            Object obj = CmdsConstant.CMDSTR.lookup.get(commandWord);
-            if(obj == null) {
-                System.out.println("未识别的指令");
+            boolean isCmdExist = CmdsConstant.CMDSTR.checkCmd(commandWord);
+            if(!isCmdExist)
                 return false;
-            }
             CmdsConstant.CMDSTR cmdstr = CmdsConstant.CMDSTR.valueOf(commandWord);
             if (cmdstr != CmdsConstant.CMDSTR.hb) {
                 synchronized (locker) {
-                    locker.notify();  //收到服务器回包之后才能解锁写操作
+                    locker.notifyAll();  //收到服务器回包之后才能解锁写操作
                 }
             }
             switch (cmdstr) {
@@ -188,9 +191,6 @@ public class SocketRead implements Runnable {
                     }
                     break;
                 case pok:
-                    synchronized (locker) {
-                        locker.notifyAll();
-                    }
 
                     break;
                 case hb:
@@ -207,99 +207,46 @@ public class SocketRead implements Runnable {
                     break;
                 case push:
                 case re_push:
-                    synchronized (locker) {
-                        locker.notifyAll();
-                    }
+
                     String endQueueNo = listResult.get(2);
                     List<String> pushList = listResult.subList(3, listResult.size());
                     socketReadCallback.hasPush(pushList, seqNo, endQueueNo, timeMsg);
                     break;
                 case file_ul_begin:
-                    synchronized (locker) {
-                        locker.notifyAll();
-                    }
                     callback.onFileUploadBegin(Integer.parseInt(seqNo));
                     break;
                 case file_ul:
-                    synchronized (locker) {
-                        locker.notifyAll();
-                    }
                     callback.onFileUploadSuccess();
                     break;
                 case file_ul_end:
-                    synchronized (locker) {
-                        locker.notifyAll();
-                    }
+
                     callback.onFileUploadEnd();
                     break;
-                case r_hrr:
-                    boolean isnullreault = false;
-                    String frequency = null;
-                    String hrr = null;
-                    if (listResult.size() < 7) {
-                        isnullreault = true;
-                    }
-                    String str_endtime = listResult.get(2);
-                    Log.wtf("str_endtime", "str_endtime = " + str_endtime);
-//                    .order(ByteOrder.BIG_ENDIAN)
-//                    int r_hrr_endtime = ByteBuffer.wrap(str_endtime.getBytes()).order(ByteOrder.BIG_ENDIAN).getInt();
-//                    int r_hrr_endtime_ll = ByteBuffer.wrap(str_endtime.getBytes()).order(ByteOrder.LITTLE_ENDIAN).getInt();
-                    long r_hrr_endtime = getCss_r_h_TimeInfo(str_endtime);
-                    String linkedIndex = listResult.get(3);
-                    String endindex = listResult.get(4);
-                    if (isnullreault) {
-                        hrr = listResult.get(5);
-                    } else {
-                        frequency = listResult.get(5);
-                        hrr = listResult.get(6);
-                    }
-                    ArrayList<Integer> integers = new ArrayList<>();
-                    if (hrr.equals("!")) {
-                        integers.add(255);
-                    } else {
-                        char[] r_hrr_charArray = hrr.toCharArray();
+//                应答
+//
+//                参数	说明	类型
+//                brew_session	命令字	str
+//                序号		int
+//                tk	会话token。如果token不存在，取None	str
+//                state	啤酒酿造会话状态。0：未开始，1：进行中，2：已完成，3：中断	int
+                case brew_session:
+                    String tk = listResult.get(2);
+                    String state = listResult.get(3);
+                    socketReadCallback.onGeBrewSessionResp(tk, state);
 
-                        for (char c : r_hrr_charArray) {
-                            String iihEX = Integer.toHexString((int) c);
-                            int int_result = Integer.valueOf(iihEX, 16);
-                            integers.add(int_result);
-                        }
-
-                    }
-                    socketReadCallback.hasHeartRr(integers, str_endtime, linkedIndex, endindex);
                     break;
-                case r_hrh:
-                    HashMap<String, ArrayList<Integer>> time2hbnun = new HashMap<>();
-                    //TODO 用于判断是否解析合理的数据给上层
-                    if (listResult.size() > 4) {
-                        String hrh_endIndex = listResult.get(3);
-                        for (int count = 4; count < listResult.size(); count++) {
-                            ArrayList<Integer> hbnum = new ArrayList<>();
-                            String s = listResult.get(count);
-                            String head1 = s.substring(0, 2);
-                            String head2 = s.substring(2, 3);
-                            String head3 = s.substring(3, 4);
-                            String head4 = s.substring(4, 8);
-                            int startime = ByteBuffer.wrap(head4.getBytes()).order(ByteOrder.BIG_ENDIAN).getInt();
-                            String head5 = s.substring(8, 12);
-                            int endtime = ByteBuffer.wrap(head5.getBytes()).order(ByteOrder.BIG_ENDIAN).getInt();
-                            String time = startime + "L" + endtime;
-                            String hbnums = s.substring(12);
-                            char[] charArray = hbnums.toCharArray();
-                            for (char c : charArray) {
-                                String iihEX = Integer.toHexString((int) c);
-                                int int_result = Integer.valueOf(iihEX, 16);
-                                hbnum.add(int_result);
-                            }
-                            time2hbnun.put(time, hbnum);
-                            socketReadCallback.getHeartHistory(hrh_endIndex, time2hbnun);
-                        }
-                        //**********循环结束，然后就是把数据丢到我们可爱的app端了****************
-                    } else if (listResult.size() <= 4) {
-                        //TODO 这个包文明显少于应有包文的长度，即为不合法的包。
-                        time2hbnun.put("error", null);
-                        socketReadCallback.getHeartHistory("error", time2hbnun);
-                    }
+
+//                参数	说明	类型
+//                cmn_prgs	命令字	str
+//                序号		int
+//                percent	进度百分比。>=0, <=100	int
+//                seq_index	序列索引。从0开始；选填的情况编码为-1；对于啤酒机项目来说，即配方步骤索引	int
+//                body	说明文字	str
+                case cmn_prgs:
+                    String percent = listResult.get(2);
+                    String seq_index = listResult.get(3);
+                    String body = listResult.get(4);
+                    socketReadCallback.onGetCmnPrgs(percent, seq_index, body);
                     break;
                 default:
                     break;
@@ -330,8 +277,8 @@ public class SocketRead implements Runnable {
     }
 
     private boolean handlerError(List<String> listResult) {
-        if (listResult.size() > 2 && ParsePackKits.checkIsError(listResult.get(2))) {
-//            System.out.println("RECV------------- ERROR");
+        if (listResult.size() >= 2 && ParsePackKits.checkIsError(listResult.get(1))) {
+            System.out.println("RECV------------- ERROR" + listResult.get(0));
             return true;
         }
         return false;

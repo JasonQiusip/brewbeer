@@ -11,9 +11,10 @@ import com.ltbrew.brewbeer.persistence.greendao.DBRecipe;
 import com.ltbrew.brewbeer.presenter.model.BrewHistory;
 import com.ltbrew.brewbeer.uis.adapter.viewholder.BaseViewHolder;
 import com.ltbrew.brewbeer.uis.adapter.viewholder.BrewingVH;
-import com.ltbrew.brewbeer.uis.view.MagicProgressBar;
+import com.ltbrew.brewbeer.uis.view.SwipeRevealLayout;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import butterknife.BindView;
@@ -27,6 +28,8 @@ public class BrewingSessionAdapter extends RecyclerView.Adapter<BrewingVH> {
 
     private BaseViewHolder.OnRvItemClickListener onRvItemClickListener;
     private List<BrewHistory> brewingHitories = Collections.EMPTY_LIST;
+    private OnDeleteClickListener mOnDeleteClickListener;
+    private HashMap<Integer, Integer> openOrCloseState = new HashMap<>();
 
     public BrewingSessionAdapter(Context context) {
         this.context = context;
@@ -36,12 +39,11 @@ public class BrewingSessionAdapter extends RecyclerView.Adapter<BrewingVH> {
     public BrewingVH onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context).inflate(R.layout.item_brewing_session, parent, false);
         BrewingVH brewingVH = new BrewingVH(view);
-        brewingVH.setOnRvItemClickListener(onRvItemClickListener);
         return brewingVH;
     }
 
     @Override
-    public void onBindViewHolder(BrewingVH holder, int position) {
+    public void onBindViewHolder(final BrewingVH holder, final int position) {
 
         BrewHistory brewHistory = brewingHitories.get(position);
         DBRecipe recipe = brewHistory.getDbRecipe();
@@ -50,8 +52,65 @@ public class BrewingSessionAdapter extends RecyclerView.Adapter<BrewingVH> {
         }
         holder.brewingState.setText(brewHistory.getBrewingState());
         Integer ratio = brewHistory.getRatio();
-        if(ratio != null) {
-            holder.magicPb.setPercent(20 / 100f);
+        if (ratio != null) {
+            holder.magicPb.setSmoothPercent(ratio / 100f);
+        }
+        holder.deleteTv.setTag(holder);
+        holder.deleteTv.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                BrewingVH vh = (BrewingVH) v.getTag();
+                if (mOnDeleteClickListener != null)
+                    mOnDeleteClickListener.onDeleteClick(v, vh.getLayoutPosition());
+                openOrCloseState.put(position, 0);
+
+            }
+        });
+        holder.contentRL.setTag(holder);
+        holder.contentRL.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                BrewingVH vh = (BrewingVH) v.getTag();
+                if (onRvItemClickListener != null)
+                    onRvItemClickListener.onRvItemClick(v, vh.getLayoutPosition());
+            }
+        });
+        holder.contentRL.setOnLongClickListener(new View.OnLongClickListener(){
+
+            @Override
+            public boolean onLongClick(View v) {
+                BrewingVH holder = (BrewingVH) v.getTag();
+//                if(holder.swipeLayout.isOpened()){
+//                    holder.swipeLayout.close(true);
+//                    return true;
+//                }
+                holder.swipeLayout.open(true);
+                return true;
+            }
+        });
+
+        holder.swipeLayout.setSwipeListener(new SwipeRevealLayout.SwipeListener() {
+            @Override
+            public void onClosed(SwipeRevealLayout view) {
+                openOrCloseState.put(position, 0);
+            }
+
+            @Override
+            public void onOpened(SwipeRevealLayout view) {
+                openOrCloseState.put(position, 1);
+            }
+
+            @Override
+            public void onSlide(SwipeRevealLayout view, float slideOffset) {
+
+            }
+        });
+        if(openOrCloseState.get(position) == null || openOrCloseState.get(position) == 0){
+            holder.swipeLayout.close(false);
+        }else{
+            holder.swipeLayout.open(true);
         }
     }
 
@@ -66,5 +125,13 @@ public class BrewingSessionAdapter extends RecyclerView.Adapter<BrewingVH> {
 
     public void setOnItemClickListener(BaseViewHolder.OnRvItemClickListener onRvItemClickListener) {
         this.onRvItemClickListener = onRvItemClickListener;
+    }
+
+    public void setOnDeleteClickListener(OnDeleteClickListener mOnDeleteClickListener) {
+        this.mOnDeleteClickListener = mOnDeleteClickListener;
+    }
+
+    public interface OnDeleteClickListener {
+        void onDeleteClick(View v, int layoutPosition);
     }
 }

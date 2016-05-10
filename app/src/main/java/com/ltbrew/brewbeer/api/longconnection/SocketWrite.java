@@ -116,12 +116,12 @@ public class SocketWrite implements Runnable {
         socketWritter.changeCmdToSendPok(ackSeqNo, endQueueNo);
     }
 
-    public void sendCmnPrgsCmd(){
-        socketWritter.changeCmdToSendCmnPrgs();
+    public void sendCmnPrgsCmd(String token){
+        socketWritter.changeCmdToSendCmnPrgs(token);
     }
 
-    public void sendBrewSessionCmd(){
-        socketWritter.changeCmdToSendBrewSession();
+    public void sendBrewSessionCmd(Long package_id){
+        socketWritter.changeCmdToSendBrewSession(package_id);
     }
 
     /************************************************************************************

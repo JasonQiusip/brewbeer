@@ -56,10 +56,11 @@ public class Cmds {
         return buildRequestString;
     }
 
-    static String buildBrewSessionCmd(long seqNo, ParsePackKits pushServiceKits) {
+    static String buildBrewSessionCmd(Long pack_id, long seqNo, ParsePackKits pushServiceKits) {
         List<String> list = new ArrayList<String>();
         list.add("brew_session");
         list.add(seqNo + "");
+        list.add(pack_id+"");
         String buildRequestString = pushServiceKits.buildRequestString(list);
         return buildRequestString;
     }

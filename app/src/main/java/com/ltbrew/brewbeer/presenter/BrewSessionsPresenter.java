@@ -130,6 +130,9 @@ public class BrewSessionsPresenter {
         Log.e("recipePresenter", list.size()+"");
         if(list != null && list.size() != 0) {
             DBRecipe dbRecipe = list.get(0);
+            dbRecipe.__setDaoSession(DBManager.getInstance().getDaoSession());
+            dbRecipe.getBrewSteps();
+            dbRecipe.getSlots();
             brewSessionView.onDownloadRecipeSuccess(dbRecipe);
             return true;
         }

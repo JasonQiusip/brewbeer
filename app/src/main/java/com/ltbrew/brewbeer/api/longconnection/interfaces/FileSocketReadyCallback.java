@@ -40,4 +40,8 @@ public interface FileSocketReadyCallback {
     void onCmdHasPush(List<String> pushLists, String pok, long pushTime);
 
     void onGetPidHeartHistory(String endindex, HashMap<String, ArrayList<Integer>> maps);
+
+    void onGetCmdPrgs(String percent, String seq_index, String body);
+
+    void onServerRespError();
 }

@@ -44,7 +44,7 @@ import butterknife.OnCheckedChanged;
 import butterknife.OnClick;
 
 public class BrewHomeActivity extends BaseActivity
-        implements NavigationView.OnNavigationItemSelectedListener, BrewHomeView, View.OnClickListener, BrewSessionFragment.onBrewingSessionClickListener {
+        implements NavigationView.OnNavigationItemSelectedListener, BrewHomeView, View.OnClickListener, BrewSessionFragment.onBrewingSessionListener {
 
     @BindView(R.id.homeCenterTitle)
     TextView homeCenterTitle;
@@ -61,10 +61,14 @@ public class BrewHomeActivity extends BaseActivity
     private BrewSessionFragment brewSessionFragment = new BrewSessionFragment();
     private RecipeFragment recipeFragment = new RecipeFragment();
     private Fragment[] fragments = new Fragment[]{brewSessionFragment, recipeFragment};
-    private SectionsPagerAdapter mSectionsPagerAdapter;
+
     private ViewPager mViewPager;
     private BrewHomePresenter brewHomePresenter;
     private List<Device> devices = Collections.EMPTY_LIST;
+    private boolean serviceIsConnected;
+    private int positionCurrentDevInDevices;
+    private LtPushService ltPushService;
+
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -80,8 +84,7 @@ public class BrewHomeActivity extends BaseActivity
             reqDataFromServer();
         }
     };
-    private int positionCurrentDevInDevices;
-    private LtPushService ltPushService;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -125,7 +128,7 @@ public class BrewHomeActivity extends BaseActivity
     }
 
     private void setupViewPager() {
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+        SectionsPagerAdapter mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
         mSectionsPagerAdapter.setFragments(fragments);
         mViewPager = (ViewPager) findViewById(R.id.brewHomeContainer);
         if (mViewPager != null) {
@@ -183,7 +186,7 @@ public class BrewHomeActivity extends BaseActivity
         if (id == R.id.nav_add_dev) {
             startAddDevActivity();
         } else if (id == R.id.nav_about) {
-
+            startAboutActivity();
         } else if (id == R.id.nav_exit) {
             startLoginActivity();
         }
@@ -195,6 +198,18 @@ public class BrewHomeActivity extends BaseActivity
         return true;
     }
 
+    void startAddDevActivity() {
+        Intent intent = new Intent();
+        intent.setClass(this, AddDevActivity.class);
+        startActivity(intent);
+    }
+
+    void startAboutActivity(){
+        Intent intent = new Intent();
+        intent.setClass(this, AboutActivity.class);
+        startActivity(intent);
+    }
+
     private void startLoginActivity() {
         Intent intent = new Intent();
         intent.setClass(this, LoginActivity.class);
@@ -203,11 +218,6 @@ public class BrewHomeActivity extends BaseActivity
         startActivity(intent);
     }
 
-    void startAddDevActivity() {
-        Intent intent = new Intent();
-        intent.setClass(this, AddDevActivity.class);
-        startActivity(intent);
-    }
 
     @OnClick(R.id.homeCreateBrewSession)
     public void createBrewSession() {
@@ -223,6 +233,8 @@ public class BrewHomeActivity extends BaseActivity
         intent.setClass(this, AddRecipeActivity.class);
         startActivity(intent);
     }
+
+    //=========================== 获取设备列表回调 start===========================
 
     @Override
     public void onGetDevsSuccess(List<Device> devices) {
@@ -253,13 +265,16 @@ public class BrewHomeActivity extends BaseActivity
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
             ltPushService = ((LtPushService.ServiceBinder) iBinder).getService();
+            serviceIsConnected = true;
         }
 
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
+            serviceIsConnected = false;
             ltPushService = null;
         }
     };
+
     public int findWhereIsCurrentDevInDevices(){
         for(int i = 0, size = devices.size(); i < size; i++){
             String currentDevId = DeviceUtil.getCurrentDevId();
@@ -279,12 +294,16 @@ public class BrewHomeActivity extends BaseActivity
         showSnackBar("获取设备失败，服务器或APP出错， 请联系客服");
 
     }
+    //=========================== 获取设备列表回调 end===========================
+
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(broadcastReceiver);
-        unbindService(mServiceConnection);
+        if(broadcastReceiver != null)
+            unregisterReceiver(broadcastReceiver);
+        if(mServiceConnection != null && serviceIsConnected)
+            unbindService(mServiceConnection);
     }
 
     @Override
@@ -294,7 +313,7 @@ public class BrewHomeActivity extends BaseActivity
                 if(devices.size() == 0 || positionCurrentDevInDevices == -1)
                     return;
                 if(positionCurrentDevInDevices == 0){
-                    positionCurrentDevInDevices = devices.size();
+                    positionCurrentDevInDevices = devices.size() - 1;
                 }else{
                     positionCurrentDevInDevices--;
                 }
@@ -320,6 +339,8 @@ public class BrewHomeActivity extends BaseActivity
     }
 
     @Override
-    public void onBrewingSessionClick() {
+    public void onReqBrewingSession(Long package_id) {
+        if(ltPushService != null)
+            ltPushService.sendBrewSessionCmd(package_id);
     }
 }

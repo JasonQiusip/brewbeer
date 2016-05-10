@@ -1,56 +1,78 @@
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <LinearLayout
+    <com.ltbrew.brewbeer.uis.view.ReboundScrollView
+        android:id="@+id/reboundScrollView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:fillViewport="true">
 
-        <TextView
-            style="@style/subTitleStyle"
-            android:layout_width="match_parent"
-            android:text="酿造状态" />
 
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/brewStateRv"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@android:color/white"
-            android:minHeight="56dp" />
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/noBrewingTaskTv"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:background="@android:color/white"
-            android:gravity="center_vertical"
-            android:paddingLeft="16dp"
-            android:text="没有正在进行酿造任务"
-            android:textSize="16sp"
-            android:visibility="gone" />
+            <TextView
+                android:id="@+id/brewStateTitle"
+                style="@style/subTitleStyle"
+                android:layout_width="match_parent"
+                android:text="酿造状态" />
 
-        <TextView
-            style="@style/subTitleStyle"
-            android:layout_width="match_parent"
-            android:text="已完成的酿造" />
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/brewStateRv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/white"
+                android:minHeight="56dp" />
 
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/finishedBrewRv"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@android:color/white"
-            android:minHeight="56dp" />
+            <TextView
+                android:id="@+id/noBrewingTaskTv"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:background="@android:color/white"
+                android:gravity="center_vertical"
+                android:paddingLeft="16dp"
+                android:text="没有正在进行酿造任务"
+                android:textSize="16sp"
+                android:visibility="gone" />
 
-        <TextView
-            android:id="@+id/noFinishedTaskTv"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:background="@android:color/white"
-            android:gravity="center_vertical"
-            android:paddingLeft="16dp"
-            android:text="无完成的酿造任务"
-            android:textSize="16sp"
-            android:visibility="gone" />
-    </LinearLayout>
-</ScrollView>
+            <TextView
+                style="@style/subTitleStyle"
+                android:layout_width="match_parent"
+                android:text="已完成的酿造" />
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/finishedBrewRv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/white"
+                android:minHeight="56dp" />
+
+            <TextView
+                android:id="@+id/noFinishedTaskTv"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:background="@android:color/white"
+                android:gravity="center_vertical"
+                android:paddingLeft="16dp"
+                android:text="无完成的酿造任务"
+                android:textSize="16sp"
+                android:visibility="gone" />
+        </LinearLayout>
+    </com.ltbrew.brewbeer.uis.view.ReboundScrollView>
+
+    <com.github.ybq.android.spinkit.SpinKitView
+        android:id="@+id/spin_kit"
+        style="@style/SpinKitView.Large.Wave"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_gravity="top|center_horizontal"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/bg_circle"
+        android:padding="12dp"
+        android:visibility="gone"
+        app:SpinKit_Color="@android:color/white" />
+</FrameLayout>

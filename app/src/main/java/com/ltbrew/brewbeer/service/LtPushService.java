@@ -32,10 +32,15 @@ public class LtPushService extends IntentService implements FileSocketReadyCallb
     public static final String PUSH_MSG_EXTRA = "pushMsg";
     public static final String CMD_RPT_ACTION = "cmd_rpt_action";
     public static final String UNBIND_ACTION = "unbind_action";
+    public static final String CMD_SOCKET_IS_READY_ACTION = "cmdSocketIsReadyAction";
     private int tryAgain = 3;
     private TransmitCmdService transmitCmdService;
     private final static int GRAY_SERVICE_ID = 1001;
     ServiceBinder serviceBinder = new ServiceBinder();
+    private int state;
+    private int starting = 0;
+    private int started = 1;
+
     public LtPushService() {
         super("LtPushService");
     }
@@ -102,9 +107,23 @@ public class LtPushService extends IntentService implements FileSocketReadyCallb
             @Override
             public void run() {
                 transmitCmdService = ConfigApi.startLongConnection(LtPushService.this);
+                state = starting;
+
             }
         }).start();
     }
+
+
+    public void sendBrewSessionCmd(Long package_id) {
+        if(transmitCmdService != null)
+            transmitCmdService.sendBrewSessionCmd(package_id);
+    }
+
+    public void sendCmnPrgsCmd(String token){
+        if(transmitCmdService != null)
+            transmitCmdService.sendCmnPrgsCmd(token);
+    }
+
 
     @Override
     public void onGetOauthTokenFailed() {
@@ -119,6 +138,7 @@ public class LtPushService extends IntentService implements FileSocketReadyCallb
                 if(tryAgain > 0){
                     tryAgain--;
                     transmitCmdService = ConfigApi.startLongConnection(LtPushService.this);
+                    state = starting;
                 }
             }
         }).start();
@@ -128,6 +148,13 @@ public class LtPushService extends IntentService implements FileSocketReadyCallb
     @Override
     public void onCmdSocketReady() {
         tryAgain = 3;
+        if(state == starting) {
+            Intent intent = new Intent();
+            intent.setAction(CMD_SOCKET_IS_READY_ACTION);
+            sendBroadcast(intent);
+        }
+        state = started;
+
     }
 
     @Override
@@ -253,6 +280,23 @@ public class LtPushService extends IntentService implements FileSocketReadyCallb
 
     @Override
     public void onGetPidHeartHistory(String endindex, HashMap<String, ArrayList<Integer>> maps) {
+
+    }
+
+    @Override
+    public void onGetCmdPrgs(String percent, String seq_index, String body) {
+        PushMsg pushMessage = new PushMsg();
+        pushMessage.ratio = Integer.valueOf(percent);
+        pushMessage.si = Integer.valueOf(seq_index);
+        pushMessage.body = body;
+        Intent intent = new Intent();
+        intent.setAction(CMN_PRGS_PUSH_ACTION);
+        intent.putExtra(PUSH_MSG_EXTRA, pushMessage);
+        sendBroadcast(intent);
+    }
+
+    @Override
+    public void onServerRespError() {
 
     }
 }
