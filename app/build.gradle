@@ -38,4 +38,6 @@ dependencies {
     compile 'de.greenrobot:greendao:2.0.0'
     compile files('libs/zxing_2015.jar')
     compile 'cn.dreamtobe.percentsmoothhandler:library:0.1.1'
+    compile files('libs/umeng-analytics-v5.6.1.jar')
+    compile files('libs/umeng-update-v2.6.0.1.jar')
 }
