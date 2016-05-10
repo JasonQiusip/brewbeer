@@ -1,13 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:background="@drawable/bg_bottom_line"
+<com.ltbrew.brewbeer.uis.view.SwipeRevealLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/swipe_layout"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
-    <TextView
-        android:id="@+id/finishedSessionItemTv"
+    android:layout_height="wrap_content"
+    app:dragEdge="right"
+    app:mode="same_level">
+
+    <FrameLayout
+        android:id="@+id/delete_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="56dp"
+        android:background="#CD3700">
+
+        <TextView
+            android:id="@+id/finishedSessionDeleteTv"
+            android:layout_width="80dp"
+            android:layout_height="56dp"
+            android:gravity="center"
+            android:background="#CD3700"
+            android:textColor="@android:color/white"
+            android:text="删除"/>
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/finishedFl"
         android:layout_width="match_parent"
-        style="@style/itemStyle"
-        android:text="小麦酒"
-        android:drawableRight="@mipmap/ic_chevron_right_black"/>
-</LinearLayout>
+        android:layout_height="wrap_content"
+       >
+
+        <TextView
+            android:id="@+id/finishedSessionItemTv"
+            android:layout_width="match_parent"
+            android:background="@drawable/bg_bottom_line"
+            style="@style/itemStyle"
+            android:text="小麦酒"
+            android:drawableRight="@mipmap/ic_chevron_right_black"/>
+    </FrameLayout>
+</com.ltbrew.brewbeer.uis.view.SwipeRevealLayout>

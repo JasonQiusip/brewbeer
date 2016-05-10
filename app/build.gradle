@@ -38,4 +38,5 @@ dependencies {
     compile 'de.greenrobot:greendao:2.0.0'
     compile files('libs/zxing_2015.jar')
     compile 'cn.dreamtobe.percentsmoothhandler:library:0.1.1'
+    compile 'com.github.ybq:Android-SpinKit:1.0.4'
 }

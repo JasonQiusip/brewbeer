@@ -145,9 +145,9 @@ public abstract class SocketCustomWriter {
     // push
     public void changeCmdToSendPok(String ackSeqNo, String endQueueNo) throws IOException, InterruptedException {
     }
-    public void changeCmdToSendCmnPrgs() {
+    public void changeCmdToSendCmnPrgs(String token) {
     }
-    public void changeCmdToSendBrewSession() {
+    public void changeCmdToSendBrewSession(Long package_id) {
     }
     
     public void sendheartreal(String id, String bTime, int linkIndex, int testBindex) throws IOException {

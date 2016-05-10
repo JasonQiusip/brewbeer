@@ -147,7 +147,8 @@ public class TransmitCmdService {
             public void onReconnect(String command) {
                 System.out.println("reconnect");
                 closeCmdWriteSocket();
-                if (CmdsConstant.CMDSTR.valueOf(command) == CmdsConstant.CMDSTR.auth) {
+                boolean isCmdExist = CmdsConstant.CMDSTR.checkCmd(command);
+                if (isCmdExist && CmdsConstant.CMDSTR.valueOf(command) == CmdsConstant.CMDSTR.auth) {
                     fileSocketReadyCallback.onOAuthFailed();
                 }
                 fileSocketReadyCallback.onCmdSocketReconnect();
@@ -160,6 +161,7 @@ public class TransmitCmdService {
 //                }
 
             }
+
 
             @Override
             public void hasPush(List<String> msgBack, String ackSeqNo, String endQueueNo, long times) throws IOException, InterruptedException {
@@ -181,6 +183,21 @@ public class TransmitCmdService {
             @Override
             public void getHeartHistory(String endindex, HashMap<String, ArrayList<Integer>> maps) {
                 fileSocketReadyCallback.onGetPidHeartHistory(endindex,maps);
+            }
+
+            @Override
+            public void onGeBrewSessionResp(String tk, String state) {
+                sendCmnPrgsCmd(tk);
+            }
+
+            @Override
+            public void onGetCmnPrgs(String percent, String seq_index, String body) {
+                fileSocketReadyCallback.onGetCmdPrgs(percent, seq_index, body);
+            }
+
+            @Override
+            public void onServerRespError() {
+                fileSocketReadyCallback.onServerRespError();
             }
 
 
@@ -255,15 +272,15 @@ public class TransmitCmdService {
         transmitFileService.getPidHearHistory(id,endIndex, whats6day, isZip);
     }
 
-    public void sendCmnPrgsCmd(){
+    public void sendCmnPrgsCmd(String token){
         if(cmdsWrite != null){
-            cmdsWrite.sendCmnPrgsCmd();
+            cmdsWrite.sendCmnPrgsCmd(token);
         }
     }
 
-    public void sendBrewSessionCmd(){
+    public void sendBrewSessionCmd(Long package_id){
         if(cmdsWrite != null){
-            cmdsWrite.sendBrewSessionCmd();
+            cmdsWrite.sendBrewSessionCmd(package_id);
         }
     }
 
@@ -279,6 +296,12 @@ public class TransmitCmdService {
         void hasHeartRr(ArrayList<Integer> result, String r_hrr_endtime, String linkedIndex, String endindex);
 
         void getHeartHistory(String endindex, HashMap<String, ArrayList<Integer>> maps);
+
+        void onGeBrewSessionResp(String tk, String state);
+
+        void onGetCmnPrgs(String percent, String seq_index, String body);
+
+        void onServerRespError();
     }
 
     public interface SocketWriteCallback {

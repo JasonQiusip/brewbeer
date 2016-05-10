@@ -36,6 +36,15 @@ public interface CmdsConstant {
                 lookup.put(mCMDSTR.name(), mCMDSTR);
             }
         }
+
+       public static boolean checkCmd(String commandWord){
+           Object obj = CmdsConstant.CMDSTR.lookup.get(commandWord);
+           if(obj == null) {
+               System.out.println("未识别的指令");
+               return false;
+           }
+           return true;
+       }
     }
 
 

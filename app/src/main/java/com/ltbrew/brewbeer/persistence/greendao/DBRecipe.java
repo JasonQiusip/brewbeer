@@ -194,4 +194,22 @@ public class DBRecipe {
         myDao.refresh(this);
     }
 
+    @Override
+    public String toString() {
+        return "DBRecipe{" +
+                "id=" + id +
+                ", formulaId=" + formulaId +
+                ", id_type='" + id_type + '\'' +
+                ", name='" + name + '\'' +
+                ", idForFn='" + idForFn + '\'' +
+                ", ref='" + ref + '\'' +
+                ", cus='" + cus + '\'' +
+                ", wr=" + wr +
+                ", wq=" + wq +
+                ", daoSession=" + daoSession +
+                ", myDao=" + myDao +
+                ", brewSteps=" + brewSteps +
+                ", slots=" + slots +
+                '}';
+    }
 }

@@ -112,6 +112,21 @@ public class TransmitFileService {
             public void getHeartHistory(String hrh_endIndex, HashMap<String, ArrayList<Integer>> maps) {
                 fileSocketCb.onGetPidHeartHistory(hrh_endIndex,maps);
             }
+
+            @Override
+            public void onGeBrewSessionResp(String tk, String state) {
+
+            }
+
+            @Override
+            public void onGetCmnPrgs(String percent, String seq_index, String body) {
+
+            }
+
+            @Override
+            public void onServerRespError() {
+
+            }
         });
         cmdRead.registerSocketReadCb(new FileSocketReadCallback() {
             @Override

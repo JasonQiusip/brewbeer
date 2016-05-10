@@ -44,6 +44,7 @@ public class ParsePackKits {
             }
             strBuilder.append(packParam(item));
         }
+        Log.e("sent pack ",  strBuilder.toString());
         return strBuilder.toString();
     }
 
@@ -351,7 +352,7 @@ public class ParsePackKits {
     }
 
     static boolean checkIsNumber(String resp) {
-        return NUMBER_ONLY.matcher(resp).find();
+        return NUMBER_ONLY.matcher(resp).find() && resp.length() <= 10;  //我们姑且认为长度大于10的都不是数字
     }
 
     public class Result {

@@ -1,5 +1,9 @@
 package com.ltbrew.brewbeer.uis.activity;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -14,6 +18,8 @@ import com.ltbrew.brewbeer.persistence.greendao.DBBrewStep;
 import com.ltbrew.brewbeer.persistence.greendao.DBRecipe;
 import com.ltbrew.brewbeer.persistence.greendao.DBSlot;
 import com.ltbrew.brewbeer.presenter.model.BrewHistory;
+import com.ltbrew.brewbeer.service.LtPushService;
+import com.ltbrew.brewbeer.service.PushMsg;
 import com.ltbrew.brewbeer.uis.utils.ParamStoreUtil;
 
 import java.util.List;
@@ -32,12 +38,25 @@ public class BrewSessionControlActivity extends AppCompatActivity {
     private DBRecipe dbRecipe;
     private ImageView backIv;
     private BrewHistory brewHistory;
+    private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if(LtPushService.CMN_PRGS_PUSH_ACTION.equals(action)){
+                PushMsg pushMsgObj = intent.getParcelableExtra(LtPushService.PUSH_MSG_EXTRA);
+                curState.setText(pushMsgObj.body);
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_brew_session_control);
         ButterKnife.bind(this);
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(LtPushService.CMD_SOCKET_IS_READY_ACTION);
+        registerReceiver(broadcastReceiver, intentFilter);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         backIv = (ImageView) toolbar.findViewById(R.id.backIv);
@@ -98,4 +117,9 @@ public class BrewSessionControlActivity extends AppCompatActivity {
         stepsContainer.addView(view);
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(broadcastReceiver);
+    }
 }

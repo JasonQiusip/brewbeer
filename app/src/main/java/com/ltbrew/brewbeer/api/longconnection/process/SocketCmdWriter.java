@@ -11,18 +11,19 @@ public class SocketCmdWriter extends SocketCustomWriter {
 
     private String ackSeqNo;
     private String endQueueNo;
-
+    private Long pack_id = -1l;
+    private String token;
 
 
     @Override
     public void sendCmdReqPacks() {
         while (excute) {
             try {
-                if (cmdType == CmdsConstant.CMDSTR.idle) {
-                    //实时 关注pushservice是不是关掉了
-//                    System.out.println("空转好吗？？？？？？");
-                    continue;
-                }
+//                if (cmdType == CmdsConstant.CMDSTR.idle) {
+//                    //实时 关注pushservice是不是关掉了
+////                    System.out.println("空转好吗？？？？？？");
+//                    continue;
+//                }
                 writeCmdPacks();
                 System.out.println("sendCmdReqPacks lock");
                 synchronized (locker) {
@@ -56,7 +57,7 @@ public class SocketCmdWriter extends SocketCustomWriter {
                 cmdType = CmdsConstant.CMDSTR.idle;
                 break;
             case cmn_prgs:
-                sendCmdTogetCmnPrgs();
+                sendCmdToGetCmnPrgs();
                 cmdType = CmdsConstant.CMDSTR.idle;
                 break;
             case brew_session:
@@ -104,7 +105,7 @@ public class SocketCmdWriter extends SocketCustomWriter {
         }
     }
 
-    private void sendCmdTogetCmnPrgs() {
+    private void sendCmdToGetCmnPrgs() {
         locker.seqNo++;
         try {
             String requestStr = Cmds.buildCmnPrgsCmd(locker.seqNo, this.pushServiceKits);
@@ -116,8 +117,10 @@ public class SocketCmdWriter extends SocketCustomWriter {
 
     private void sendCmdToCheckBrewSession() {
         locker.seqNo++;
+        if(pack_id == -1)
+            return;
         try {
-            String requestStr = Cmds.buildBrewSessionCmd(locker.seqNo,this.pushServiceKits);
+            String requestStr = Cmds.buildBrewSessionCmd(pack_id, locker.seqNo,this.pushServiceKits);
             outputStream.write(toByteArr(ParsePackKits.buildPack(requestStr)));
         } catch (IOException e) {
             e.printStackTrace();
@@ -132,14 +135,25 @@ public class SocketCmdWriter extends SocketCustomWriter {
         cmdType = CmdsConstant.CMDSTR.sendPok;
         this.ackSeqNo = ackSeqNo;
         this.endQueueNo = endQueueNo;
+        synchronized (locker){
+            locker.notifyAll();
+        }
     }
 
     @Override
-    public void changeCmdToSendCmnPrgs(){
+    public void changeCmdToSendCmnPrgs(String token){
+        this.token = token;
         cmdType = CmdsConstant.CMDSTR.cmn_prgs;
+        synchronized (locker){
+            locker.notifyAll();
+        }
     }
     @Override
-    public void changeCmdToSendBrewSession(){
+    public void changeCmdToSendBrewSession(Long package_id){
+        this.pack_id = package_id;
         cmdType = CmdsConstant.CMDSTR.brew_session;
+        synchronized (locker){
+            locker.notifyAll();
+        }
     }
 }
