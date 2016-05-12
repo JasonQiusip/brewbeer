@@ -1,5 +1,8 @@
-package com.ltbrew.brewbeer.api.longconnection.process;
+package com.ltbrew.brewbeer.api.longconnection.process.cmdconnection;
 
+
+import com.ltbrew.brewbeer.api.longconnection.process.ParsePackKits;
+import com.ltbrew.brewbeer.api.longconnection.process.SocketCustomWriter;
 
 import java.io.IOException;
 
@@ -56,19 +59,12 @@ public class SocketCmdWriter extends SocketCustomWriter {
                 writePok();
                 cmdType = CmdsConstant.CMDSTR.idle;
                 break;
-            case cmn_prgs:
-                sendCmdToGetCmnPrgs();
-                cmdType = CmdsConstant.CMDSTR.idle;
-                break;
-            case brew_session:
-                sendCmdToCheckBrewSession();
-                cmdType = CmdsConstant.CMDSTR.idle;
-                break;
+
         }
     }
 
     @Override
-    void writeAuthorizePack() throws IOException {
+    public void writeAuthorizePack() throws IOException {
         super.writeAuthorizePack();
     }
 
@@ -77,7 +73,7 @@ public class SocketCmdWriter extends SocketCustomWriter {
         do {
             locker.seqNo++;
             try {
-                outputStream.write(toByteArr(ParsePackKits.buildPack(Cmds.buildPockCmd(locker.seqNo, ackSeqNo, endQueueNo, this.pushServiceKits))));
+                outputStream.write(toByteArr(ParsePackKits.makePack(Cmds.buildPockCmd(locker.seqNo, ackSeqNo, endQueueNo, this.pushServiceKits))));
                 break;
             } catch (IOException e) {
                 e.printStackTrace();
@@ -91,7 +87,7 @@ public class SocketCmdWriter extends SocketCustomWriter {
     }
 
     @Override
-    void writeHeartbeat() {
+    public void writeHeartbeat() {
         super.writeHeartbeat();
     }
 
@@ -99,33 +95,12 @@ public class SocketCmdWriter extends SocketCustomWriter {
         locker.seqNo++;
         try {
             String requestStr = Cmds.buildPockCmd(locker.seqNo, ackSeqNo, endQueueNo, this.pushServiceKits);
-            outputStream.write(toByteArr(ParsePackKits.buildPack(requestStr)));
+            outputStream.write(toByteArr(ParsePackKits.makePack(requestStr)));
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void sendCmdToGetCmnPrgs() {
-        locker.seqNo++;
-        try {
-            String requestStr = Cmds.buildCmnPrgsCmd(locker.seqNo, this.pushServiceKits);
-            outputStream.write(toByteArr(ParsePackKits.buildPack(requestStr)));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void sendCmdToCheckBrewSession() {
-        locker.seqNo++;
-        if(pack_id == -1)
-            return;
-        try {
-            String requestStr = Cmds.buildBrewSessionCmd(pack_id, locker.seqNo,this.pushServiceKits);
-            outputStream.write(toByteArr(ParsePackKits.buildPack(requestStr)));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
     //******************************************************** 外部控制修改命令******************************************//
     //外部修改命令类型， 内部更加命令类型执行命令
@@ -140,20 +115,5 @@ public class SocketCmdWriter extends SocketCustomWriter {
         }
     }
 
-    @Override
-    public void changeCmdToSendCmnPrgs(String token){
-        this.token = token;
-        cmdType = CmdsConstant.CMDSTR.cmn_prgs;
-        synchronized (locker){
-            locker.notifyAll();
-        }
-    }
-    @Override
-    public void changeCmdToSendBrewSession(Long package_id){
-        this.pack_id = package_id;
-        cmdType = CmdsConstant.CMDSTR.brew_session;
-        synchronized (locker){
-            locker.notifyAll();
-        }
-    }
+
 }

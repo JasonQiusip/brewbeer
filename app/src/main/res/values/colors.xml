@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#334858</color>
-    <color name="colorPrimaryDark">#334858</color>
+    <color name="colorPrimary">#e19702</color>
+    <color name="colorPrimaryDark">#c78502</color>
     <color name="colorAccent">#f59b45</color>
     <color name="result_view">#b0000000</color>
     <color name="viewfinder_mask">#60000000</color>
     <color name="possible_result_points">#c0ffff00</color>
+    <color name="btn_bg">#e19702</color>
+    <color name="btn_bg_pressed">#c78502</color>
 </resources>

@@ -38,7 +38,7 @@
         <TextView
             android:id="@+id/brewingSessionItemTv"
             style="@style/brewingTvStyle"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:text="小麦酒" />
 
         <TextView
@@ -46,6 +46,10 @@
             style="@style/brewingTvStyle"
             android:layout_width="wrap_content"
             android:layout_toLeftOf="@+id/rightArrowIv"
+            android:layout_toRightOf="@id/brewingSessionItemTv"
+            android:layout_marginLeft="6dp"
+            android:singleLine="true"
+            android:gravity="right"
             android:text="煮水15分钟"
             android:textColor="@color/colorAccent" />
 
@@ -59,7 +63,16 @@
             app:mpb_background_color="#dddddd"
             app:mpb_fill_color="#4876FF"
             app:mpb_flat="true" />
-
+        <TextView
+            android:id="@+id/brewingStage"
+            android:layout_height="20dp"
+            android:layout_width="wrap_content"
+            android:gravity="center"
+            android:textSize="12sp"
+            android:layout_marginRight="4dp"
+            android:layout_toLeftOf="@+id/rightArrowIv"
+            android:layout_alignBottom="@id/magicPb"
+            android:textColor="@color/colorAccent" />
         <ImageView
             android:id="@+id/rightArrowIv"
             android:layout_width="wrap_content"

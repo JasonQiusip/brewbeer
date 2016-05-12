@@ -17,8 +17,8 @@ import android.view.animation.Animation;
 import android.widget.TextView;
 
 import com.github.ybq.android.spinkit.SpinKitView;
-import com.github.ybq.android.spinkit.animation.AnimationUtils;
 import com.ltbrew.brewbeer.R;
+import com.ltbrew.brewbeer.api.longconnection.process.ParsePackKits;
 import com.ltbrew.brewbeer.interfaceviews.BrewSessionVeiw;
 import com.ltbrew.brewbeer.persistence.greendao.DBRecipe;
 import com.ltbrew.brewbeer.presenter.BrewSessionsPresenter;
@@ -78,16 +78,49 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
                 if (brewSessionsPresenter != null) {
                     brewSessionsPresenter.getRecipeAfterBrewBegin(formula_id);
                 }
-            } else if (LtPushService.CMD_SOCKET_IS_READY_ACTION.equals(action)) {
+            } else if (LtPushService.FILE_SOCKET_IS_READY_ACTION.equals(action)) {
                 if (brewingHistoryList.size() != 0) {
-                    BrewHistory brewHistory = brewingHistoryList.get(0);
-                    onBrewingSessionListener.onReqBrewingSession(brewHistory.getPackage_id());
+//                    for (int i = 0, size = brewingHistoryList.size(); i < size; i++) {
+                        BrewHistory brewHistory = brewingHistoryList.get(0);
+                        onBrewingSessionListener.onReqBrewingSession(brewHistory.getPackage_id());
+//                    }
                 }
 
-            } else if (LtPushService.CMN_PRGS_PUSH_ACTION.equals(action)) {
+            } else if (LtPushService.CMN_PRGS_CHECK_ACTION.equals(action)) {
                 PushMsg pushMsgObj = intent.getParcelableExtra(LtPushService.PUSH_MSG_EXTRA);
-                BrewHistory brewHistory = brewingHistoryList.get(0);
+                Log.e("CMN_PRGS_PUSH_ACTION", pushMsgObj.toString());
+                String st = pushMsgObj.st;
+                BrewHistory brewHistory;
+                if(st != null) {
+                    String package_id = st.split(":")[1];
+                    brewHistory = findBrewHistory(package_id);
+                }else{
+                    brewHistory = brewingHistoryList.get(0);
+                }
+                brewHistory.setRatio(pushMsgObj.ratio);
+                brewHistory.setSi(pushMsgObj.si);
                 brewHistory.setBrewingState(pushMsgObj.body);
+                brewHistory.setSt(st);
+                brewingSessionAdapter.setData(brewingHistoryList);
+                brewingSessionAdapter.notifyDataSetChanged();
+            } else if (LtPushService.CMN_PRGS_PUSH_ACTION.equals(action)) {
+                if(onBrewingSessionListener != null)
+                    onBrewingSessionListener.onReceiveSessionState();
+                PushMsg pushMsgObj = intent.getParcelableExtra(LtPushService.PUSH_MSG_EXTRA);
+                Log.e("CMN_PRGS_PUSH_ACTION", pushMsgObj.toString());
+                String st = pushMsgObj.st;
+                BrewHistory brewHistory;
+                if(st != null) {
+                    String package_id = st.split(":")[1];
+                    brewHistory = findBrewHistory(package_id);
+                }else{
+                    brewHistory = brewingHistoryList.get(0);
+                }
+                brewHistory.setRatio(pushMsgObj.ratio);
+                brewHistory.setSi(pushMsgObj.si);
+                brewHistory.setBrewingState(pushMsgObj.body);
+                brewHistory.setSt(st);
+                brewingSessionAdapter.setData(brewingHistoryList);
                 brewingSessionAdapter.notifyDataSetChanged();
             } else if (LtPushService.CMD_RPT_ACTION.equals(action)) {
                 BrewHistory brewHistory = brewingHistoryList.get(0);
@@ -96,6 +129,16 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
             }
         }
     };
+
+    private BrewHistory findBrewHistory(String package_id){
+        for (int i = 0, size = brewingHistoryList.size(); i < size; i++) {
+            BrewHistory brewHistory = brewingHistoryList.get(i);
+            if(package_id != null && ParsePackKits.isNumber(package_id) &&brewHistory.getPackage_id() == Long.valueOf(package_id)){
+                return brewHistory;
+            }
+        }
+        return null;
+    }
 
     @Override
     public void onAttach(Context context) {
@@ -150,7 +193,8 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
         intentFilter.addAction(PACK_IS_SENT);
         intentFilter.addAction(LtPushService.CMN_PRGS_PUSH_ACTION);
         intentFilter.addAction(LtPushService.CMD_RPT_ACTION);
-        intentFilter.addAction(LtPushService.CMD_SOCKET_IS_READY_ACTION);
+        intentFilter.addAction(LtPushService.FILE_SOCKET_IS_READY_ACTION);
+        intentFilter.addAction(LtPushService.CMN_PRGS_CHECK_ACTION);
         this.getActivity().registerReceiver(broadcastReceiver, intentFilter);
 
         decideWeatherReboundScrollViewShouldMove();
@@ -179,6 +223,12 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
                 super.onScrollStateChanged(recyclerView, newState);
                 reboundScrollView.setCanScroll(false);
 
+            }
+        });
+        brewStateRv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                reboundScrollView.setCanScroll(false);
             }
         });
     }
@@ -236,6 +286,7 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
                     String formulaId = String.format("%08x", formula_id);
                     brewingFormulaIdToPosition.put(formulaId, i);
                     brewSessionsPresenter.getRecipeInfo(formulaId);
+                    onBrewingSessionListener.onReqBrewingSession(brewHistory.getPackage_id());
                 }
 
                 for (int i = 0, size = finishedHistoryList.size(); i < size; i++) {
@@ -257,7 +308,7 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
 
 
     @Override
-    public void onGetBrewSessionFailed(int code) {
+    public void onGetBrewSessionFailed(String code) {
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -312,5 +363,6 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
 
     public interface onBrewingSessionListener {
         void onReqBrewingSession(Long package_id);
+        void onReceiveSessionState();
     }
 }

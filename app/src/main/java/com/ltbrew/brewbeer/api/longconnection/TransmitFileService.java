@@ -1,5 +1,7 @@
 package com.ltbrew.brewbeer.api.longconnection;
 
+import android.util.Log;
+
 import com.ltbrew.brewbeer.api.longconnection.interfaces.FileSocketReadyCallback;
 import com.ltbrew.brewbeer.api.longconnection.process.CommonParam;
 import com.ltbrew.brewbeer.api.longconnection.process.ReqType;
@@ -115,12 +117,12 @@ public class TransmitFileService {
 
             @Override
             public void onGeBrewSessionResp(String tk, String state) {
-
+                sendCmnPrgsCmd(tk);
             }
 
             @Override
             public void onGetCmnPrgs(String percent, String seq_index, String body) {
-
+                fileSocketCb.onGetCmdPrgs(percent, seq_index, body);
             }
 
             @Override
@@ -152,6 +154,12 @@ public class TransmitFileService {
 
         });
         return cmdRead;
+    }
+
+    public void sendCmnPrgsCmd(String token){
+        if(cmdsWrite != null){
+            cmdsWrite.sendCmnPrgsCmd(token);
+        }
     }
 
     private void closeFileWriteSocketConnection() {
@@ -204,6 +212,11 @@ public class TransmitFileService {
 
     public void getPidHearHistory(String id, int endIndex, int whats6day, boolean isZip) throws IOException {
         cmdsWrite.senHeartHistory(id,endIndex, whats6day, isZip);
+    }
+
+    public void sendBrewSessionCmd(Long package_id) {
+        if(cmdsWrite != null)
+            cmdsWrite.sendBrewSessionCmd(package_id);
     }
 
     interface FileSocketReadCallback {

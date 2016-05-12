@@ -1,6 +1,7 @@
-package com.ltbrew.brewbeer.api.longconnection.process;
+package com.ltbrew.brewbeer.api.longconnection.process.cmdconnection;
 
 import com.ltbrew.brewbeer.api.common.CSSLog;
+import com.ltbrew.brewbeer.api.longconnection.process.ParsePackKits;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,13 +11,12 @@ import java.util.List;
  */
 public class Cmds {
 
-    static String buildAuthorizeCmd(String token, int seqNo, ParsePackKits pushServiceKits) {
+    public static String buildAuthorizeCmd(String token, int seqNo, ParsePackKits pushServiceKits) {
         List<String> list = new ArrayList<String>();
         list.add("auth");
         list.add(seqNo + "");
         list.add(token);
         String buildRequestString = pushServiceKits.buildRequestString(list);
-        CSSLog.showLog("wuyuan", "buildRequestString = " + buildRequestString);
         return buildRequestString;
     }
 
@@ -40,27 +40,10 @@ public class Cmds {
         return buildRequestString;
     }
 
-    static String buildHeartRateCmd(long seqNo, ParsePackKits pushServiceKits) {
+    public static String buildHeartRateCmd(long seqNo, ParsePackKits pushServiceKits) {
         List<String> list = new ArrayList<String>();
         list.add("hb");
         list.add(seqNo + "");
-        String buildRequestString = pushServiceKits.buildRequestString(list);
-        return buildRequestString;
-    }
-
-    static String buildCmnPrgsCmd(long seqNo, ParsePackKits pushServiceKits) {
-        List<String> list = new ArrayList<String>();
-        list.add("cmn_prgs");
-        list.add(seqNo + "");
-        String buildRequestString = pushServiceKits.buildRequestString(list);
-        return buildRequestString;
-    }
-
-    static String buildBrewSessionCmd(Long pack_id, long seqNo, ParsePackKits pushServiceKits) {
-        List<String> list = new ArrayList<String>();
-        list.add("brew_session");
-        list.add(seqNo + "");
-        list.add(pack_id+"");
         String buildRequestString = pushServiceKits.buildRequestString(list);
         return buildRequestString;
     }

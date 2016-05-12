@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.ltbrew.brewbeer.R;
+import com.ltbrew.brewbeer.persistence.greendao.DBBrewStep;
 import com.ltbrew.brewbeer.persistence.greendao.DBRecipe;
 import com.ltbrew.brewbeer.presenter.model.BrewHistory;
 import com.ltbrew.brewbeer.uis.adapter.viewholder.BaseViewHolder;
@@ -82,10 +83,6 @@ public class BrewingSessionAdapter extends RecyclerView.Adapter<BrewingVH> {
             @Override
             public boolean onLongClick(View v) {
                 BrewingVH holder = (BrewingVH) v.getTag();
-//                if(holder.swipeLayout.isOpened()){
-//                    holder.swipeLayout.close(true);
-//                    return true;
-//                }
                 holder.swipeLayout.open(true);
                 return true;
             }
@@ -111,6 +108,24 @@ public class BrewingSessionAdapter extends RecyclerView.Adapter<BrewingVH> {
             holder.swipeLayout.close(false);
         }else{
             holder.swipeLayout.open(true);
+        }
+        Integer si = brewHistory.getSi();
+        if(si != null) {
+            List<DBBrewStep> brewSteps = brewHistory.getDbRecipe().getBrewSteps();
+            if(brewSteps != null && brewSteps.size() > si) {
+                String stageInfo = getStageInfo(brewSteps.get(si));
+                holder.brewingStage.setText(stageInfo);
+            }
+        }
+    }
+
+    private String getStageInfo(DBBrewStep dbBrewStep){
+        String stepId = dbBrewStep.getStepId();
+        String act = dbBrewStep.getAct();
+        if ("boil".equals(act)) {
+             return dbBrewStep.getI();
+        } else {
+            return "投放原料到槽" + dbBrewStep.getSlot();
         }
     }
 

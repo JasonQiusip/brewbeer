@@ -10,5 +10,5 @@ import java.util.List;
 public interface BrewSessionVeiw extends RecipeView {
 
     void onGetBrewSessionSuccess(List<BrewHistory> brewingHistoryList, List<BrewHistory> finishedHistoryList);
-    void onGetBrewSessionFailed(int code);
+    void onGetBrewSessionFailed(String code);
 }

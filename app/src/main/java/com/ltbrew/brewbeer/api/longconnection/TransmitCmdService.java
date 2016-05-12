@@ -1,8 +1,10 @@
 package com.ltbrew.brewbeer.api.longconnection;
 
+import android.util.Log;
+
 import com.ltbrew.brewbeer.api.common.CSSLog;
 import com.ltbrew.brewbeer.api.longconnection.interfaces.FileSocketReadyCallback;
-import com.ltbrew.brewbeer.api.longconnection.process.CmdsConstant;
+import com.ltbrew.brewbeer.api.longconnection.process.cmdconnection.CmdsConstant;
 import com.ltbrew.brewbeer.api.longconnection.process.CommonParam;
 import com.ltbrew.brewbeer.api.longconnection.process.ManageLongConnIp;
 import com.ltbrew.brewbeer.api.longconnection.process.ReqType;
@@ -85,6 +87,8 @@ public class TransmitCmdService {
 //        serverAddress = InetAddress.getByName(ManageLongConnIp.getInstance().ipHost); // "27.154.54.242"
 //        cmdSocket = new Socket(serverAddress, ManageLongConnIp.getInstance().port); //25712
 //        serverAddress = InetAddress.getByName("27.154.54.242"); // "27.154.54.242"
+        if(cmdSocket != null && !cmdSocket.isClosed())
+            return;
         serverAddress = InetAddress.getByName("218.5.96.6"); // "27.154.54.242"
         cmdSocket = new Socket(serverAddress, 25712); //25712
         CSSLog.showLog("serverAddress:" + serverAddress, "cmdSocket:" + cmdSocket);
@@ -129,12 +133,12 @@ public class TransmitCmdService {
                     String[] splitedIp = ipsigle.split(":");
                     String ipaddr = splitedIp[0];
                     String host = splitedIp[1];
-//                    if (transmitFileService != null) {
-//                        if (transmitFileService.initializeFileLongConn(ipaddr, Integer.parseInt(host))) {
-//                            initFileSocket = true;
-//                            break;
-//                        }
-//                    }
+                    if (transmitFileService != null) {
+                        if (transmitFileService.initializeFileLongConn(ipaddr, Integer.parseInt(host))) {
+                            initFileSocket = true;
+                            break;
+                        }
+                    }
                 }
                 if (!initFileSocket) {
                     if (fileSocketReadyCallback != null)
@@ -152,13 +156,13 @@ public class TransmitCmdService {
                     fileSocketReadyCallback.onOAuthFailed();
                 }
                 fileSocketReadyCallback.onCmdSocketReconnect();
-//                initializeCmdLongConn();
+                initializeCmdLongConn();
 
-//                if (transmitFileService != null && transmitFileService.isFileSocketAvailable()) {
-//                    newPool();
-//                    transmitFileService.closeFileSocketConnection();
-//                    transmitFileService = new TransmitFileService(authorizeToken, pool, fileSocketReadyCallback);
-//                }
+                if (transmitFileService != null && transmitFileService.isFileSocketAvailable()) {
+                    newPool();
+                    transmitFileService.closeFileSocketConnection();
+                    transmitFileService = new TransmitFileService(authorizeToken, pool, fileSocketReadyCallback);
+                }
 
             }
 
@@ -187,12 +191,11 @@ public class TransmitCmdService {
 
             @Override
             public void onGeBrewSessionResp(String tk, String state) {
-                sendCmnPrgsCmd(tk);
+
             }
 
             @Override
             public void onGetCmnPrgs(String percent, String seq_index, String body) {
-                fileSocketReadyCallback.onGetCmdPrgs(percent, seq_index, body);
             }
 
             @Override
@@ -251,36 +254,34 @@ public class TransmitCmdService {
         }
         return SOCKETSTATE.unknown;
     }
-
+    //api called from outside
     public void beginFileUpload(UploadParam uploadParam) {
-        transmitFileService.beginFileUpload(uploadParam);
+        if(transmitFileService != null)
+            transmitFileService.beginFileUpload(uploadParam);
     }
 
     public void fileUpload(byte[] fileParts) {
-        transmitFileService.fileUpload(fileParts);
+        if(transmitFileService != null)
+            transmitFileService.fileUpload(fileParts);
     }
 
     public void endFileUpload() {
-        transmitFileService.endFileUpload();
+        if(transmitFileService != null)
+            transmitFileService.endFileUpload();
     }
 
     public void getHeartRealResult(String id, String bTime, int linkIndex, int testBindex) throws IOException {
-        transmitFileService.getPidHeartRr(id,bTime,linkIndex,testBindex);
+        if(transmitFileService != null)
+            transmitFileService.getPidHeartRr(id,bTime,linkIndex,testBindex);
     }
 
     public void getHeartHistory(String id, int endIndex, int whats6day, boolean isZip) throws IOException {
-        transmitFileService.getPidHearHistory(id,endIndex, whats6day, isZip);
+        if(transmitFileService != null)
+            transmitFileService.getPidHearHistory(id,endIndex, whats6day, isZip);
     }
-
-    public void sendCmnPrgsCmd(String token){
-        if(cmdsWrite != null){
-            cmdsWrite.sendCmnPrgsCmd(token);
-        }
-    }
-
     public void sendBrewSessionCmd(Long package_id){
-        if(cmdsWrite != null){
-            cmdsWrite.sendBrewSessionCmd(package_id);
+        if(transmitFileService != null){
+            transmitFileService.sendBrewSessionCmd(package_id);
         }
     }
 

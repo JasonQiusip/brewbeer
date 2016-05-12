@@ -27,8 +27,8 @@ public class WelcomeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_welcome);
-        TextView welcomeTv = (TextView)findViewById(R.id.welcomeTv);
-        welcomeTv.setTypeface(BrewApp.getInstance().textFont);
+//        TextView welcomeTv = (TextView)findViewById(R.id.welcomeTv);
+//        welcomeTv.setTypeface(BrewApp.getInstance().textFont);
         Observable.timer(3000, TimeUnit.MILLISECONDS).subscribe(new Action1<Long>() {
             @Override
             public void call(Long aLong) {

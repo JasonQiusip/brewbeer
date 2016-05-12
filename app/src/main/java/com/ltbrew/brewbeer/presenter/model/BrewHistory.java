@@ -14,8 +14,9 @@ public class BrewHistory {
     Long pid;
     Integer state;
     Integer ratio;
-    Integer st;
+    Integer si;
     String brewingState;
+    String st;
     DBRecipe dbRecipe;
 
     public DBRecipe getDbRecipe() {
@@ -90,25 +91,19 @@ public class BrewHistory {
         this.ratio = ratio;
     }
 
-    public Integer getSt() {
+    public Integer getSi() {
+        return si;
+    }
+
+    public void setSi(Integer si) {
+        this.si = si;
+    }
+
+    public String getSt() {
         return st;
     }
 
-    public void setSt(Integer st) {
+    public void setSt(String st) {
         this.st = st;
-    }
-
-    @Override
-    public String toString() {
-        return "BrewHistory{" +
-                "formula_id=" + formula_id +
-                ", begin_time='" + begin_time + '\'' +
-                ", end_time='" + end_time + '\'' +
-                ", package_id=" + package_id +
-                ", pid=" + pid +
-                ", state=" + state +
-                ", brewingState='" + brewingState + '\'' +
-                ", dbRecipe=" + dbRecipe +
-                '}';
     }
 }

@@ -33,7 +33,7 @@ public class ParsePackKits {
      * @param list
      * @return
      */
-    String buildRequestString(List<String> list) {
+    public String buildRequestString(List<String> list) {
         StringBuilder strBuilder = new StringBuilder();
         strBuilder.append("*");
         strBuilder.append(list.size());
@@ -44,7 +44,6 @@ public class ParsePackKits {
             }
             strBuilder.append(packParam(item));
         }
-        Log.e("sent pack ",  strBuilder.toString());
         return strBuilder.toString();
     }
 
@@ -305,7 +304,7 @@ public class ParsePackKits {
         return sb;
     }
 
-    static byte[] charToByteArray(char[] charArray) {
+    public static byte[] charToByteArray(char[] charArray) {
 
         byte[] input = new byte[charArray.length];
         int i = 0;
@@ -316,7 +315,7 @@ public class ParsePackKits {
         return input;
     }
 
-    static String buildPack(String requestStr) {
+    public static String makePack(String requestStr) {
         char first = (char) (requestStr.length() & 0xff);
         char second = (char) ((requestStr.length() >> 8) & 0xff);
         char third = (char) ((requestStr.length() >> 16) & 0xff);
@@ -355,6 +354,9 @@ public class ParsePackKits {
         return NUMBER_ONLY.matcher(resp).find() && resp.length() <= 10;  //我们姑且认为长度大于10的都不是数字
     }
 
+    public static boolean isNumber(String resp) {
+        return NUMBER_ONLY.matcher(resp).find();
+    }
     public class Result {
         public boolean decodeOK;
         public List<String> resultList = new ArrayList<String>();

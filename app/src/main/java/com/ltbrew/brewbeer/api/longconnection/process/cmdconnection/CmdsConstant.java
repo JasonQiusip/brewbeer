@@ -1,4 +1,4 @@
-package com.ltbrew.brewbeer.api.longconnection.process;
+package com.ltbrew.brewbeer.api.longconnection.process.cmdconnection;
 
 import java.util.EnumSet;
 import java.util.HashMap;

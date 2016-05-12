@@ -27,6 +27,8 @@ public class BrewingVH extends BaseViewHolder {
     public RelativeLayout contentRL;
     @BindView(R.id.swipe_layout)
     public SwipeRevealLayout swipeLayout;
+    @BindView(R.id.brewingStage)
+    public TextView brewingStage;
 
     public BrewingVH(View itemView) {
         super(itemView);

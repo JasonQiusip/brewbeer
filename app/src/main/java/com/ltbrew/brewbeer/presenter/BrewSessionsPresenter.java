@@ -56,13 +56,13 @@ public class BrewSessionsPresenter {
 
                     String content = brewHistory.getContent();
                     JSONObject brewHistoryJson = JSON.parseObject(content);
-                    Integer state1 = brewHistoryJson.getInteger("state");
-                    if(state1 == 1){
-                        return;
-                    }
                     JSONArray jsonArray = brewHistoryJson.getJSONArray("history");
                     List<BrewHistory> brewingHistoryList = new ArrayList<>();
                     List<BrewHistory> finishedHistoryList = new ArrayList<>();
+                    if(jsonArray == null) {
+                        brewSessionView.onGetBrewSessionFailed("没有历史记录");
+                        return;
+                    }
                     for (int i = 0, size = jsonArray.size(); i < size; i++) {
                         JSONObject jsonObject = jsonArray.getJSONObject(i);
                         Long formula_id = jsonObject.getLong("formula_id");
@@ -90,7 +90,7 @@ public class BrewSessionsPresenter {
 
 
                 }else{
-                    brewSessionView.onGetBrewSessionFailed(brewHistory.getCode());
+                    brewSessionView.onGetBrewSessionFailed(brewHistory.getCode()+"");
                 }
             }
         }).subscribeOn(Schedulers.io()).subscribe();

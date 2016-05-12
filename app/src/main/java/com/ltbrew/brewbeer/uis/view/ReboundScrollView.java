@@ -95,7 +95,7 @@ public class ReboundScrollView extends ScrollView {
 
 			if (!isMoved)
 				break; // 如果没有移动布局， 则跳过执行
-			if(deltaY > DpSpPixUtils.dip2px(getContext(), 120)){
+			if(deltaY > DpSpPixUtils.dip2px(getContext(), 120) && canPullDown && canScroll){
 				if(onRefreshListener != null)
 					onRefreshListener.onRefresh();
 			}
@@ -115,8 +115,6 @@ public class ReboundScrollView extends ScrollView {
 
 			break;
 		case MotionEvent.ACTION_MOVE:
-			if(!canScroll)
-				break;
 
 			// 在移动的过程中， 既没有滚动到可以上拉的程度， 也没有滚动到可以下拉的程度
 			if (!canPullDown && !canPullUp) {
@@ -126,6 +124,8 @@ public class ReboundScrollView extends ScrollView {
 
 				break;
 			}
+			if(!canScroll)
+				break;
 
 			// 计算手指移动的距离
 			float nowY = ev.getY();

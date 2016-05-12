@@ -293,7 +293,7 @@ public class RsyncUtils
     return finalPack;
   }
   
-  public static String stringToByteArray(byte[] finalData)
+  public static String toHexStr(byte[] finalData)
   {
     StringBuilder transferedString = new StringBuilder();
     for (int i = 0; i < finalData.length; i++) {

@@ -13,10 +13,14 @@
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"></uses-permission>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <uses-permission android:name="android.permission.FLASHLIGHT"/>
+    <uses-permission android:name="android.permission.VIBRATE"/>
     <uses-permission
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="18" />
-    z
     <application
         android:name=".BrewApp"
         android:allowBackup="true"
@@ -24,6 +28,24 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
+        //++++++++++++++++++++++for UMENG++++++++++++++++++++++++++++++++++
+        <meta-data
+            android:name="UMENG_APPKEY"
+            android:value="57315457e0f55a27e6000e97" />
+        <meta-data
+            android:name="UMENG_CHANNEL"
+            android:value="Channel ID" />
+
+        <service
+            android:name="com.umeng.update.net.DownloadingService"
+            android:process=":DownloadingService" />
+
+        <activity
+            android:name="com.umeng.update.UpdateDialogActivity"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+        //----------------------for UMENG-------------------------------------
+
         <activity
             android:name=".uis.activity.WelcomeActivity"
             android:label="@string/app_name">
@@ -68,6 +90,9 @@
             android:label=""
             android:theme="@style/AppTheme" />
         <activity android:name=".uis.activity.AboutActivity"></activity>
+        <activity
+            android:name=".thirdpartylib.activity.CaptureActivity"
+             />
     </application>
 
 </manifest>

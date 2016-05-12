@@ -37,10 +37,10 @@ public class BrewApi {
     public static HttpResponse getBrewHistory(String devId, String begin_date, String end_date, String state){
         HashMap body = new HashMap();
         if(!TextUtils.isEmpty(begin_date)) {
-            body.put("begin_date", begin_date);
+            body.put("begin", begin_date);
         }
         if(!TextUtils.isEmpty(end_date)) {
-            body.put("end_date", end_date);
+            body.put("end", end_date);
         }
         if(!TextUtils.isEmpty(state)) {
             body.put("state", state);

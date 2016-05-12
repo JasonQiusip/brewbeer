@@ -44,6 +44,7 @@ public class AddDevPresenter {
                 HttpResponse httpResponse = DevApi.setPhoneNo2Dev(qrCode, phoneNumb);
                 if(httpResponse.isSuccess()){
                     String content = httpResponse.getContent();
+                    subscriber.onNext(content);
                 }else{
                     subscriber.onError(new Throwable(""+httpResponse.getCode()));
                 }

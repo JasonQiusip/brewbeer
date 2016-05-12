@@ -7,6 +7,7 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
@@ -44,6 +45,29 @@ public class BrewSessionControlActivity extends AppCompatActivity {
             String action = intent.getAction();
             if(LtPushService.CMN_PRGS_PUSH_ACTION.equals(action)){
                 PushMsg pushMsgObj = intent.getParcelableExtra(LtPushService.PUSH_MSG_EXTRA);
+                int si = pushMsgObj.si;
+                if(brewHistory != null) {
+                    brewHistory.setRatio(pushMsgObj.ratio);
+                    brewHistory.setSi(pushMsgObj.si);
+                    brewHistory.setBrewingState(pushMsgObj.body);
+                    brewHistory.setSt(pushMsgObj.st);
+                }
+                View view = stepsContainer.getChildAt(si);
+                view.setBackgroundColor(getResources().getColor(R.color.colorAccent));
+                curState.setText(pushMsgObj.body);
+            }else if (LtPushService.CMN_PRGS_CHECK_ACTION.equals(action)) {
+                PushMsg pushMsgObj = intent.getParcelableExtra(LtPushService.PUSH_MSG_EXTRA);
+                Log.e("CMN_PRGS_PUSH_ACTION", pushMsgObj.toString());
+                String st = pushMsgObj.st;
+                if(brewHistory != null) {
+                    brewHistory.setRatio(pushMsgObj.ratio);
+                    brewHistory.setSi(pushMsgObj.si);
+                    brewHistory.setBrewingState(pushMsgObj.body);
+                    brewHistory.setSt(st);
+                }
+                int si = pushMsgObj.si;
+                View view = stepsContainer.getChildAt(si);
+                view.setBackgroundColor(getResources().getColor(R.color.colorAccent));
                 curState.setText(pushMsgObj.body);
             }
         }
@@ -55,7 +79,9 @@ public class BrewSessionControlActivity extends AppCompatActivity {
         setContentView(R.layout.activity_brew_session_control);
         ButterKnife.bind(this);
         IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(LtPushService.CMD_SOCKET_IS_READY_ACTION);
+        intentFilter.addAction(LtPushService.CMN_PRGS_CHECK_ACTION);
+        intentFilter.addAction(LtPushService.CMN_PRGS_PUSH_ACTION);
+        intentFilter.addAction(LtPushService.FILE_SOCKET_IS_READY_ACTION);
         registerReceiver(broadcastReceiver, intentFilter);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -85,10 +111,6 @@ public class BrewSessionControlActivity extends AppCompatActivity {
             String stepId = dbBrewStep.getStepId();
             String act = dbBrewStep.getAct();
             if ("boil".equals(act)) {
-                if(i == 0)
-                {
-                    curState.setText(dbBrewStep.getI());
-                }
                 addItemToContainer(dbBrewStep.getI(), "");
             } else {
                 Integer slot = dbBrewStep.getSlot();

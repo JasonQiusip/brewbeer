@@ -201,24 +201,4 @@ public class DBBrewStep {
         myDao.refresh(this);
     }
 
-    @Override
-    public String toString() {
-        return "DBBrewStep{" +
-                "id=" + id +
-                ", stepId='" + stepId + '\'' +
-                ", act='" + act + '\'' +
-                ", f=" + f +
-                ", pid=" + pid +
-                ", i='" + i + '\'' +
-                ", k=" + k +
-                ", t=" + t +
-                ", drn=" + drn +
-                ", slot=" + slot +
-                ", recipeId=" + recipeId +
-                ", daoSession=" + daoSession +
-                ", myDao=" + myDao +
-                ", dBRecipe=" + dBRecipe +
-                ", dBRecipe__resolvedKey=" + dBRecipe__resolvedKey +
-                '}';
-    }
 }

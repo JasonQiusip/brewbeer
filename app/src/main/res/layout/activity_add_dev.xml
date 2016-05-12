@@ -16,7 +16,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@android:color/white"
+            style="@style/toolbarStyle"
             app:popupTheme="@style/AppTheme.PopupOverlay" >
             <ImageView
                 android:id="@+id/backIv"
@@ -32,7 +32,7 @@
                 android:layout_gravity="center"
                 android:textSize="20dp"
                 android:text="添加设备"
-                android:textColor="#000000"/>
+                android:textColor="#ffffff"/>
          </android.support.v7.widget.Toolbar>
 
     </android.support.design.widget.AppBarLayout>

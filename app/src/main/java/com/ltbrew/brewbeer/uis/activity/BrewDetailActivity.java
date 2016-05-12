@@ -23,7 +23,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class BrewDetailActivity extends AppCompatActivity {
+public class BrewDetailActivity extends BaseActivity {
 
     @BindView(R.id.brewDetailContainer)
     LinearLayout brewDetailContainer;

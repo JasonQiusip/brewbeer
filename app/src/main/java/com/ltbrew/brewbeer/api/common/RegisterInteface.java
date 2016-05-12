@@ -31,7 +31,7 @@ public class RegisterInteface {
 			dict1.put("pwd", pwd);
 
 		String paramString = MiscUtil.joinString(dict1, false);
-		String a = RsyncUtils.stringToByteArray(new RC4(charToByteArray(secret.toCharArray())).encrypt(charToByteArray(paramString.toCharArray())));
+		String a = RsyncUtils.toHexStr(new RC4(charToByteArray(secret.toCharArray())).encrypt(charToByteArray(paramString.toCharArray())));
 		String signature = getSignature(paramString, secret, "");
 
 		TreeMap<String, String> dict = new TreeMap<String, String>();
@@ -81,6 +81,6 @@ public class RegisterInteface {
 		mac.init(key);
 		byte[] bytes = mac.doFinal(toSign.getBytes(CHARSET));
 
-		return RsyncUtils.stringToByteArray(bytes).replace(CARRIAGE_RETURN, EMPTY_STRING);
+		return RsyncUtils.toHexStr(bytes).replace(CARRIAGE_RETURN, EMPTY_STRING);
 	}
 }

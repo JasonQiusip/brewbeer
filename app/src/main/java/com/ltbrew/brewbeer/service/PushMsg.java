@@ -7,10 +7,10 @@ public class PushMsg implements Parcelable {
     public String cb;
     public String des;
     public String id;
-    public Integer f;
+    public int f;
     public String body;
-    public Integer si;
-    public Integer ratio;
+    public int si;
+    public int ratio;
     public String st;
 
     public PushMsg() {
@@ -21,7 +21,10 @@ public class PushMsg implements Parcelable {
         cb = in.readString();
         des = in.readString();
         id = in.readString();
+        f = in.readInt();
         body = in.readString();
+        si = in.readInt();
+        ratio = in.readInt();
         st = in.readString();
     }
 
@@ -47,7 +50,10 @@ public class PushMsg implements Parcelable {
         parcel.writeString(cb);
         parcel.writeString(des);
         parcel.writeString(id);
+        parcel.writeInt(f);
         parcel.writeString(body);
+        parcel.writeInt(si);
+        parcel.writeInt(ratio);
         parcel.writeString(st);
     }
 }

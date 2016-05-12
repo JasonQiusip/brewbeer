@@ -4,7 +4,8 @@ import android.annotation.TargetApi;
 import android.os.Build;
 import android.util.Log;
 
-import com.ltbrew.brewbeer.api.longconnection.process.CmdsConstant;
+import com.ltbrew.brewbeer.api.common.RsyncUtils;
+import com.ltbrew.brewbeer.api.longconnection.process.cmdconnection.CmdsConstant;
 import com.ltbrew.brewbeer.api.longconnection.process.CommonParam;
 import com.ltbrew.brewbeer.api.longconnection.process.ParsePackKits;
 
@@ -13,12 +14,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
 import java.net.SocketException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -96,12 +93,11 @@ public class SocketRead implements Runnable {
             outStream.write(buffer, 0, len);
             byte[] byteArray = outStream.toByteArray();
             StringBuilder sb = ParsePackKits.byteArrayToStr(byteArray);
-
             String resp = sb.toString();
             if (isRemain()) {
                 resp = decodeResp.finalResult.remain + resp;
             }
-            System.out.println(new Date().toString()+" PARSEPACKKITS" + "RESP-----------------------" + resp + "\n");
+            System.out.println(new Date().toString()+" PARSEPACKKITS" + "RESP-----------------------" +new String(byteArray) +"\n"+ RsyncUtils.toHexStr(resp.getBytes()) + "\n");
 
             decodeResp = pushServiceKits.decodeResp(resp);
             boolean decodeOK = decodeResp.finalResult.decodeOK;
@@ -179,7 +175,6 @@ public class SocketRead implements Runnable {
                             sBuffer.append(goups[3] & 0xff).append(":");
                             sBuffer.append((goups[4] & 0xff) << 8 | goups[5]);
                             String str = sBuffer.toString();
-                            System.err.println("lqmlqmlqmstr:" + str);
                             ipAddrs[ipscount - 1] = str;
                         }
                         socketReadCallback.onIPHostReceived(ipAddrs);

@@ -1,11 +1,13 @@
 package com.ltbrew.brewbeer.api.longconnection;
 
+import android.util.Log;
+
 import com.ltbrew.brewbeer.api.longconnection.process.CommonParam;
 import com.ltbrew.brewbeer.api.longconnection.process.ParsePackKits;
 import com.ltbrew.brewbeer.api.longconnection.process.ReqType;
-import com.ltbrew.brewbeer.api.longconnection.process.SocketCmdWriter;
+import com.ltbrew.brewbeer.api.longconnection.process.cmdconnection.SocketCmdWriter;
 import com.ltbrew.brewbeer.api.longconnection.process.SocketCustomWriter;
-import com.ltbrew.brewbeer.api.longconnection.process.SocketFileWriter;
+import com.ltbrew.brewbeer.api.longconnection.process.fileconnection.SocketFileWriter;
 import com.ltbrew.brewbeer.api.model.UploadParam;
 
 import java.io.IOException;
@@ -121,6 +123,7 @@ public class SocketWrite implements Runnable {
     }
 
     public void sendBrewSessionCmd(Long package_id){
+
         socketWritter.changeCmdToSendBrewSession(package_id);
     }
 

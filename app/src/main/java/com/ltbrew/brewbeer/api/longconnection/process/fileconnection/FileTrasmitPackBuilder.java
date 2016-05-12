@@ -1,5 +1,6 @@
-package com.ltbrew.brewbeer.api.longconnection.process;
+package com.ltbrew.brewbeer.api.longconnection.process.fileconnection;
 
+import com.ltbrew.brewbeer.api.longconnection.process.ParsePackKits;
 import com.ltbrew.brewbeer.api.model.FileEnum;
 import com.ltbrew.brewbeer.api.model.UploadParam;
 
@@ -82,6 +83,24 @@ public class FileTrasmitPackBuilder {
         list.add("file_ul_end");
         list.add(seqNo+"");
         list.add(fileBeginSeqNo+"");
+        String buildRequestString = pushServiceKits.buildRequestString(list);
+        return buildRequestString;
+    }
+
+    static String buildCmnPrgsCmd(long seqNo, String token, ParsePackKits pushServiceKits) {
+        List<String> list = new ArrayList<String>();
+        list.add("cmn_prgs");
+        list.add(seqNo + "");
+        list.add(token);
+        String buildRequestString = pushServiceKits.buildRequestString(list);
+        return buildRequestString;
+    }
+
+    static String buildBrewSessionCmd(Long pack_id, long seqNo, ParsePackKits pushServiceKits) {
+        List<String> list = new ArrayList<String>();
+        list.add("brew_session");
+        list.add(seqNo + "");
+        list.add(pack_id+"");
         String buildRequestString = pushServiceKits.buildRequestString(list);
         return buildRequestString;
     }

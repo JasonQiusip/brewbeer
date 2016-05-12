@@ -15,7 +15,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@android:color/white"
+            style="@style/toolbarStyle"
             app:popupTheme="@style/AppTheme.PopupOverlay">
 
             <TextView
@@ -25,7 +25,7 @@
                 android:layout_gravity="center"
                 android:gravity="center"
                 android:text="LinkBrew"
-                android:textColor="#334858"
+                android:textColor="#ffffff"
                 android:textSize="25dp" />
 
             <TextView

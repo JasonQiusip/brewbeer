@@ -8,6 +8,7 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.Message;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.GravityCompat;
@@ -33,10 +34,12 @@ import com.ltbrew.brewbeer.uis.Constants;
 import com.ltbrew.brewbeer.uis.adapter.SectionsPagerAdapter;
 import com.ltbrew.brewbeer.uis.fragment.BrewSessionFragment;
 import com.ltbrew.brewbeer.uis.fragment.RecipeFragment;
+import com.ltbrew.brewbeer.uis.utils.ReqSessionStateQueue;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.locks.Lock;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -68,6 +71,7 @@ public class BrewHomeActivity extends BaseActivity
     private boolean serviceIsConnected;
     private int positionCurrentDevInDevices;
     private LtPushService ltPushService;
+    private ReqSessionStateQueue reqSessionStateQueue;
 
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
@@ -125,8 +129,11 @@ public class BrewHomeActivity extends BaseActivity
         }
         brewHomePresenter = new BrewHomePresenter(this);
         brewHomePresenter.getDevs();
+        initMessageQueue();
     }
 
+
+    //初始化ViewPager
     private void setupViewPager() {
         SectionsPagerAdapter mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
         mSectionsPagerAdapter.setFragments(fragments);
@@ -154,14 +161,21 @@ public class BrewHomeActivity extends BaseActivity
             }
         });
     }
+    //初始化一个消息队列
+    private void initMessageQueue() {
+        reqSessionStateQueue = new ReqSessionStateQueue();
+        reqSessionStateQueue.setLtPushService(ltPushService);
+        reqSessionStateQueue.start();
+    }
 
+    //点击底部酿造的按钮
     @OnCheckedChanged(R.id.brewRb)
     public void brewRb(boolean checked) {
         if (!checked)
             return;
         mViewPager.setCurrentItem(0);
     }
-
+    //点击底部配方按钮
     @OnCheckedChanged(R.id.recipeRb)
     public void recipeRb(boolean checked) {
         if (!checked)
@@ -179,6 +193,7 @@ public class BrewHomeActivity extends BaseActivity
         }
     }
 
+    //侧面导航栏点击事件
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
@@ -197,28 +212,29 @@ public class BrewHomeActivity extends BaseActivity
         }
         return true;
     }
-
+    //打开添加设备界面
     void startAddDevActivity() {
         Intent intent = new Intent();
         intent.setClass(this, AddDevActivity.class);
         startActivity(intent);
     }
-
+    //打开关于我们界面
     void startAboutActivity(){
         Intent intent = new Intent();
         intent.setClass(this, AboutActivity.class);
         startActivity(intent);
     }
-
+    //打开登录界面
     private void startLoginActivity() {
         Intent intent = new Intent();
         intent.setClass(this, LoginActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
         intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
         startActivity(intent);
+        finish();
     }
 
-
+    //点击新建酿造按钮
     @OnClick(R.id.homeCreateBrewSession)
     public void createBrewSession() {
         if (devices.size() == 0 || DeviceUtil.getCurrentDevId() == null) {
@@ -227,7 +243,7 @@ public class BrewHomeActivity extends BaseActivity
         }
         startAddRecipeActivity();
     }
-
+    //打开新建酿造界面
     private void startAddRecipeActivity() {
         Intent intent = new Intent();
         intent.setClass(this, AddRecipeActivity.class);
@@ -235,7 +251,7 @@ public class BrewHomeActivity extends BaseActivity
     }
 
     //=========================== 获取设备列表回调 start===========================
-
+    //设备列表获得成功
     @Override
     public void onGetDevsSuccess(List<Device> devices) {
         if(!TextUtils.isEmpty(DeviceUtil.getCurrentDevId()))
@@ -245,7 +261,7 @@ public class BrewHomeActivity extends BaseActivity
         startPushService();
         positionCurrentDevInDevices = findWhereIsCurrentDevInDevices();
     }
-
+    //请求酿造历史和获取配方列表
     public void reqDataFromServer() {
         if (brewSessionFragment == null)
             return;
@@ -254,17 +270,18 @@ public class BrewHomeActivity extends BaseActivity
         brewSessionFragment.getBrewHistory();
         recipeFragment.getAllRecipes();
     }
-
+    //启动后台推送服务
     private void startPushService() {
         Intent intent = new Intent(this, LtPushService.class);
         bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
         startService(intent);
     }
-
+    //绑定服务
     ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
             ltPushService = ((LtPushService.ServiceBinder) iBinder).getService();
+            reqSessionStateQueue.setLtPushService(ltPushService);
             serviceIsConnected = true;
         }
 
@@ -340,7 +357,16 @@ public class BrewHomeActivity extends BaseActivity
 
     @Override
     public void onReqBrewingSession(Long package_id) {
-        if(ltPushService != null)
-            ltPushService.sendBrewSessionCmd(package_id);
+        Message msg = new Message();
+        msg.obj = package_id;
+        reqSessionStateQueue.handler.sendMessage(msg); //将消息发送到消息队列进行排队处理
+    }
+
+    @Override
+    public void onReceiveSessionState() {
+        Lock lock = reqSessionStateQueue.lock;
+        synchronized (lock) {
+            lock.notifyAll();
+        }
     }
 }

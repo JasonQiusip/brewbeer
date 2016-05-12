@@ -1,7 +1,8 @@
 package com.ltbrew.brewbeer.api.longconnection.process;
 
-import com.ltbrew.brewbeer.api.common.CSSLog;
 import com.ltbrew.brewbeer.api.longconnection.TransmitCmdService;
+import com.ltbrew.brewbeer.api.longconnection.process.cmdconnection.Cmds;
+import com.ltbrew.brewbeer.api.longconnection.process.cmdconnection.CmdsConstant;
 import com.ltbrew.brewbeer.api.model.UploadParam;
 
 import java.io.IOException;
@@ -67,15 +68,14 @@ public abstract class SocketCustomWriter {
 
     public void hbRecover() {
         //开启心跳包
-
         synchronized (stopHbSignal) {
             stopHbSignal.notify();
         }
     }
 
-    void writeAuthorizePack() throws IOException {
+    public void writeAuthorizePack() throws IOException {
         locker.seqNo++;
-        String authorizePack = ParsePackKits.buildPack(Cmds.buildAuthorizeCmd(authorizeToken, locker.seqNo, this.pushServiceKits));
+        String authorizePack = ParsePackKits.makePack(Cmds.buildAuthorizeCmd(authorizeToken, locker.seqNo, this.pushServiceKits));
         System.out.println("writeAuthorizePack： "+ authorizePack);
         outputStream.write(toByteArr(authorizePack));
     }
@@ -83,7 +83,7 @@ public abstract class SocketCustomWriter {
     /**
      * 发送心跳包
      */
-    void writeHeartbeat() {
+    public void writeHeartbeat() {
         Thread hbThread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -96,10 +96,10 @@ public abstract class SocketCustomWriter {
                             }
                         }
                         locker.seqNo++;
-                        outputStream.write(toByteArr(ParsePackKits.buildPack(Cmds.buildHeartRateCmd(locker.seqNo, pushServiceKits))));
+                        outputStream.write(toByteArr(ParsePackKits.makePack(Cmds.buildHeartRateCmd(locker.seqNo, pushServiceKits))));
                         System.err.print("hb = " + locker.seqNo);
                         /**
-                         *  只有读的返回包成功之后才会解除该锁定
+                         *  只有hb读的返回包成功之后才会解除该锁定
                          *  SocketRead{@link com.linktop.LongConn.SocketRead#checkRespPack}
                          */
                         synchronized (hblocker) {
@@ -123,16 +123,6 @@ public abstract class SocketCustomWriter {
 
     public byte[] toByteArr(String str) {
         return ParsePackKits.charToByteArray(str.toCharArray());
-    }
-
-    //
-    public void writeFileBegin(UploadParam uploadParam) throws IOException {
-    }
-
-    public void writeFileEnd(int fileBeginSeqNo) throws IOException {
-    }
-
-    public void writeFile(byte[] fileParts) throws IOException {
     }
 
     public void sendFileReqPacks() {

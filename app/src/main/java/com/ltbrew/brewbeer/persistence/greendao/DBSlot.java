@@ -141,18 +141,4 @@ public class DBSlot {
         myDao.refresh(this);
     }
 
-    @Override
-    public String toString() {
-        return "DBSlot{" +
-                "id=" + id +
-                ", slotStepId='" + slotStepId + '\'' +
-                ", slotId=" + slotId +
-                ", name='" + name + '\'' +
-                ", recipeId=" + recipeId +
-                ", daoSession=" + daoSession +
-                ", myDao=" + myDao +
-                ", dBRecipe=" + dBRecipe +
-                ", dBRecipe__resolvedKey=" + dBRecipe__resolvedKey +
-                '}';
-    }
 }

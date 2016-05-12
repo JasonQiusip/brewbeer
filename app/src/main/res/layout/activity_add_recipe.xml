@@ -16,7 +16,7 @@ tools:context="com.ltbrew.brewbeer.uis.activity.AddRecipeActivity">
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="@android:color/white"
+       style="@style/toolbarStyle"
         app:popupTheme="@style/AppTheme.PopupOverlay" >
         <ImageView
             android:id="@+id/backIv"
@@ -31,7 +31,7 @@ tools:context="com.ltbrew.brewbeer.uis.activity.AddRecipeActivity">
             android:layout_gravity="center"
             android:textSize="20dp"
             android:text="创建酿酒"
-            android:textColor="#000000"/>
+            android:textColor="#ffffff"/>
     </android.support.v7.widget.Toolbar>
 
 </android.support.design.widget.AppBarLayout>
