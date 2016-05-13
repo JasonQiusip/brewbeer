@@ -1,5 +1,7 @@
 package com.ltbrew.brewbeer.api.cssApi;
 
+import android.text.TextUtils;
+
 import com.ltbrew.brewbeer.api.common.ApiConstants;
 import com.ltbrew.brewbeer.api.generalApi.GeneralApi;
 import com.ltbrew.brewbeer.api.model.HttpReqParam;
@@ -39,5 +41,9 @@ public class DevApi {
         HttpReqParam httpReqParam = new HttpReqParam();
         httpReqParam.setBody(body);
         return GeneralApi.dev(httpReqParam, ApiConstants.UNBIND);
+    }
+
+    public static HttpResponse getDevInfo(String devId){
+        return GeneralApi.res(null, devId, ApiConstants.INFO);
     }
 }

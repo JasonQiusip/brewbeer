@@ -26,7 +26,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@android:color/white"
-                android:minHeight="56dp" />
+                />
 
             <TextView
                 android:id="@+id/noBrewingTaskTv"
@@ -35,9 +35,9 @@
                 android:background="@android:color/white"
                 android:gravity="center_vertical"
                 android:paddingLeft="16dp"
-                android:text="没有正在进行酿造任务"
+                android:text="无激活的酿造状态"
                 android:textSize="16sp"
-                android:visibility="gone" />
+                 />
 
             <TextView
                 style="@style/subTitleStyle"
@@ -49,7 +49,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@android:color/white"
-                android:minHeight="56dp" />
+                 />
 
             <TextView
                 android:id="@+id/noFinishedTaskTv"
@@ -60,7 +60,7 @@
                 android:paddingLeft="16dp"
                 android:text="无完成的酿造任务"
                 android:textSize="16sp"
-                android:visibility="gone" />
+                />
         </LinearLayout>
     </com.ltbrew.brewbeer.uis.view.ReboundScrollView>
 

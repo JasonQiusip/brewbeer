@@ -211,7 +211,7 @@ public class RecipePresenter {
         List<DBSlot> dbSlots = new ArrayList<>();
         int sc = slots.getInteger("sc");
         for (int i = 0; i < sc; i++) {
-            String slotStepId = STEP_PREFIX + String.format("%02d", i);
+            String slotStepId = STEP_PREFIX + (i+1);
             JSONObject slot = slots.getJSONObject(slotStepId);
             int id = slot.getInteger("id");
             String name = slot.getString("name");
@@ -255,7 +255,7 @@ public class RecipePresenter {
                 dbBrewStep.setI(des);
             }else if("drop".equals(act)){
                 Integer s = step.getInteger("s");
-                dbBrewStep.setSlot(s);
+                dbBrewStep.setSlot(s+1);
             }
             dbBrewStep.setRecipeId(dbRecipe.getId());
             dbBrewStep.setDBRecipe(dbRecipe);

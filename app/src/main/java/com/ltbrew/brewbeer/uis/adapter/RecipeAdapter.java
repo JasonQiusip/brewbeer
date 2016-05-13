@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.TextView;
 
 import com.ltbrew.brewbeer.R;
@@ -41,8 +42,15 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeVH> {
 
     @Override
     public void onBindViewHolder(RecipeVH holder, int position) {
-        Recipe recipe = recipes.get(position);
+        final Recipe recipe = recipes.get(position);
         holder.recipeNameTv.setText(recipe.getName());
+        holder.recipeCheckbox.setChecked(recipe.isChecked());
+        holder.recipeCheckbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                recipe.setChecked(isChecked);
+            }
+        });
     }
 
     @Override

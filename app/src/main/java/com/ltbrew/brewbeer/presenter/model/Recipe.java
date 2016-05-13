@@ -10,6 +10,7 @@ public class Recipe {
     String id_type;
     String name;
     String ref;
+    boolean checked;
 
     public String getCus() {
         return cus;
@@ -53,4 +54,11 @@ public class Recipe {
         this.ref = ref;
     }
 
+    public boolean isChecked() {
+        return checked;
+    }
+
+    public void setChecked(boolean checked) {
+        this.checked = checked;
+    }
 }

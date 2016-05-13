@@ -95,8 +95,10 @@ public class RecipeDetailActivity extends BaseActivity implements AddPackView {
                 addItemToContainer("步骤" + stepId.split("s_")[1], dbBrewStep.getI());
             } else {
                 Integer slot = dbBrewStep.getSlot();
+                if(slots.size() - 1 < slot)
+                    continue;
                 DBSlot dbSlot = slots.get(slot);
-                addItemToContainer("步骤" + stepId.split("s_")[1], "投放" + dbSlot.getName() + "到槽" + slot);
+                addItemToContainer("步骤" + stepId.split("s_")[1], "投放" + dbSlot.getName() + "到槽" + (slot+1));
             }
         }
         addItemToContainer("", "");//防止需显示的内容被fab遮挡

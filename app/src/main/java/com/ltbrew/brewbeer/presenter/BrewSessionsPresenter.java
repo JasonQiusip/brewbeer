@@ -60,7 +60,7 @@ public class BrewSessionsPresenter {
                     List<BrewHistory> brewingHistoryList = new ArrayList<>();
                     List<BrewHistory> finishedHistoryList = new ArrayList<>();
                     if(jsonArray == null) {
-                        brewSessionView.onGetBrewSessionFailed("没有历史记录");
+                        brewSessionView.onGetBrewSessionSuccess(brewingHistoryList, finishedHistoryList);
                         return;
                     }
                     for (int i = 0, size = jsonArray.size(); i < size; i++) {
@@ -101,14 +101,15 @@ public class BrewSessionsPresenter {
         int year = calendar.get(Calendar.YEAR);
         int month = calendar.get(Calendar.MONTH);
         int day = calendar.get(Calendar.DAY_OF_MONTH);
-        String date_begin = year +"-" + String.format("%02d", month + 1) + "-" + String.format("%02d", day);
+        String date_end = year +"-" + String.format("%02d", month + 1) + "-" + String.format("%02d", day);
         calendar.set(Calendar.DAY_OF_MONTH, day - 7);
         int year_begin = calendar.get(Calendar.YEAR);
         int month_begin = calendar.get(Calendar.MONTH);
         int day_begin = calendar.get(Calendar.DAY_OF_MONTH);
-        String date_end = year_begin +"-" + String.format("%02d", month_begin + 1) + "-" + String.format("%02d", day_begin);
-
-        String[] dateTime = new String[]{date_begin, date_end};
+        String date_begin = year_begin +"-" + String.format("%02d", month_begin + 1) + "-" + String.format("%02d", day_begin);
+        date_begin += "T00:00:00";
+        date_end += "T23:59:59";
+        String[] dateTime = new String[]{date_end, date_begin};
         return dateTime;
 
     }

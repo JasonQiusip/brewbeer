@@ -114,8 +114,12 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
                     String package_id = st.split(":")[1];
                     brewHistory = findBrewHistory(package_id);
                 }else{
+                    if(brewingHistoryList.size() == 0)
+                        return;
                     brewHistory = brewingHistoryList.get(0);
                 }
+                if(brewHistory == null)
+                    return;
                 brewHistory.setRatio(pushMsgObj.ratio);
                 brewHistory.setSi(pushMsgObj.si);
                 brewHistory.setBrewingState(pushMsgObj.body);
@@ -275,11 +279,20 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
             public void run() {
                 if(spinKit.isShown())
                     animateProgressView(View.GONE, R.anim.anim_popup_close_progress);
+
+                if(brewingHistoryList.size() != 0){
+                    noBrewingTaskTv.setVisibility(View.GONE);
+                }
+                if(finishedHistoryList.size() != 0){
+                    noFinishedTaskTv.setVisibility(View.GONE);
+                }
+
                 brewingSessionAdapter.setData(brewingHistoryList);
                 brewingSessionAdapter.notifyDataSetChanged();
 
                 finishedSessionAdapter.setData(finishedHistoryList);
                 finishedSessionAdapter.notifyDataSetChanged();
+
                 for (int i = 0, size = brewingHistoryList.size(); i < size; i++) {
                     BrewHistory brewHistory = brewingHistoryList.get(i);
                     Long formula_id = brewHistory.getFormula_id();
@@ -364,5 +377,11 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
     public interface onBrewingSessionListener {
         void onReqBrewingSession(Long package_id);
         void onReceiveSessionState();
+    }
+
+    public int getBrewingSessionCount(){
+        if(brewingHistoryList == null)
+            return 0;
+        return brewingHistoryList.size();
     }
 }

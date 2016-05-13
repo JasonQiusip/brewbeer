@@ -21,7 +21,22 @@ public class DeviceUtil {
         return getSharedPreferences().getString(CUR_DEV_ID, "");
     }
 
+
+    public static void setDevNickName(String devId, String nickName){
+        getSharedPreferences().edit().putString(devId, nickName).commit();
+
+    }
+
+    public static String getDevNickName(String devId){
+        return getSharedPreferences().getString(devId, "");
+    }
+
+    public static void clearData(){
+        getSharedPreferences().edit().clear();
+    }
+
     private static SharedPreferences getSharedPreferences(){
         return BrewApp.getInstance().getSharedPreferences(DEVICE_SP, Context.MODE_PRIVATE);
     }
+
 }

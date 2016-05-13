@@ -102,9 +102,11 @@ public class FinishedSessionAdapter extends RecyclerView.Adapter<FinishedBrewVH>
             @Override
             public void onClick(View v) {
                 FinishedBrewVH vh = (FinishedBrewVH) v.getTag();
+                int layoutPosition = vh.getLayoutPosition();
                 if (mOnDeleteClickListener != null)
-                    mOnDeleteClickListener.onDeleteClick(v, vh.getLayoutPosition());
-                notifyItemRemoved(vh.getLayoutPosition());
+                    mOnDeleteClickListener.onDeleteClick(v, layoutPosition);
+                finishedHistoryList.remove(layoutPosition);
+                notifyItemRemoved(layoutPosition);
             }
         });
     }

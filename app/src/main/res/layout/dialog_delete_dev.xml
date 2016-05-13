@@ -7,16 +7,16 @@
     <Button
         android:id="@+id/changeNameBtn"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:background="@drawable/bg_dialog_cancel"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_round_top_selector"
         android:text="修改名称"
         android:layout_marginRight="0.5dp"
         />
     <Button
         android:id="@+id/deleteDevBtn"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:background="@drawable/bg_dialog_ok"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_round_bottom_selector"
         android:text="删除设备"
         />
 </LinearLayout>

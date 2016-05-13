@@ -71,11 +71,11 @@ public class RecipeFragment extends Fragment implements RecipeView, BaseViewHold
         // Inflate the layout for this fragment
         view = inflater.inflate(R.layout.fragment_recipe, container, false);
         ButterKnife.bind(this, view);
-        fab.setOnClickListener(new View.OnClickListener(){
+        fab.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
-                Log.e("","fdsafdadsfsdafdsfa");
+                showSnackBar("功能还未开启，敬请期待");
             }
         });
         recipeRv.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
@@ -95,7 +95,7 @@ public class RecipeFragment extends Fragment implements RecipeView, BaseViewHold
     public void getAllRecipes() {
         recipeRefreshLayout.setRefreshing(true);
         final String devId = DeviceUtil.getCurrentDevId();
-        if(TextUtils.isEmpty(devId)){
+        if (TextUtils.isEmpty(devId)) {
             recipeRefreshLayout.setRefreshing(false);
             return;
         }
@@ -118,19 +118,19 @@ public class RecipeFragment extends Fragment implements RecipeView, BaseViewHold
     }
 
     protected void showErrorMsg(String msg) {
-        if(Constants.NETWORK_ERROR.equals(msg)){
+        if (Constants.NETWORK_ERROR.equals(msg)) {
             //网络错误
-            showSnackBar(msg+"网络错误，请检查您的网络！");
+            showSnackBar(msg + "网络错误，请检查您的网络！");
             return;
-        }else if(Constants.PASSWORD_ERROR.equals(msg)){
-            showSnackBar(msg+"用户名或密码出错，请重试！");
+        } else if (Constants.PASSWORD_ERROR.equals(msg)) {
+            showSnackBar(msg + "用户名或密码出错，请重试！");
             return;
         }
         //服务错误
-        showSnackBar(msg+"服务器或APP出错，请联系客服");
+        showSnackBar(msg + "服务器或APP出错，请联系客服");
     }
 
-    public void showSnackBar(String msg){
+    public void showSnackBar(String msg) {
         Snackbar.make(view, msg, Snackbar.LENGTH_SHORT).show();
     }
 

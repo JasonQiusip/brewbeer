@@ -67,6 +67,9 @@ public class TransmitFileService {
         cmdRead = newCmdRead(socket);
         cmdRead.setLocker(locker);
         cmdRead.sethbLocker(hbLocker);
+        if(pool.isShutdown()){
+            return;
+        }
         pool.execute(cmdsWrite);
         pool.execute(cmdRead);
     }

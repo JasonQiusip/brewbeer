@@ -11,4 +11,7 @@ public interface BrewHomeView {
 
     void onGetDevsSuccess(List<Device> devices);
     void onGetDevsFailed(String message);
+
+    void onReqDeleteDevSuccess(int state);
+    void onDeleteDevFailed(String message);
 }

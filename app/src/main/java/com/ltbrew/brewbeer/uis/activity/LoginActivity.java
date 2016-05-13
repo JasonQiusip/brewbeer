@@ -47,7 +47,7 @@ public class LoginActivity extends BaseActivity implements LoginView {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        initToolbar();
+        initToolbarWithCustomMsg("登录");
         hideBackIv();
         ButterKnife.bind(this);
         loginPresenter = new LoginPresenter(this);

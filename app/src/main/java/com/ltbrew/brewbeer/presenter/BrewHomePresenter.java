@@ -1,7 +1,5 @@
 package com.ltbrew.brewbeer.presenter;
 
-import android.text.TextUtils;
-
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -10,12 +8,12 @@ import com.ltbrew.brewbeer.api.model.HttpResponse;
 import com.ltbrew.brewbeer.interfaceviews.BrewHomeView;
 import com.ltbrew.brewbeer.presenter.model.Device;
 import com.ltbrew.brewbeer.presenter.util.DeviceUtil;
+import com.ltbrew.brewbeer.presenter.util.RxUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import rx.Observable;
-import rx.Scheduler;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
@@ -53,11 +51,12 @@ public class BrewHomePresenter {
                 HttpResponse devsResp = DevApi.getDevs();
                 if(devsResp.isSuccess()){
                     String content = devsResp.getContent();
-                    if(content.equals("[]")) {
+                    ArrayList<Device> devices = new ArrayList();
+                    if(content.equals("[]")) { //没有获取到设备置空
                         DeviceUtil.storeCurrentDevId("");
+                        subscriber.onNext(devices);
                         return;
                     }
-                    ArrayList<Device> devices = new ArrayList();
                     parseDevsResp(content, devices);
                     subscriber.onNext(devices);
                 }else{
@@ -85,5 +84,38 @@ public class BrewHomePresenter {
         if(!findDev) {
             DeviceUtil.storeCurrentDevId(devices.get(0).getId());
         }
+    }
+
+
+    public void unbindDev(){
+        RxUtil.createWithIntResp(new Observable.OnSubscribe<Integer>() {
+            @Override
+            public void call(Subscriber<? super Integer> subscriber) {
+                String currentDevId = DeviceUtil.getCurrentDevId();
+                HttpResponse httpResponse = DevApi.unbindDev(currentDevId);
+                if(httpResponse.isSuccess()){
+                    if(!"".equals(httpResponse.getContent())) {
+                        JSONObject jsonObject = JSON.parseObject(httpResponse.getContent());
+                        Integer state = jsonObject.getInteger("state");
+                        subscriber.onNext(state);
+                        return;
+                    }
+                    subscriber.onNext(0);
+                }else{
+                    subscriber.onError(new Throwable(httpResponse.getCode()+""));
+                }
+            }
+        }).subscribe(new Action1<Integer>() {
+            @Override
+            public void call(Integer state) {
+                brewHomeView.onReqDeleteDevSuccess(state);
+            }
+        }, new Action1<Throwable>() {
+            @Override
+            public void call(Throwable throwable) {
+                brewHomeView.onDeleteDevFailed(throwable.getMessage());
+
+            }
+        });
     }
 }

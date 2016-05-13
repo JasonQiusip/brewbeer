@@ -33,9 +33,14 @@ public class SocketFileWriter extends SocketCustomWriter {
                 //非idle状态时启动该操作
                 fileWriterOperator();
                 //将数据从queue中取出写到服务器
-                String dataSend = queue.size() > 0 ? queue.get(0) : null;
 
-                if (dataSend != null) {
+                if (queue != null && queue.size() > 0 ) {
+                    String dataSend = queue.get(0);
+                    if(dataSend == null){
+                        queue.remove(0);
+                        continue;
+                    }
+
                     Log.e("","===###################sendFileReqPacks####################====\n"+dataSend);
 
                     outputStream.write(toByteArr(dataSend));

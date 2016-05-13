@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.support.design.widget.NavigationView;
@@ -20,6 +21,7 @@ import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.PopupWindow;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
@@ -32,6 +34,8 @@ import com.ltbrew.brewbeer.presenter.util.DeviceUtil;
 import com.ltbrew.brewbeer.service.LtPushService;
 import com.ltbrew.brewbeer.uis.Constants;
 import com.ltbrew.brewbeer.uis.adapter.SectionsPagerAdapter;
+import com.ltbrew.brewbeer.uis.dialog.DeleteOrRenameDevPopupWindow;
+import com.ltbrew.brewbeer.uis.dialog.SetDevNameDialog;
 import com.ltbrew.brewbeer.uis.fragment.BrewSessionFragment;
 import com.ltbrew.brewbeer.uis.fragment.RecipeFragment;
 import com.ltbrew.brewbeer.uis.utils.ReqSessionStateQueue;
@@ -72,13 +76,16 @@ public class BrewHomeActivity extends BaseActivity
     private int positionCurrentDevInDevices;
     private LtPushService ltPushService;
     private ReqSessionStateQueue reqSessionStateQueue;
+    private DeleteOrRenameDevPopupWindow deleteOrRenameDevPopupWindow;
+    private Handler handler = new Handler();
+    private long recordTimeMillis = 0;
 
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
-            if(LtPushService.UNBIND_ACTION.equals(action)){
-                if(brewHomePresenter != null)
+            if (LtPushService.UNBIND_ACTION.equals(action)) {
+                if (brewHomePresenter != null)
                     brewHomePresenter.getDevs();
                 return;
             }
@@ -122,7 +129,7 @@ public class BrewHomeActivity extends BaseActivity
             View view = navigationView.getHeaderView(0);
             leftArrowIv = (ImageView) view.findViewById(R.id.leftArrowIv);
             devIdTv = (TextView) view.findViewById(R.id.devIdTv);
-            rightArrowIv = (ImageView)view.findViewById(R.id.rightArrowIv);
+            rightArrowIv = (ImageView) view.findViewById(R.id.rightArrowIv);
             leftArrowIv.setOnClickListener(this);
             devIdTv.setOnClickListener(this);
             rightArrowIv.setOnClickListener(this);
@@ -161,6 +168,7 @@ public class BrewHomeActivity extends BaseActivity
             }
         });
     }
+
     //初始化一个消息队列
     private void initMessageQueue() {
         reqSessionStateQueue = new ReqSessionStateQueue();
@@ -175,6 +183,7 @@ public class BrewHomeActivity extends BaseActivity
             return;
         mViewPager.setCurrentItem(0);
     }
+
     //点击底部配方按钮
     @OnCheckedChanged(R.id.recipeRb)
     public void recipeRb(boolean checked) {
@@ -189,7 +198,11 @@ public class BrewHomeActivity extends BaseActivity
         if (drawer != null && drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            super.onBackPressed();
+            if(System.currentTimeMillis() - recordTimeMillis < 2000){
+                super.onBackPressed();
+            }
+            recordTimeMillis = System.currentTimeMillis();
+            showSnackBar("再按一次退出");
         }
     }
 
@@ -203,6 +216,8 @@ public class BrewHomeActivity extends BaseActivity
         } else if (id == R.id.nav_about) {
             startAboutActivity();
         } else if (id == R.id.nav_exit) {
+            DeviceUtil.clearData();
+            stopService(new Intent(this, LtPushService.class));
             startLoginActivity();
         }
 
@@ -212,18 +227,21 @@ public class BrewHomeActivity extends BaseActivity
         }
         return true;
     }
+
     //打开添加设备界面
     void startAddDevActivity() {
         Intent intent = new Intent();
         intent.setClass(this, AddDevActivity.class);
         startActivity(intent);
     }
+
     //打开关于我们界面
-    void startAboutActivity(){
+    void startAboutActivity() {
         Intent intent = new Intent();
         intent.setClass(this, AboutActivity.class);
         startActivity(intent);
     }
+
     //打开登录界面
     private void startLoginActivity() {
         Intent intent = new Intent();
@@ -241,8 +259,13 @@ public class BrewHomeActivity extends BaseActivity
             showMsgWindow("提醒", "您还未添加任何设备， 请先添加", null);
             return;
         }
+        if(brewSessionFragment.getBrewingSessionCount() == 6){
+            showMsgWindow("提醒", "您已创建了六个酿造任务， 无法再创建更多", null);
+            return;
+        }
         startAddRecipeActivity();
     }
+
     //打开新建酿造界面
     private void startAddRecipeActivity() {
         Intent intent = new Intent();
@@ -254,13 +277,25 @@ public class BrewHomeActivity extends BaseActivity
     //设备列表获得成功
     @Override
     public void onGetDevsSuccess(List<Device> devices) {
-        if(!TextUtils.isEmpty(DeviceUtil.getCurrentDevId()))
-            devIdTv.setText(DeviceUtil.getCurrentDevId());
+        String currentDevId = DeviceUtil.getCurrentDevId();
+        if (!TextUtils.isEmpty(currentDevId)) {
+            homeCenterTitle.setTypeface(null);
+            String devNickName = DeviceUtil.getDevNickName(currentDevId);
+            if (!TextUtils.isEmpty(devNickName)) {
+                setDeviceName(devNickName);
+
+            } else {
+                setDeviceName(currentDevId);
+
+            }
+        }
         this.devices = devices;
         reqDataFromServer();
         startPushService();
         positionCurrentDevInDevices = findWhereIsCurrentDevInDevices();
     }
+
+
     //请求酿造历史和获取配方列表
     public void reqDataFromServer() {
         if (brewSessionFragment == null)
@@ -270,12 +305,14 @@ public class BrewHomeActivity extends BaseActivity
         brewSessionFragment.getBrewHistory();
         recipeFragment.getAllRecipes();
     }
+
     //启动后台推送服务
     private void startPushService() {
         Intent intent = new Intent(this, LtPushService.class);
         bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
         startService(intent);
     }
+
     //绑定服务
     ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
@@ -292,10 +329,11 @@ public class BrewHomeActivity extends BaseActivity
         }
     };
 
-    public int findWhereIsCurrentDevInDevices(){
-        for(int i = 0, size = devices.size(); i < size; i++){
+    //找到当前设备在设备列表中的位置
+    public int findWhereIsCurrentDevInDevices() {
+        for (int i = 0, size = devices.size(); i < size; i++) {
             String currentDevId = DeviceUtil.getCurrentDevId();
-            if(currentDevId.equals(devices.get(i).getId())){
+            if (currentDevId.equals(devices.get(i).getId())) {
                 return i;
             }
         }
@@ -307,54 +345,184 @@ public class BrewHomeActivity extends BaseActivity
         if (Constants.NETWORK_ERROR.equals(message)) {
             showSnackBar("设备获取失败，请确认网络");
             return;
+        }else if(Constants.PASSWORD_ERROR.equals(message)){
+            showSnackBar("用户名或密码出错，请重试！");
+            return;
         }
-        showSnackBar("获取设备失败，服务器或APP出错， 请联系客服");
+        showSnackBar("获取设备失败，服务器或APP出错："+message+"， 请联系客服");
 
     }
+
+
     //=========================== 获取设备列表回调 end===========================
 
+    //============================删除设备回调==========================
 
+    //    state值	描述
+    //    1	帐号格式不对
+    //    2	设备id格式不正确/api_key来源非法
+    //    3	已经是解绑状态
+    //    4	设备不属于当前帐号
+    //    5	子帐号解关注成功
+    //    6	设备io参数以及主帐号不匹配（实际上和2有些重复）
+    @Override
+    public void onReqDeleteDevSuccess(int state) {
+        switch (state){
+            case 0:
+                showSnackBar("设备解绑成功");
+                switchToNextDevInList();
+                break;
+            case 1:
+                showSnackBar("帐号格式不对");
+                break;
+            case 2:
+                showSnackBar("设备id格式不正确或api_key来源非法");
+                break;
+            case 3:
+                showSnackBar("已经是解绑状态");
+                break;
+            case 4:
+                showSnackBar("设备不属于当前帐号");
+                break;
+            case 5:
+                showSnackBar("子帐号解关注成功");
+                break;
+            case 6:
+                showSnackBar("设备io参数以及主帐号不匹配");
+                break;
+        }
+    }
+
+    @Override
+    public void onDeleteDevFailed(String message) {
+        showSnackBar(message);
+    }
+    //============================删除设备回调==========================
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if(broadcastReceiver != null)
+        if (broadcastReceiver != null)
             unregisterReceiver(broadcastReceiver);
-        if(mServiceConnection != null && serviceIsConnected)
+        if (mServiceConnection != null && serviceIsConnected)
             unbindService(mServiceConnection);
     }
 
     @Override
     public void onClick(View view) {
-        switch (view.getId()){
+        switch (view.getId()) {
             case R.id.leftArrowIv:
-                if(devices.size() == 0 || positionCurrentDevInDevices == -1)
-                    return;
-                if(positionCurrentDevInDevices == 0){
-                    positionCurrentDevInDevices = devices.size() - 1;
-                }else{
-                    positionCurrentDevInDevices--;
-                }
-                Device device = devices.get(positionCurrentDevInDevices);
-                DeviceUtil.storeCurrentDevId(device.getId());
-                devIdTv.setText(device.getId());
+                switchToPrevDevInList();
                 break;
             case R.id.devIdTv:
+                showPopupToChangeNameOrDelete();
+
                 break;
             case R.id.rightArrowIv:
-                if(devices.size() == 0 || positionCurrentDevInDevices == -1)
-                    return;
-                if(positionCurrentDevInDevices == devices.size() -1){
-                    positionCurrentDevInDevices = 0;
-                }else{
-                    positionCurrentDevInDevices ++;
-                }
-                Device device1 = devices.get(positionCurrentDevInDevices);
-                DeviceUtil.storeCurrentDevId(device1.getId());
-                devIdTv.setText(device1.getId());
+                switchToNextDevInList();
                 break;
         }
     }
+    //点击向左的箭头切换上一个设备
+    private void switchToPrevDevInList() {
+        if (devices.size() == 0 || positionCurrentDevInDevices == -1)
+            return;
+        handler.removeCallbacksAndMessages(null);
+        if (positionCurrentDevInDevices == 0) {
+            positionCurrentDevInDevices = devices.size() - 1;
+        } else {
+            positionCurrentDevInDevices--;
+        }
+        Device device = devices.get(positionCurrentDevInDevices);
+        DeviceUtil.storeCurrentDevId(device.getId());
+        String devNickName = DeviceUtil.getDevNickName(device.getId());
+        if (!TextUtils.isEmpty(devNickName)) {
+            setDeviceName(devNickName);
+        } else {
+            setDeviceName(device.getId());
+        }
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                reqDataFromServer();
+            }
+        }, 500);
 
+    }
+    //点击设备id显示弹出框
+    private void showPopupToChangeNameOrDelete() {
+        if (TextUtils.isEmpty(DeviceUtil.getCurrentDevId()))
+            return;
+        if (deleteOrRenameDevPopupWindow != null)
+            return;
+        deleteOrRenameDevPopupWindow = new DeleteOrRenameDevPopupWindow(this);
+        deleteOrRenameDevPopupWindow.setOnButtonClickListener(new DeleteOrRenameDevPopupWindow.OnButtonClickListener() {
+            @Override
+            public void onChangeNameBtnClick() {
+                showChangeNameDialog();
+            }
+
+            @Override
+            public void onDeleteDevBtnClick() {
+                deleteDevice();
+            }
+        });
+        deleteOrRenameDevPopupWindow.setWidth(devIdTv.getWidth());
+        deleteOrRenameDevPopupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
+            @Override
+            public void onDismiss() {
+                deleteOrRenameDevPopupWindow = null;
+            }
+        });
+        deleteOrRenameDevPopupWindow.showAsDropDown(devIdTv, 0, 16);
+    }
+
+    private void showChangeNameDialog() {
+        SetDevNameDialog setDevNameDialog = new SetDevNameDialog(this);
+        setDevNameDialog.setOnSetNameForDevListener(new SetDevNameDialog.OnSetNameForDevListener() {
+            @Override
+            public void onSetDevName(String name) {
+                DeviceUtil.setDevNickName(DeviceUtil.getCurrentDevId(), name);
+                setDeviceName(DeviceUtil.getDevNickName(DeviceUtil.getCurrentDevId()));
+            }
+        });
+        setDevNameDialog.show();
+    }
+
+    private void deleteDevice() {
+        if(brewHomePresenter != null)
+            brewHomePresenter.unbindDev();
+    }
+    //点击向右的箭头切换下一个设备
+    private void switchToNextDevInList() {
+        if (devices.size() == 0 || positionCurrentDevInDevices == -1)
+            return;
+        handler.removeCallbacksAndMessages(null);
+        if (positionCurrentDevInDevices == devices.size() - 1) {
+            positionCurrentDevInDevices = 0;
+        } else {
+            positionCurrentDevInDevices++;
+        }
+        Device device = devices.get(positionCurrentDevInDevices);
+        DeviceUtil.storeCurrentDevId(device.getId());
+        String devNickName = DeviceUtil.getDevNickName(device.getId());
+        if (!TextUtils.isEmpty(devNickName)) {
+            setDeviceName(devNickName);
+        } else {
+            setDeviceName(device.getId());
+        }
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                reqDataFromServer();
+            }
+        }, 500);
+    }
+
+
+    private void setDeviceName(String devNickName) {
+        devIdTv.setText(devNickName);
+        homeCenterTitle.setText(devNickName);
+    }
     @Override
     public void onReqBrewingSession(Long package_id) {
         Message msg = new Message();

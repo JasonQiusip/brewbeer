@@ -41,6 +41,8 @@ public class RegisterActivity extends BaseActivity implements RegisterView {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
+        initToolbarWithCustomMsg("注册");
+
         ButterKnife.bind(this);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -58,13 +60,14 @@ public class RegisterActivity extends BaseActivity implements RegisterView {
             showSnackBar("手机号非11位国内手机号");
             return;
         }
+        if(countDownTimer != null)
+            return;
+        KeyboardUtil.hideKeyboard(this, btnReqCode);
         registerPresenter.reqRegCode(phone);
         activeCountDownTimer();
     }
 
     private void activeCountDownTimer(){
-        if(countDownTimer != null)
-            return;
         countDownTimer = new CountDownTimer(2*60*1000, 1000) {
             int count = 120;
             @Override
@@ -80,6 +83,7 @@ public class RegisterActivity extends BaseActivity implements RegisterView {
 
             @Override
             public void onFinish() {
+                countDownTimer = null;
                 RegisterActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -107,6 +111,7 @@ public class RegisterActivity extends BaseActivity implements RegisterView {
     public void register(){
         String phone = regPhoneNoEdt.getText().toString();
         String pwd = edtRegPwd.getText().toString();
+        String pwdConfirm = edPsw2.getText().toString();
         String regCode = editRegCode.getText().toString();
         if(TextUtils.isEmpty(phone)){
             showSnackBar("手机号不能为空");
@@ -122,10 +127,17 @@ public class RegisterActivity extends BaseActivity implements RegisterView {
         }else if(pwd.length() < 6){
             showSnackBar("密码长度不能小于6位");
             return;
+        }else if(pwd.length() >20){
+            showSnackBar("密码长度不能大于20位");
+            return;
         }
 
         if(TextUtils.isEmpty(regCode)){
             showSnackBar("验证码为空, 请确认");
+            return;
+        }
+        if(!pwd.equals(pwdConfirm)){
+            showSnackBar("两次输入的密码不一致请确认");
             return;
         }
         showDialog("正在进行注册...");

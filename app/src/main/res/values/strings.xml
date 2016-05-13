@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">酿酒大师</string>
+    <string name="app_name">精酿大师</string>
     <string name="action_settings">Settings</string>
     <string name="title_activity_login">Sign in</string>
 
@@ -7,9 +7,9 @@
     <string name="prompt_email">输入11位手机号</string>
     <string name="prompt_password">密码</string>
     <string name="action_sign_in">登     录</string>
-    <string name="add_dev_info">扫描前请确认设备开机\n且电量不低于20%</string>
+    <string name="add_dev_info">扫描前请确认设备开机</string>
     <string name="scan_qrcode">扫描二维码</string>
-    <string name="scan_msg">请扫描原料包上的二维码以添加设备</string>
+    <string name="scan_msg">请扫描原料包上的二维码以新建酿造</string>
     <string name="action_sign_in_short">Sign in</string>
     <string name="error_invalid_email">This email address is invalid</string>
     <string name="error_invalid_password">This password is too short</string>

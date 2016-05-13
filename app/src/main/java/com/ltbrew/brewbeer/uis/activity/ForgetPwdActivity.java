@@ -12,6 +12,7 @@ import com.ltbrew.brewbeer.R;
 import com.ltbrew.brewbeer.interfaceviews.ForgetPwdView;
 import com.ltbrew.brewbeer.presenter.ForgetPwdPresenter;
 import com.ltbrew.brewbeer.uis.Constants;
+import com.ltbrew.brewbeer.uis.utils.AccUtils;
 import com.ltbrew.brewbeer.uis.utils.KeyboardUtil;
 
 import butterknife.BindView;
@@ -40,7 +41,8 @@ public class ForgetPwdActivity extends BaseActivity implements ForgetPwdView {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_forget_pwd);
         ButterKnife.bind(this);
-        initToolbar();
+        initToolbarWithCustomMsg("重置密码");
+
         forgetPwdPresenter = new ForgetPwdPresenter(this);
     }
 
@@ -54,13 +56,14 @@ public class ForgetPwdActivity extends BaseActivity implements ForgetPwdView {
             showSnackBar("手机号非11位国内手机号");
             return;
         }
+        if(countDownTimer != null)
+            return;
+        KeyboardUtil.hideKeyboard(this, btnForgetPwdReqCode);
         forgetPwdPresenter.pwdLost(phone);
         activeCountDownTimer();
     }
 
     private void activeCountDownTimer(){
-        if(countDownTimer != null)
-            return;
         countDownTimer = new CountDownTimer(2*60*1000, 1000) {
             int count = 120;
             @Override
@@ -75,6 +78,7 @@ public class ForgetPwdActivity extends BaseActivity implements ForgetPwdView {
 
             @Override
             public void onFinish() {
+                countDownTimer = null;
                 ForgetPwdActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -102,6 +106,7 @@ public class ForgetPwdActivity extends BaseActivity implements ForgetPwdView {
     public void resetPwd(){
         String phone = forgetPwdPhoneNoEdt.getText().toString();
         String pwd = edtForgetPwd.getText().toString();
+        String pwdConfirm = forgetPwdConfirmPwdEdt.getText().toString();
         String regCode = editForgetPwdCode.getText().toString();
         if(TextUtils.isEmpty(phone)){
             showSnackBar("手机号不能为空");
@@ -117,10 +122,18 @@ public class ForgetPwdActivity extends BaseActivity implements ForgetPwdView {
         }else if(pwd.length() < 6){
             showSnackBar("密码长度不能小于6位");
             return;
+        }else if(pwd.length() >20){
+            showSnackBar("密码长度不能大于20位");
+            return;
         }
 
         if(TextUtils.isEmpty(regCode)){
             showSnackBar("验证码为空, 请确认");
+            return;
+        }
+
+        if(!pwd.equals(pwdConfirm)){
+            showSnackBar("两次输入的密码不一致请确认");
             return;
         }
         showDialog("正在重设密码...");
@@ -140,6 +153,7 @@ public class ForgetPwdActivity extends BaseActivity implements ForgetPwdView {
         hideDialog();
         cancelTimer();
         if (Constants.PwdNewState.SUCCESS.equals(state)) {
+            AccUtils.storeAcc(forgetPwdPhoneNoEdt.getText().toString());
             startLoginActivity();
         } else if (Constants.PwdNewState.CHECK_PHONE_NO.equals(state)) {
             showSnackBar("请确认您的手机号是否为正确的手机号");
@@ -156,6 +170,7 @@ public class ForgetPwdActivity extends BaseActivity implements ForgetPwdView {
         Intent intent = new Intent(this, LoginActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
+        finish();
     }
 
     @Override

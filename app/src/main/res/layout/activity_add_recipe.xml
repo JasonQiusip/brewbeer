@@ -30,7 +30,7 @@ tools:context="com.ltbrew.brewbeer.uis.activity.AddRecipeActivity">
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:textSize="20dp"
-            android:text="创建酿酒"
+            android:text="新建酿造"
             android:textColor="#ffffff"/>
     </android.support.v7.widget.Toolbar>
 
