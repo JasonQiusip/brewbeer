@@ -24,8 +24,6 @@ import butterknife.OnClick;
  */
 public class DeleteOrRenameDevPopupWindow extends PopupWindow {
 
-
-
     private OnButtonClickListener mOnButtonClickListener;
 
     public DeleteOrRenameDevPopupWindow(Context context) {

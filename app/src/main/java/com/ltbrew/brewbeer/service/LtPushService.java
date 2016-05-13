@@ -341,4 +341,9 @@ public class LtPushService extends IntentService implements FileSocketReadyCallb
 
     }
 
+    @Override
+    public void onLongConnectionKickedOut() {
+
+    }
+
 }

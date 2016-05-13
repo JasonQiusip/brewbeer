@@ -92,6 +92,7 @@ public class BrewHomeActivity extends BaseActivity
             ArrayList<Device> devs = intent.getParcelableArrayListExtra(AddDevActivity.DEVICES_EXTRA);
             devices = devs;
             positionCurrentDevInDevices = findWhereIsCurrentDevInDevices();
+            updateUIForDev();
             reqDataFromServer();
         }
     };
@@ -277,6 +278,14 @@ public class BrewHomeActivity extends BaseActivity
     //设备列表获得成功
     @Override
     public void onGetDevsSuccess(List<Device> devices) {
+        updateUIForDev();
+        this.devices = devices;
+        reqDataFromServer();
+        startPushService();
+        positionCurrentDevInDevices = findWhereIsCurrentDevInDevices();
+    }
+
+    private void updateUIForDev() {
         String currentDevId = DeviceUtil.getCurrentDevId();
         if (!TextUtils.isEmpty(currentDevId)) {
             homeCenterTitle.setTypeface(null);
@@ -289,10 +298,6 @@ public class BrewHomeActivity extends BaseActivity
 
             }
         }
-        this.devices = devices;
-        reqDataFromServer();
-        startPushService();
-        positionCurrentDevInDevices = findWhereIsCurrentDevInDevices();
     }
 
 
@@ -474,7 +479,7 @@ public class BrewHomeActivity extends BaseActivity
                 deleteOrRenameDevPopupWindow = null;
             }
         });
-        deleteOrRenameDevPopupWindow.showAsDropDown(devIdTv, 0, 16);
+//        deleteOrRenameDevPopupWindow.showAsDropDown(devIdTv, 0, 16);
     }
 
     private void showChangeNameDialog() {

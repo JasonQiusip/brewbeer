@@ -3,6 +3,7 @@ package com.ltbrew.brewbeer.api.longconnection;
 import android.util.Log;
 
 import com.ltbrew.brewbeer.api.common.CSSLog;
+import com.ltbrew.brewbeer.api.common.TokenDispatcher;
 import com.ltbrew.brewbeer.api.longconnection.interfaces.FileSocketReadyCallback;
 import com.ltbrew.brewbeer.api.longconnection.process.cmdconnection.CmdsConstant;
 import com.ltbrew.brewbeer.api.longconnection.process.CommonParam;
@@ -154,6 +155,10 @@ public class TransmitCmdService {
                 boolean isCmdExist = CmdsConstant.CMDSTR.checkCmd(command);
                 if (isCmdExist && CmdsConstant.CMDSTR.valueOf(command) == CmdsConstant.CMDSTR.auth) {
                     fileSocketReadyCallback.onOAuthFailed();
+                }
+                if(isCmdExist && CmdsConstant.CMDSTR.valueOf(command) == CmdsConstant.CMDSTR.kick){
+                    TokenDispatcher.getInstance().setToken(null);
+                    fileSocketReadyCallback.onLongConnectionKickedOut();
                 }
                 fileSocketReadyCallback.onCmdSocketReconnect();
                 initializeCmdLongConn();
