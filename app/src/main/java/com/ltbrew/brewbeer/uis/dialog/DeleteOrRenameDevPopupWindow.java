@@ -2,6 +2,8 @@ package com.ltbrew.brewbeer.uis.dialog;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
@@ -32,7 +34,8 @@ public class DeleteOrRenameDevPopupWindow extends PopupWindow {
         setContentView(phoneNumbSettingDialog);
         setFocusable(true);
         setOutsideTouchable(true);
-        setBackgroundDrawable(null);
+        setTouchable(true);
+        setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         ButterKnife.bind(this, phoneNumbSettingDialog);
     }
 

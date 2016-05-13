@@ -55,8 +55,7 @@ public class BrewSessionsPresenter {
                 if(brewHistory.isSuccess()){
 
                     String content = brewHistory.getContent();
-                    JSONObject brewHistoryJson = JSON.parseObject(content);
-                    JSONArray jsonArray = brewHistoryJson.getJSONArray("history");
+                    JSONArray jsonArray = JSON.parseArray(content);
                     List<BrewHistory> brewingHistoryList = new ArrayList<>();
                     List<BrewHistory> finishedHistoryList = new ArrayList<>();
                     if(jsonArray == null) {

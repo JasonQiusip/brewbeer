@@ -467,6 +467,7 @@ public class BrewHomeActivity extends BaseActivity
             }
         });
         deleteOrRenameDevPopupWindow.setWidth(devIdTv.getWidth());
+        deleteOrRenameDevPopupWindow.setHeight(ViewPager.LayoutParams.WRAP_CONTENT);
         deleteOrRenameDevPopupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
             @Override
             public void onDismiss() {

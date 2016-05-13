@@ -105,6 +105,7 @@ public class AddDevPresenter {
             public void onCompleted() {
                 retry --;
                 if(retry < 0){
+                    addDevView.onFoundDevFailed("");
                     subscribe.unsubscribe();
                 }
             }
