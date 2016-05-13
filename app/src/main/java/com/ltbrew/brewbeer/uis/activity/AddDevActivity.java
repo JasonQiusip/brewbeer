@@ -14,6 +14,7 @@ import com.ltbrew.brewbeer.presenter.model.Device;
 import com.ltbrew.brewbeer.thirdpartylib.MessageWindow;
 import com.ltbrew.brewbeer.thirdpartylib.activity.CaptureActivity;
 import com.ltbrew.brewbeer.uis.dialog.SetDevPhoneNumbDialog;
+import com.ltbrew.brewbeer.uis.utils.KeyboardUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,6 +70,7 @@ public class AddDevActivity extends BaseActivity implements AddDevView {
                             addDevPresenter.setPhoneNumb(scanQrCode, phoneNumb);
                         setDevPhoneNumbDialog.dismiss();
                         messageWindow = showMsgWindow("提醒", "正在设置设备号码...", null);
+                        KeyboardUtil.hideKeyboard(AddDevActivity.this, backIv);
 
                     }
                 });
@@ -79,6 +81,7 @@ public class AddDevActivity extends BaseActivity implements AddDevView {
 
     @Override
     public void onSetPhoneNumbSuccess() {
+        hideMsgWindow();
         messageWindow = showMsgWindow("提醒", "正在请求绑定...", null);
         addDevPresenter.addDev(scanQrCode);
     }
@@ -101,8 +104,10 @@ public class AddDevActivity extends BaseActivity implements AddDevView {
     @Override
     public void onReqAddDevSuccess(AddDevResp addDevResp) {
         Integer state = addDevResp.state;
-        if(state == null)
+        if(state == null) {
+            showMsgWindow("提醒", "您已绑定该设备", null);
             return;
+        }
         hideMsgWindow();
         switch (state){
             case 0:
@@ -141,6 +146,7 @@ public class AddDevActivity extends BaseActivity implements AddDevView {
         intent.putParcelableArrayListExtra(DEVICES_EXTRA, devices);
         intent.setAction(BrewHomeActivity.ADD_DEV_SUCCESS_ACTION);
         sendBroadcast(intent);
+        finish();
     }
 
     @Override
@@ -151,8 +157,10 @@ public class AddDevActivity extends BaseActivity implements AddDevView {
 
 
     private void hideMsgWindow() {
-        if(messageWindow != null)
+        if(messageWindow != null) {
             messageWindow.hidePopupWindow();
+            messageWindow = null;
+        }
     }
 
 }
