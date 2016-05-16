@@ -39,7 +39,8 @@ public class BrewDetailActivity extends BaseActivity {
         setContentView(R.layout.activity_brew_detail);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        getSupportActionBar().setTitle("");
         ButterKnife.bind(this);
 
 
@@ -64,20 +65,24 @@ public class BrewDetailActivity extends BaseActivity {
         List<DBSlot> slots = dbRecipe.getSlots();
         for (DBSlot dbSlot : slots) {
             String slotStepId = dbSlot.getSlotStepId();
-            addItemToContainer(slotStepId.replace("s_", "设备槽"), dbSlot.getName());
+            slotStepId = slotStepId.replace("s_", "");
+            int id = Integer.parseInt(slotStepId, 16);
+
+            addItemToContainer("设备槽"+(id + 1), dbSlot.getName());
         }
         addItemToContainer("步骤", "", true);
         List<DBBrewStep> brewSteps = dbRecipe.getBrewSteps();
         for (DBBrewStep dbBrewStep : brewSteps) {
             String stepId = dbBrewStep.getStepId();
+            stepId = stepId.split("s_")[1];
+            int id = Integer.parseInt(stepId, 16);
             String act = dbBrewStep.getAct();
             if ("boil".equals(act)) {
-                addItemToContainer("步骤" + stepId.split("s_")[1], dbBrewStep.getI());
+                addItemToContainer("步骤" + (id+1), dbBrewStep.getI());
             } else {
-                addItemToContainer("步骤" + stepId.split("s_")[1], "投放原料到槽" + dbBrewStep.getSlot());
+                addItemToContainer("步骤" + (id+1), "投放原料到槽" + dbBrewStep.getSlot());
             }
         }
-
     }
 
     private void addItemToContainer(String title, String contentDes) {

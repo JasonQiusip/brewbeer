@@ -122,10 +122,10 @@ public class RecipePresenter {
                 if (checkLocalDb(subscriber, fn)) return;
 
                 String ref = recipe.getRef();
-                if(TextUtils.isEmpty(ref)){
-                    subscriber.onCompleted();
-                    return;
-                }
+//                if(TextUtils.isEmpty(ref)){
+//                    subscriber.onCompleted();
+//                    return;
+//                }
 
                 HttpResponse httpResponse = BrewApi.downloadRecipe(devId, fn, ref);
                 if(httpResponse.isSuccess()){
@@ -211,7 +211,7 @@ public class RecipePresenter {
         List<DBSlot> dbSlots = new ArrayList<>();
         int sc = slots.getInteger("sc");
         for (int i = 0; i < sc; i++) {
-            String slotStepId = STEP_PREFIX + (i+1);
+            String slotStepId = STEP_PREFIX + String.format("%02x", i);
             JSONObject slot = slots.getJSONObject(slotStepId);
             int id = slot.getInteger("id");
             String name = slot.getString("name");
@@ -233,7 +233,7 @@ public class RecipePresenter {
         int stepCount = formula.getInteger("sc");
         Log.e("parseSteps", "sc =======> " + stepCount + "  "+dbRecipe.getId());
         for (int i = 0; i < stepCount; i++) {
-            String stepId = STEP_PREFIX + String.format("%02d", i);
+            String stepId = STEP_PREFIX + String.format("%02x", i);
             JSONObject step = formula.getJSONObject(stepId);
             String act = step.getString("act");
 
@@ -254,8 +254,8 @@ public class RecipePresenter {
                 dbBrewStep.setDrn(drn);
                 dbBrewStep.setI(des);
             }else if("drop".equals(act)){
-                Integer s = step.getInteger("s");
-                dbBrewStep.setSlot(s+1);
+                Integer index = step.getInteger("s");
+                dbBrewStep.setSlot(index+1);
             }
             dbBrewStep.setRecipeId(dbRecipe.getId());
             dbBrewStep.setDBRecipe(dbRecipe);

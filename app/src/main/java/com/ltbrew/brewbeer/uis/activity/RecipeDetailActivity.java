@@ -90,15 +90,18 @@ public class RecipeDetailActivity extends BaseActivity implements AddPackView {
         List<DBBrewStep> brewSteps = dbRecipe.getBrewSteps();
         for (DBBrewStep dbBrewStep : brewSteps) {
             String stepId = dbBrewStep.getStepId();
+            stepId = stepId.split("s_")[1];
+            int id = Integer.parseInt(stepId, 16);
+
             String act = dbBrewStep.getAct();
             if ("boil".equals(act)) {
-                addItemToContainer("步骤" + stepId.split("s_")[1], dbBrewStep.getI());
+                addItemToContainer("步骤" + + (id+1), dbBrewStep.getI());
             } else {
                 Integer slot = dbBrewStep.getSlot();
-                if(slots.size() - 1 < slot)
+                if(slots.size() < slot)
                     continue;
-                DBSlot dbSlot = slots.get(slot);
-                addItemToContainer("步骤" + stepId.split("s_")[1], "投放" + dbSlot.getName() + "到槽" + (slot+1));
+                DBSlot dbSlot = slots.get(slot - 1);
+                addItemToContainer("步骤" + + (id+1), "投放" + dbSlot.getName() + "到槽" + slot);
             }
         }
         addItemToContainer("", "");//防止需显示的内容被fab遮挡

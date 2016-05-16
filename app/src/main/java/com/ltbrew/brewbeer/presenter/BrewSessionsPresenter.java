@@ -64,14 +64,15 @@ public class BrewSessionsPresenter {
                     }
                     for (int i = 0, size = jsonArray.size(); i < size; i++) {
                         JSONObject jsonObject = jsonArray.getJSONObject(i);
-                        Long formula_id = jsonObject.getLong("formula_id");
+                        String formula_id = jsonObject.getString("formula_id");
+                        long formula_id_long = Long.parseLong(formula_id, 16);
                         String begin_time = jsonObject.getString("begin_time");
                         String end_time = jsonObject.getString("end_time");
                         Long package_id = jsonObject.getLong("package_id");
                         Long pid = jsonObject.getLong("pid");
                         Integer state = jsonObject.getInteger("state");
                         BrewHistory brewHistoryModel = new BrewHistory();
-                        brewHistoryModel.setFormula_id(formula_id);
+                        brewHistoryModel.setFormula_id(formula_id_long);
                         brewHistoryModel.setBegin_time(begin_time);
                         brewHistoryModel.setEnd_time(end_time);
                         brewHistoryModel.setPackage_id(package_id);
@@ -92,7 +93,17 @@ public class BrewSessionsPresenter {
                     brewSessionView.onGetBrewSessionFailed(brewHistory.getCode()+"");
                 }
             }
-        }).subscribeOn(Schedulers.io()).subscribe();
+        }).subscribeOn(Schedulers.io()).subscribe(new Action1<String>() {
+            @Override
+            public void call(String s) {
+
+            }
+        }, new Action1<Throwable>() {
+            @Override
+            public void call(Throwable throwable) {
+                throwable.printStackTrace();
+            }
+        });
     }
 
     private String[] getTodayUnixTime(){
