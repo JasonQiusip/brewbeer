@@ -22,16 +22,19 @@
             android:fitsSystemWindows="true"
             app:contentScrim="#ffffff"
             app:layout_scrollFlags="scroll|exitUntilCollapsed">
+
             <ImageView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"
                 android:src="@mipmap/beer_natural_ingrediets"/>
+
             <android.support.v7.widget.Toolbar
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 app:layout_collapseMode="pin"
+                style="@style/toolbarStyle"
                 app:popupTheme="@style/AppTheme.PopupOverlay" >
                 <ImageView
                     android:id="@+id/backIv"
@@ -42,14 +45,15 @@
                     android:src="@mipmap/left_arrow"/>
 
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textColor="#334858"
+                    android:textColor="#ffffff"
+                    android:gravity="center"
+                    android:layout_marginRight="60dp"
                     android:textSize="20dp"
                     android:text="配方详情"/>
 
-                </android.support.v7.widget.Toolbar>
-
+            </android.support.v7.widget.Toolbar>
         </android.support.design.widget.CollapsingToolbarLayout>
     </android.support.design.widget.AppBarLayout>
 

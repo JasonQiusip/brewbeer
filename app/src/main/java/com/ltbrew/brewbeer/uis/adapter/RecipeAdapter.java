@@ -27,7 +27,7 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeVH> {
     private final Context context;
     private List<Recipe> recipes = Collections.EMPTY_LIST;
     private BaseViewHolder.OnRvItemClickListener onRvItemClickListener;
-
+    private int[] imgRes = new int[]{R.mipmap.recipe_0, R.mipmap.recipe_1, R.mipmap.recipe_2, R.mipmap.recipe_3, R.mipmap.recipe_4,R.mipmap.recipe_5, R.mipmap.recipe_6, R.mipmap.recipe_7};
     public RecipeAdapter(Context context) {
         this.context = context;
     }
@@ -51,6 +51,9 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeVH> {
                 recipe.setChecked(isChecked);
             }
         });
+        if(imgRes.length -1 > position) {
+            holder.recipeIv.setImageResource(imgRes[position]);
+        }
     }
 
     @Override

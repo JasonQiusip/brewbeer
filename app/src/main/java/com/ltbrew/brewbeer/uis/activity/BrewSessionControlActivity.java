@@ -114,7 +114,11 @@ public class BrewSessionControlActivity extends AppCompatActivity {
                 addItemToContainer(dbBrewStep.getI(), "");
             } else {
                 Integer slot = dbBrewStep.getSlot();
-                DBSlot dbSlot = slots.get(slot);
+                if(slots.size() < slot)
+                    continue;
+                if(slot - 1 < 0)
+                    continue;
+                DBSlot dbSlot = slots.get(slot - 1);
                 String addMaterialToSlot = "投放" + dbSlot.getName() + "到槽" + slot;
                 addItemToContainer(addMaterialToSlot, "");
             }

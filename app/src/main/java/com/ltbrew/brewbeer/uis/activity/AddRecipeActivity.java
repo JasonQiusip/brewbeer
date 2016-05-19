@@ -128,7 +128,7 @@ public class AddRecipeActivity extends BaseActivity implements OnAddActionListen
             intent.putExtra(FORMULA_ID_EXTRA, formula_id);
             intent.putExtra(RECIPE_NAME_EXTRA, name);
             sendBroadcast(intent);
-            showMsgWindow("提醒", name + " 已同步 正在获取配方", new MessageWindow.OnMsgWindowActionListener() {
+            showMsgWindow("提醒", name + " 已同步 点击详情查看配方", new MessageWindow.OnMsgWindowActionListener() {
                 @Override
                 public void onCloseWindow() {
                     finish();
@@ -139,7 +139,7 @@ public class AddRecipeActivity extends BaseActivity implements OnAddActionListen
                     startRecipeDetail();
                     finish();
                 }
-            }).showTvDetail();
+            }).showTvDetail().hideTvClose();
         }else if(state == 1){
             showMsgWindow("提醒", "原料包无效已被使用", null);
         }else if(state == 2){

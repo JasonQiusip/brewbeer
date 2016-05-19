@@ -59,6 +59,7 @@ public class MessageWindow {
 	};
 	private OnMsgWindowActionListener onCloseWindowListener;
 	private TextView tv_detail;
+	private TextView tvClose;
 
 	/**
 	 * 显示弹出框
@@ -149,7 +150,7 @@ public class MessageWindow {
 		View view = LayoutInflater.from(mContext).inflate(R.layout.layout_message_window, null);
 
 		viewMessage = view.findViewById(R.id.message_window);
-		TextView tvClose = (TextView) view.findViewById(R.id.tv_close);
+		tvClose = (TextView) view.findViewById(R.id.tv_close);
 		tv_detail = (TextView) view.findViewById(R.id.tv_detail);
 		tvTitle = (TextView) view.findViewById(R.id.tv_title);
 		tvMessage = (TextView) view.findViewById(R.id.tv_message);
@@ -175,9 +176,17 @@ public class MessageWindow {
 		return view;
 	}
 
-	public void showTvDetail(){
+	public MessageWindow hideTvClose(){
+		if(tvClose != null){
+			tvClose.setVisibility(View.INVISIBLE);
+		}
+		return this;
+	}
+
+	public MessageWindow showTvDetail(){
 		if(tv_detail != null)
 		tv_detail.setVisibility(View.VISIBLE);
+		return this;
 	}
 
 	private void setTouchEvent(View view) {

@@ -66,7 +66,7 @@
             android:label="" />
         <activity
             android:name=".uis.activity.BrewDetailActivity"
-            android:label="" />
+            android:label="a" />
         <activity
             android:name=".uis.activity.AddDevActivity"
             android:label="" />
