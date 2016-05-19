@@ -1,5 +1,6 @@
 package com.ltbrew.brewbeer.service;
 
+import android.app.ActivityManager;
 import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -21,6 +22,7 @@ import com.ltbrew.brewbeer.api.longconnection.TransmitCmdService;
 import com.ltbrew.brewbeer.api.longconnection.interfaces.FileSocketReadyCallback;
 import com.ltbrew.brewbeer.api.longconnection.process.ParsePackKits;
 import com.ltbrew.brewbeer.api.longconnection.process.cmdconnection.CmdsConstant;
+import com.ltbrew.brewbeer.uis.activity.BrewHomeActivity;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -245,6 +247,11 @@ public class LtPushService extends IntentService implements FileSocketReadyCallb
             System.out.println("未识别的指令");
             return;
         }
+        if(isBackground(this)){
+            Intent intent = new Intent(this, BrewHomeActivity.class);
+            showNotification(this, pushMessageObj.des, 11, intent);
+            return;
+        }
         Intent intent = new Intent();
         switch (PushCommand.valueOf(cb)) {
             case bind:
@@ -258,6 +265,11 @@ public class LtPushService extends IntentService implements FileSocketReadyCallb
                 sendBroadcast(intent);
                 break;
             case cmn_prgs:
+                intent.setAction(CMN_PRGS_PUSH_ACTION);
+                intent.putExtra(PUSH_MSG_EXTRA, pushMessageObj);
+                sendBroadcast(intent);
+                break;
+            case cmn_msg:
                 intent.setAction(CMN_PRGS_PUSH_ACTION);
                 intent.putExtra(PUSH_MSG_EXTRA, pushMessageObj);
                 sendBroadcast(intent);
@@ -346,4 +358,32 @@ public class LtPushService extends IntentService implements FileSocketReadyCallb
 
     }
 
+    public static boolean isBackground(Context context) {
+        ActivityManager activityManager = (ActivityManager) context
+                .getSystemService(Context.ACTIVITY_SERVICE);
+        List<ActivityManager.RunningAppProcessInfo> appProcesses = activityManager
+                .getRunningAppProcesses();
+        for (ActivityManager.RunningAppProcessInfo appProcess : appProcesses) {
+            if (appProcess.processName.equals(context.getPackageName())) {
+                /*
+                BACKGROUND=400 EMPTY=500 FOREGROUND=100
+                GONE=1000 PERCEPTIBLE=130 SERVICE=300 ISIBLE=200
+                 */
+                Log.i(context.getPackageName(), "此appimportace ="
+                        + appProcess.importance
+                        + ",context.getClass().getName()="
+                        + context.getClass().getName());
+                if (appProcess.importance != ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
+                    Log.i(context.getPackageName(), "处于后台"
+                            + appProcess.processName);
+                    return true;
+                } else {
+                    Log.i(context.getPackageName(), "处于前台"
+                            + appProcess.processName);
+                    return false;
+                }
+            }
+        }
+        return false;
+    }
 }

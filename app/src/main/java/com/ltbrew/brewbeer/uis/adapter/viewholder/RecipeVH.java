@@ -2,6 +2,7 @@ package com.ltbrew.brewbeer.uis.adapter.viewholder;
 
 import android.view.View;
 import android.widget.CheckBox;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.ltbrew.brewbeer.R;
@@ -17,6 +18,8 @@ public class RecipeVH extends BaseViewHolder {
     public CheckBox recipeCheckbox;
     @BindView(R.id.recipeNameTv)
     public TextView recipeNameTv;
+    @BindView(R.id.recipeIv)
+    public ImageView recipeIv;
     public RecipeVH(View itemView) {
         super(itemView);
     }

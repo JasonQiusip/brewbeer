@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public enum PushCommand {
-    bind, follow,cmd_report,cmn_prgs, brew_session, unbind;
+    bind, follow,cmd_report,cmn_prgs, brew_session, unbind, cmn_msg;
     public static final Map lookup = new HashMap();
     static {
         for (PushCommand mPushCommand : EnumSet.allOf(PushCommand.class)) {

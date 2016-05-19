@@ -36,9 +36,11 @@ public interface ApiConstants {
 
     // 提起重置密码
     final String SMS_PWD_NEW = "pwd_new";
+
     final String BREW_HISTORY = "brew_history";
     final String BREW_BEGIN = "brew_begin";
     final String BREW_LS_FORMULA = "brew_ls_formula";
+
     final String BIND = "bind";
     String UNBIND = "unbind";
     String PATCH_TID = "patch_tid";
