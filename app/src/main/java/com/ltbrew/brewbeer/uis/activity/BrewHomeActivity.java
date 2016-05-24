@@ -410,6 +410,7 @@ public class BrewHomeActivity extends BaseActivity
             unregisterReceiver(broadcastReceiver);
         if (mServiceConnection != null && serviceIsConnected)
             unbindService(mServiceConnection);
+        stopService(new Intent(this, LtPushService.class));
     }
 
     @Override
@@ -531,6 +532,9 @@ public class BrewHomeActivity extends BaseActivity
     }
     @Override
     public void onReqBrewingSession(Long package_id) {
+//        if(ltPushService != null)
+//            ltPushService.sendBrewSessionCmd(package_id);
+////
         Message msg = new Message();
         msg.obj = package_id;
         reqSessionStateQueue.handler.sendMessage(msg); //将消息发送到消息队列进行排队处理

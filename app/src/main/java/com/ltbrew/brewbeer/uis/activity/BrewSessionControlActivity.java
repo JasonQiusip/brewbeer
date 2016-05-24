@@ -111,7 +111,13 @@ public class BrewSessionControlActivity extends AppCompatActivity {
             String stepId = dbBrewStep.getStepId();
             String act = dbBrewStep.getAct();
             if ("boil".equals(act)) {
-                addItemToContainer(dbBrewStep.getI(), "");
+                int temp = dbBrewStep.getT() / 5;
+                if(temp < 100) {
+                    addItemToContainer("加热到" + temp + "度，" + dbBrewStep.getK() / 60 + "分钟", "");
+                }else{
+                    addItemToContainer("煮沸，" + dbBrewStep.getK() / 60 + "分钟", "");
+                }
+
             } else {
                 Integer slot = dbBrewStep.getSlot();
                 if(slots.size() < slot)

@@ -119,16 +119,16 @@ public class RecipePresenter {
             public void call(Subscriber<? super DBRecipe> subscriber) {
                 String fn = recipe.getId();
 
-                if (checkLocalDb(subscriber, fn)) return;
+                checkLocalDb(subscriber, fn);
 
                 String ref = recipe.getRef();
-//                if(TextUtils.isEmpty(ref)){
-//                    subscriber.onCompleted();
-//                    return;
-//                }
+                if(TextUtils.isEmpty(ref)){
+                    subscriber.onCompleted();
+                    return;
+                }
 
                 HttpResponse httpResponse = BrewApi.downloadRecipe(devId, fn, ref);
-                if(httpResponse.isSuccess()){
+                if(httpResponse != null && httpResponse.isSuccess()){
                     byte[] file = httpResponse.getFile();
                     if(file == null)
                         return;

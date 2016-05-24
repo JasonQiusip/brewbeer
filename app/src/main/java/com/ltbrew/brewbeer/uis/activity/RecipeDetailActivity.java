@@ -62,7 +62,7 @@ public class RecipeDetailActivity extends BaseActivity implements AddPackView {
         if (isRecipeSet) {//如果但前获取不到值
             showRecipe();
         } else {
-            showMsgWindow("提醒", "正在获取配方数据， 请稍后...", null);
+            messageWindow = showMsgWindow("提醒", "正在获取配方数据， 请稍后...", null);
             ParamStoreUtil.getInstance().setParamSetObserver(new ParamSetObserver() {
                 @Override
                 public void onSetRecipe() {
@@ -75,16 +75,34 @@ public class RecipeDetailActivity extends BaseActivity implements AddPackView {
     }
 
     private void showRecipe() {
+        if(messageWindow != null) {
+            messageWindow.hidePopupWindow();
+            messageWindow = null;
+        }
+        messageWindow = showMsgWindow("提醒", "配方已同步，点击按钮下发配方", new MessageWindow.OnMsgWindowActionListener() {
+            @Override
+            public void onCloseWindow() {
+                messageWindow = null;
+            }
+
+            @Override
+            public void onClickDetail() {
+            }
+        });
         dbRecipe = ParamStoreUtil.getInstance().getCurrentCreatingRecipe();
         if (dbRecipe == null)
             return;
         addItemToContainer("配方详情", "", true);
         addItemToContainer("配方名称", dbRecipe.getName());
         Integer wr = dbRecipe.getWr();
-        if (wr != null) {
-            addItemToContainer("水温", String.format("%.1f", wr / 5f) + " 度");
-        }
+//        if (wr != null) {
+//            addItemToContainer("水温", String.format("%.1f", wr / 5f) + " 度");
+//        }
+
         addItemToContainer("加水容积", dbRecipe.getWq() + " 升");
+        addItemToContainer("酵母", "未提供信息");
+        addItemToContainer("酵母重量", "未提供信息");
+        addItemToContainer("糖化水量", "未提供信息");
         List<DBSlot> slots = dbRecipe.getSlots();
         addItemToContainer("步骤", "", true);
         List<DBBrewStep> brewSteps = dbRecipe.getBrewSteps();
@@ -95,7 +113,13 @@ public class RecipeDetailActivity extends BaseActivity implements AddPackView {
 
             String act = dbBrewStep.getAct();
             if ("boil".equals(act)) {
-                addItemToContainer("步骤" + + (id+1), dbBrewStep.getI());
+                int temp = dbBrewStep.getT() / wr;
+                if(temp < 100) {
+                    addItemToContainer("步骤" + +(id + 1), "加热到" + temp + "度，" + dbBrewStep.getK() / 60 + "分钟");
+                }else{
+                    addItemToContainer("步骤" + +(id + 1), "煮沸，" + dbBrewStep.getK() / 60 + "分钟");
+                }
+
             } else {
                 Integer slot = dbBrewStep.getSlot();
                 if(slots.size() < slot)
@@ -126,6 +150,10 @@ public class RecipeDetailActivity extends BaseActivity implements AddPackView {
 
     @OnClick(R.id.sendRecipe)
     public void clickSendRecipeFab() {
+        if(messageWindow != null) {
+            messageWindow.hidePopupWindow();
+            messageWindow = null;
+        }
         messageWindow = showMsgWindow("提醒", "正在下发原料包...", null);
         addPackPresenter.addPackToDev(packId, OPEN_DEV_START_BREWING);
     }

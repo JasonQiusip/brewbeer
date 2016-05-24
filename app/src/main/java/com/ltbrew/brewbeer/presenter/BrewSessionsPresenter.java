@@ -66,9 +66,9 @@ public class BrewSessionsPresenter {
                         JSONObject jsonObject = jsonArray.getJSONObject(i);
                         String formula_id = jsonObject.getString("formula_id");
                         long formula_id_long = Long.parseLong(formula_id, 16);
-                        String begin_time = jsonObject.getString("begin_time");
-                        String end_time = jsonObject.getString("end_time");
-                        Long package_id = jsonObject.getLong("package_id");
+                        String begin_time = jsonObject.getString("begin");
+                        String end_time = jsonObject.getString("end");
+                        Long package_id = jsonObject.getLong("pack_id");
                         Long pid = jsonObject.getLong("pid");
                         Integer state = jsonObject.getInteger("state");
                         BrewHistory brewHistoryModel = new BrewHistory();

@@ -261,6 +261,9 @@ public class SocketFileWriter extends SocketCustomWriter {
     }
 
     private void sendCmdToCheckBrewSession(Long package_id) {
+        synchronized (locker){
+            locker.notifyAll();
+        }
         locker.seqNo++;
         try {
             String requestStr = FileTrasmitPackBuilder.buildBrewSessionCmd(package_id, locker.seqNo,this.pushServiceKits);

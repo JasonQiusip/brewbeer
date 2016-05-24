@@ -123,7 +123,12 @@ public class BrewingSessionAdapter extends RecyclerView.Adapter<BrewingVH> {
         String stepId = dbBrewStep.getStepId();
         String act = dbBrewStep.getAct();
         if ("boil".equals(act)) {
-             return dbBrewStep.getI();
+            int temp = dbBrewStep.getT() / 5;
+            if(temp < 100) {
+                 return "加热到" + temp + "度，" + dbBrewStep.getK() / 60 + "分钟";
+            }else{
+                return "煮沸，" + dbBrewStep.getK() / 60 + "分钟";
+            }
         } else {
             return "投放原料到槽" + dbBrewStep.getSlot();
         }

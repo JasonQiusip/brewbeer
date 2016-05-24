@@ -34,6 +34,7 @@ import java.util.List;
 public class LtPushService extends IntentService implements FileSocketReadyCallback {
     private static final String TAG = "LtPushService";
     public static final String CMN_PRGS_PUSH_ACTION = "CMN_PRGS_PUSH";
+    public static final String CMN_MSG_PUSH_ACTION = "CMN_MSG_PUSH";
     public static final String CMN_PRGS_CHECK_ACTION = "CMN_PRGS_CHECK_ACTION";
     public static final String PUSH_MSG_EXTRA = "pushMsg";
     public static final String CMD_RPT_ACTION = "cmd_rpt_action";
@@ -107,6 +108,12 @@ public class LtPushService extends IntentService implements FileSocketReadyCallb
     public void onCreate() {
         super.onCreate();
 
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        transmitCmdService.closeSocket();
     }
 
     private void startConnectionOnNewThread() {
@@ -270,7 +277,7 @@ public class LtPushService extends IntentService implements FileSocketReadyCallb
                 sendBroadcast(intent);
                 break;
             case cmn_msg:
-                intent.setAction(CMN_PRGS_PUSH_ACTION);
+                intent.setAction(CMN_MSG_PUSH_ACTION);
                 intent.putExtra(PUSH_MSG_EXTRA, pushMessageObj);
                 sendBroadcast(intent);
                 break;
@@ -293,7 +300,7 @@ public class LtPushService extends IntentService implements FileSocketReadyCallb
         pushMessage.id = id;
         pushMessage.f = f;
         JSONObject pld = jsonObject.getJSONObject("_pld");
-        if (pld != null || !pld.equals("null")) {
+        if ("cmn_prgs".equals(cb) && (pld != null || !pld.equals("null"))) {
             String body = pld.getString("body");
             Integer si = pld.getInteger("si");
             Integer ratio = pld.getInteger("ratio");
@@ -303,6 +310,11 @@ public class LtPushService extends IntentService implements FileSocketReadyCallb
             pushMessage.si = si;
             pushMessage.ratio = ratio;
             pushMessage.st = st;
+        }else if("cmn_msg".equals(cb) && (pld != null || !pld.equals("null"))){
+            int ms = pld.getInteger("ms");
+            pushMessage.ms = ms;
+            pushMessage.body = description;
+
         }
         return pushMessage;
     }

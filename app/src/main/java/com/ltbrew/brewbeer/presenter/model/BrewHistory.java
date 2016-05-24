@@ -17,6 +17,7 @@ public class BrewHistory {
     Integer si;
     String brewingState;
     String st;
+    int ms;
     DBRecipe dbRecipe;
 
     public DBRecipe getDbRecipe() {
@@ -105,5 +106,13 @@ public class BrewHistory {
 
     public void setSt(String st) {
         this.st = st;
+    }
+
+    public int getMs() {
+        return ms;
+    }
+
+    public void setMs(int ms) {
+        this.ms = ms;
     }
 }

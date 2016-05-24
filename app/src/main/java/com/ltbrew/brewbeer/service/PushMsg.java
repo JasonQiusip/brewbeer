@@ -12,6 +12,7 @@ public class PushMsg implements Parcelable {
     public int si;
     public int ratio;
     public String st;
+    public int ms;
 
     public PushMsg() {
 
@@ -26,6 +27,25 @@ public class PushMsg implements Parcelable {
         si = in.readInt();
         ratio = in.readInt();
         st = in.readString();
+        ms = in.readInt();
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(cb);
+        dest.writeString(des);
+        dest.writeString(id);
+        dest.writeInt(f);
+        dest.writeString(body);
+        dest.writeInt(si);
+        dest.writeInt(ratio);
+        dest.writeString(st);
+        dest.writeInt(ms);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
     }
 
     public static final Creator<PushMsg> CREATOR = new Creator<PushMsg>() {
@@ -39,21 +59,4 @@ public class PushMsg implements Parcelable {
             return new PushMsg[size];
         }
     };
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel parcel, int i) {
-        parcel.writeString(cb);
-        parcel.writeString(des);
-        parcel.writeString(id);
-        parcel.writeInt(f);
-        parcel.writeString(body);
-        parcel.writeInt(si);
-        parcel.writeInt(ratio);
-        parcel.writeString(st);
-    }
 }

@@ -64,7 +64,7 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
     private HashMap<String, Integer> brewingFormulaIdToPosition = new HashMap<>();
     private HashMap<String, Integer> finishedFormulaIdToPosition = new HashMap<>();
     private List<BrewHistory> brewingHistoryList = Collections.EMPTY_LIST;
-    private List<BrewHistory> finishedHistoryList;
+    private List<BrewHistory> finishedHistoryList = Collections.EMPTY_LIST;
     private onBrewingSessionListener onBrewingSessionListener;
 
     public static final String PACK_IS_SENT = "com.ltbrew.beer.AddRecipeActivity.PACK_IS_SENT_TO_DEV";
@@ -120,6 +120,8 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
                 }
                 if(brewHistory == null)
                     return;
+                Log.e("CMN_PRGS_PUSH_ACTION1", brewHistory.toString());
+
                 brewHistory.setRatio(pushMsgObj.ratio);
                 brewHistory.setSi(pushMsgObj.si);
                 brewHistory.setBrewingState(pushMsgObj.body);
@@ -127,8 +129,20 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
                 brewingSessionAdapter.setData(brewingHistoryList);
                 brewingSessionAdapter.notifyDataSetChanged();
             } else if (LtPushService.CMD_RPT_ACTION.equals(action)) {
+                brewSessionsPresenter.getBrewHistory();
                 BrewHistory brewHistory = brewingHistoryList.get(0);
                 brewHistory.setBrewingState("设备已开始酿酒");
+                brewingSessionAdapter.notifyDataSetChanged();
+            } else if(LtPushService.CMN_MSG_PUSH_ACTION.equals(action)){
+                if(onBrewingSessionListener != null)
+                    onBrewingSessionListener.onReceiveSessionState();
+                PushMsg pushMsgObj = intent.getParcelableExtra(LtPushService.PUSH_MSG_EXTRA);
+                Log.e("CMN_MSG_PUSH_ACTION", pushMsgObj.toString());
+
+                int ms = pushMsgObj.ms;
+                BrewHistory brewHistory = brewingHistoryList.get(0);
+                brewHistory.setMs(ms);
+                brewingSessionAdapter.setData(brewingHistoryList);
                 brewingSessionAdapter.notifyDataSetChanged();
             }
         }
@@ -272,6 +286,8 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
 
     @Override
     public void onGetBrewSessionSuccess(List<BrewHistory> brewingHistories, List<BrewHistory> finishedHistories) {
+        brewingHistoryList.clear();
+        finishedHistoryList.clear();
         this.brewingHistoryList = brewingHistories;
         this.finishedHistoryList = finishedHistories;
         this.getActivity().runOnUiThread(new Runnable() {
@@ -279,9 +295,10 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
             public void run() {
                 if(spinKit.isShown())
                     animateProgressView(View.GONE, R.anim.anim_popup_close_progress);
-
                 if(brewingHistoryList.size() != 0){
                     noBrewingTaskTv.setVisibility(View.GONE);
+                }else{
+                    noBrewingTaskTv.setVisibility(View.VISIBLE);
                 }
                 if(finishedHistoryList.size() != 0){
                     noFinishedTaskTv.setVisibility(View.GONE);
@@ -371,6 +388,10 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
         BrewHistory brewHistory = new BrewHistory();
         brewHistory.setDbRecipe(dbRecipe);
         brewingHistoryList.add(0, brewHistory);
+
+        if(brewingHistoryList.size() != 0){
+            noBrewingTaskTv.setVisibility(View.GONE);
+        }
         brewingSessionAdapter.notifyDataSetChanged();
     }
 

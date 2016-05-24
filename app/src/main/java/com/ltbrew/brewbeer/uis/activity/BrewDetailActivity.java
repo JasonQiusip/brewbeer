@@ -57,20 +57,23 @@ public class BrewDetailActivity extends BaseActivity {
         addItemToContainer("配方详情", "", true);
         addItemToContainer("配方名称", dbRecipe.getName());
         Integer wr = dbRecipe.getWr();
-        if (wr != null) {
-            addItemToContainer("水温", String.format("%.1f", wr / 5f) + " 度");
-        }
+//        if (wr != null) {
+//            addItemToContainer("水温", String.format("%.1f", wr / 5f) + " 度");
+//        }
         addItemToContainer("加水容积", dbRecipe.getWq() + " 升");
-        addItemToContainer("设备槽", "", true);
+        addItemToContainer("酵母", "未提供信息");
+        addItemToContainer("酵母重量", "未提供信息");
+        addItemToContainer("糖化水量", "未提供信息");
+        addItemToContainer("增补[啤酒机/其它]", "", true);
         List<DBSlot> slots = dbRecipe.getSlots();
         for (DBSlot dbSlot : slots) {
             String slotStepId = dbSlot.getSlotStepId();
             slotStepId = slotStepId.replace("s_", "");
             int id = Integer.parseInt(slotStepId, 16);
 
-            addItemToContainer("设备槽"+(id + 1), dbSlot.getName());
+            addItemToContainer("增补"+(id + 1), dbSlot.getName());
         }
-        addItemToContainer("步骤", "", true);
+        addItemToContainer("糖化/煮沸步骤", "", true);
         List<DBBrewStep> brewSteps = dbRecipe.getBrewSteps();
         for (DBBrewStep dbBrewStep : brewSteps) {
             String stepId = dbBrewStep.getStepId();
@@ -78,7 +81,13 @@ public class BrewDetailActivity extends BaseActivity {
             int id = Integer.parseInt(stepId, 16);
             String act = dbBrewStep.getAct();
             if ("boil".equals(act)) {
-                addItemToContainer("步骤" + (id+1), dbBrewStep.getI());
+                int temp = dbBrewStep.getT() / wr;
+                if(temp < 100) {
+                    addItemToContainer("步骤" + +(id + 1), "加热到" + temp + "度，" + dbBrewStep.getK() / 60 + "分钟");
+                }else{
+                    addItemToContainer("步骤" + +(id + 1), "煮沸，" + dbBrewStep.getK() / 60 + "分钟");
+                }
+
             } else {
                 addItemToContainer("步骤" + (id+1), "投放原料到槽" + dbBrewStep.getSlot());
             }
