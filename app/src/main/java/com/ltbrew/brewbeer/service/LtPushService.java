@@ -36,10 +36,13 @@ public class LtPushService extends IntentService implements FileSocketReadyCallb
     public static final String CMN_PRGS_PUSH_ACTION = "CMN_PRGS_PUSH";
     public static final String CMN_MSG_PUSH_ACTION = "CMN_MSG_PUSH";
     public static final String CMN_PRGS_CHECK_ACTION = "CMN_PRGS_CHECK_ACTION";
+    public static final String BREW_SESSION_PUSH_ACTION = "BREW_SESSION_PUSH_ACTION";
     public static final String PUSH_MSG_EXTRA = "pushMsg";
     public static final String CMD_RPT_ACTION = "cmd_rpt_action";
     public static final String UNBIND_ACTION = "unbind_action";
     public static final String FILE_SOCKET_IS_READY_ACTION = "fileSocketIsReadyAction";
+    public static final String PUSH_PLD_EXTRA = "pld";
+    public static final String REQUEST_BREW_SESSION_FAILED = "reqBrewSessionFailed";
     private int tryAgain = 3;
     private TransmitCmdService transmitCmdService;
     private final static int GRAY_SERVICE_ID = 1001;
@@ -47,6 +50,8 @@ public class LtPushService extends IntentService implements FileSocketReadyCallb
     private int state;
     private int starting = 0;
     private int started = 1;
+    private Thread startLongConnectionThread;
+    private Thread reconnectThread;
 
     public LtPushService() {
         super("LtPushService");
@@ -117,14 +122,17 @@ public class LtPushService extends IntentService implements FileSocketReadyCallb
     }
 
     private void startConnectionOnNewThread() {
-        new Thread(new Runnable() {
+        if(startLongConnectionThread != null && startLongConnectionThread.isAlive())
+            return;
+        startLongConnectionThread = new Thread(new Runnable() {
             @Override
             public void run() {
                 transmitCmdService = ConfigApi.startLongConnection(LtPushService.this);
                 state = starting;
 
             }
-        }).start();
+        });
+        startLongConnectionThread.start();
     }
 
 
@@ -144,7 +152,7 @@ public class LtPushService extends IntentService implements FileSocketReadyCallb
     public void onOAuthFailed() {
         Log.e("", "======================onOAuthFailed=========================");
 
-        new Thread(new Runnable() {
+        reconnectThread = new Thread(new Runnable() {
             @Override
             public void run() {
                 if (tryAgain > 0) {
@@ -153,7 +161,8 @@ public class LtPushService extends IntentService implements FileSocketReadyCallb
                     state = starting;
                 }
             }
-        }).start();
+        });
+        reconnectThread.start();
 
     }
 
@@ -243,8 +252,9 @@ public class LtPushService extends IntentService implements FileSocketReadyCallb
         Log.e(TAG, "" + pushLists);
         int size = pushLists.size();
         String pushMsg = pushLists.get(0);
-        PushMsg pushMessageObj = parsePushMsg(pushMsg);
-        String cb = pushMessageObj.cb;
+        JSONObject jsonObject = JSON.parseObject(pushMsg);
+        PushMsg pushMessage = parsePushMsg(jsonObject);
+        String cb = pushMessage.cb;
         if (cb.contains(":")) {
             String[] splittedStr = cb.split(":");
             cb = splittedStr[1];
@@ -256,9 +266,12 @@ public class LtPushService extends IntentService implements FileSocketReadyCallb
         }
         if(isBackground(this)){
             Intent intent = new Intent(this, BrewHomeActivity.class);
-            showNotification(this, pushMessageObj.des, 11, intent);
+            showNotification(this, pushMessage.des, 11, intent);
             return;
         }
+        JSONObject pld = jsonObject.getJSONObject("_pld");
+
+
         Intent intent = new Intent();
         switch (PushCommand.valueOf(cb)) {
             case bind:
@@ -272,25 +285,53 @@ public class LtPushService extends IntentService implements FileSocketReadyCallb
                 sendBroadcast(intent);
                 break;
             case cmn_prgs:
-                intent.setAction(CMN_PRGS_PUSH_ACTION);
-                intent.putExtra(PUSH_MSG_EXTRA, pushMessageObj);
-                sendBroadcast(intent);
+                if (pld != null || !pld.equals("null")) {
+                    String body = pld.getString("body");
+                    Integer si = pld.getInteger("si");
+                    Integer ratio = pld.getInteger("ratio");
+                    String st = pld.getString("st");
+                    PldForCmnPrgs pldForCmnPrgs = new PldForCmnPrgs();
+                    pldForCmnPrgs.body = body;
+                    pldForCmnPrgs.si = si;
+                    pldForCmnPrgs.ratio = ratio;
+                    pldForCmnPrgs.st = st;
+                    intent.setAction(CMN_PRGS_PUSH_ACTION);
+                    intent.putExtra(PUSH_MSG_EXTRA, pushMessage);
+                    intent.putExtra(PUSH_PLD_EXTRA, pldForCmnPrgs);
+                    sendBroadcast(intent);
+                }
                 break;
             case cmn_msg:
-                intent.setAction(CMN_MSG_PUSH_ACTION);
-                intent.putExtra(PUSH_MSG_EXTRA, pushMessageObj);
-                sendBroadcast(intent);
+                if(pld != null || !pld.equals("null")){
+                    PldForCmnMsg pldForCmnMsg = new PldForCmnMsg();
+                    int ms = pld.getInteger("ms");
+                    pldForCmnMsg.ms = ms;
+                    intent.setAction(CMN_MSG_PUSH_ACTION);
+                    intent.putExtra(PUSH_MSG_EXTRA, pushMessage);
+                    intent.putExtra(PUSH_PLD_EXTRA, pldForCmnMsg);
+                    sendBroadcast(intent);
+                }
+
                 break;
             case brew_session:
-
+                if(pld != null || !pld.equals("null")){
+                    PldForBrewSession pldForBrewSession = new PldForBrewSession();
+                    String pack_id = pld.getString("pack_id");
+                    String formula_id = pld.getString("formula_id");
+                    int state = pld.getInteger("state");
+                    pldForBrewSession.state = state;
+                    intent.setAction(BREW_SESSION_PUSH_ACTION);
+                    intent.putExtra(PUSH_MSG_EXTRA, pushMessage);
+                    intent.putExtra(PUSH_PLD_EXTRA, pldForBrewSession);
+                    sendBroadcast(intent);
+                }
                 break;
         }
 
     }
 
-    private PushMsg parsePushMsg(String pushMsg) {
+    private PushMsg parsePushMsg(JSONObject jsonObject) {
         PushMsg pushMessage = new PushMsg();
-        JSONObject jsonObject = JSON.parseObject(pushMsg);
         String cb = jsonObject.getString("cb");
         String description = jsonObject.getString("description");
         String id = jsonObject.getString("id");
@@ -299,23 +340,6 @@ public class LtPushService extends IntentService implements FileSocketReadyCallb
         pushMessage.des = description;
         pushMessage.id = id;
         pushMessage.f = f;
-        JSONObject pld = jsonObject.getJSONObject("_pld");
-        if ("cmn_prgs".equals(cb) && (pld != null || !pld.equals("null"))) {
-            String body = pld.getString("body");
-            Integer si = pld.getInteger("si");
-            Integer ratio = pld.getInteger("ratio");
-            String st = pld.getString("st");
-
-            pushMessage.body = body;
-            pushMessage.si = si;
-            pushMessage.ratio = ratio;
-            pushMessage.st = st;
-        }else if("cmn_msg".equals(cb) && (pld != null || !pld.equals("null"))){
-            int ms = pld.getInteger("ms");
-            pushMessage.ms = ms;
-            pushMessage.body = description;
-
-        }
         return pushMessage;
     }
 
@@ -324,11 +348,20 @@ public class LtPushService extends IntentService implements FileSocketReadyCallb
 
     }
 
+    String tk;
+
+    @Override
+    public void onGeBrewSessionResp(String tk, String state) {
+        this.tk = tk;
+        Log.e(TAG, tk);
+    }
+
     @Override
     public void onGetCmdPrgs(String percent, String seq_index, String body) {
         PushMsg pushMessage = new PushMsg();
         pushMessage.ratio = Integer.valueOf(percent);
         pushMessage.si = Integer.valueOf(seq_index);
+        pushMessage.st = tk;
         byte[] bytes = ParsePackKits.charToByteArray(body.toCharArray()); //utf8中文串通过转字符串再转String会出现乱码， 所以在次将String转会byte数组， 再用系统的方法转为中文
         pushMessage.body = new String(bytes);
         Intent intent = new Intent();
@@ -361,14 +394,18 @@ public class LtPushService extends IntentService implements FileSocketReadyCallb
 
 
     @Override
-    public void onServerRespError() {
-
+    public void onServerRespError(String cmd) {
+        if("brew_session".equals(cmd) || "cmn_prgs".equals(cmd)){
+            sendBroadcast(new Intent(REQUEST_BREW_SESSION_FAILED));
+        }
     }
 
     @Override
     public void onLongConnectionKickedOut() {
 
     }
+
+
 
     public static boolean isBackground(Context context) {
         ActivityManager activityManager = (ActivityManager) context
@@ -398,4 +435,6 @@ public class LtPushService extends IntentService implements FileSocketReadyCallb
         }
         return false;
     }
+
+
 }

@@ -1,7 +1,5 @@
 package com.ltbrew.brewbeer.api.longconnection;
 
-import android.util.Log;
-
 import com.ltbrew.brewbeer.api.longconnection.interfaces.FileSocketReadyCallback;
 import com.ltbrew.brewbeer.api.longconnection.process.CommonParam;
 import com.ltbrew.brewbeer.api.longconnection.process.ReqType;
@@ -76,7 +74,7 @@ public class TransmitFileService {
 
 
     private SocketRead newCmdRead(Socket socket) {
-        SocketRead cmdRead = new SocketRead(socket, new TransmitCmdService.SocketReadCallback() {
+        SocketRead cmdRead = new SocketRead(socket, new SocketReackCallback() {
 
             @Override
             public void onIPHostReceived(String[] ips) {
@@ -120,6 +118,7 @@ public class TransmitFileService {
 
             @Override
             public void onGeBrewSessionResp(String tk, String state) {
+                fileSocketCb.onGeBrewSessionResp(tk, state);
                 sendCmnPrgsCmd(tk);
             }
 
@@ -129,8 +128,8 @@ public class TransmitFileService {
             }
 
             @Override
-            public void onServerRespError() {
-
+            public void onServerRespError(String cmd) {
+                fileSocketCb.onServerRespError(cmd);
             }
         });
         cmdRead.registerSocketReadCb(new FileSocketReadCallback() {
@@ -180,7 +179,8 @@ public class TransmitFileService {
     }
 
     public void closeFileSocketConnection() {
-        cmdRead.endReadThread(false);
+        if(cmdRead != null)
+            cmdRead.endReadThread(false);
         closeFileWriteSocketConnection();
     }
 
@@ -220,6 +220,14 @@ public class TransmitFileService {
     public void sendBrewSessionCmd(Long package_id) {
         if(cmdsWrite != null)
             cmdsWrite.sendBrewSessionCmd(package_id);
+    }
+
+    interface SocketReackCallback extends TransmitCmdService.SocketReadCallback{
+
+        void onGeBrewSessionResp(String tk, String state);
+
+        void onGetCmnPrgs(String percent, String seq_index, String body);
+
     }
 
     interface FileSocketReadCallback {

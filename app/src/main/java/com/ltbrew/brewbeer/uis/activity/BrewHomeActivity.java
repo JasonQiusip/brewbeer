@@ -280,8 +280,8 @@ public class BrewHomeActivity extends BaseActivity
     public void onGetDevsSuccess(List<Device> devices) {
         updateUIForDev();
         this.devices = devices;
-        reqDataFromServer();
         startPushService();
+        reqDataFromServer();
         positionCurrentDevInDevices = findWhereIsCurrentDevInDevices();
     }
 
@@ -532,16 +532,13 @@ public class BrewHomeActivity extends BaseActivity
     }
     @Override
     public void onReqBrewingSession(Long package_id) {
-//        if(ltPushService != null)
-//            ltPushService.sendBrewSessionCmd(package_id);
-////
         Message msg = new Message();
         msg.obj = package_id;
         reqSessionStateQueue.handler.sendMessage(msg); //将消息发送到消息队列进行排队处理
     }
 
     @Override
-    public void onReceiveSessionState() {
+    public void unlockLockerToExecuteNextMsg() {
         Lock lock = reqSessionStateQueue.lock;
         synchronized (lock) {
             lock.notifyAll();

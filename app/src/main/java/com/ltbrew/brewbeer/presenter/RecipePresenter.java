@@ -119,7 +119,7 @@ public class RecipePresenter {
             public void call(Subscriber<? super DBRecipe> subscriber) {
                 String fn = recipe.getId();
 
-                checkLocalDb(subscriber, fn);
+                DBRecipe dbRecipe = checkLocalDb(subscriber, fn);
 
                 String ref = recipe.getRef();
                 if(TextUtils.isEmpty(ref)){
@@ -147,7 +147,7 @@ public class RecipePresenter {
                     if(slots == null)
                         return;
 
-                    DBRecipe dbRecipe = new DBRecipe();
+                    dbRecipe = new DBRecipe();
                     dbRecipe.setIdForFn(fn);
                     dbRecipe.setRef(ref);
 
@@ -179,7 +179,7 @@ public class RecipePresenter {
 
     }
 
-    private boolean checkLocalDb(Subscriber<? super DBRecipe> subscriber, String fn) {
+    private DBRecipe checkLocalDb(Subscriber<? super DBRecipe> subscriber, String fn) {
         List<DBRecipe> list = DBManager.getInstance().getDBRecipeDao().queryBuilder().where(DBRecipeDao.Properties.IdForFn.eq(fn)).list();
         Log.e("recipePresenter", list.size()+"");
         if(list != null && list.size() != 0) {
@@ -187,10 +187,10 @@ public class RecipePresenter {
             dbRecipe.__setDaoSession(DBManager.getInstance().getDaoSession());
             dbRecipe.getBrewSteps();
             dbRecipe.getSlots();
-            subscriber.onNext(dbRecipe);
-            return true;
+//            subscriber.onNext(dbRecipe);
+            return dbRecipe;
         }
-        return false;
+        return null;
     }
 
     private void parseRecipeProperties(DBRecipe dbRecipe, JSONObject formula) {

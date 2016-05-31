@@ -59,4 +59,19 @@ public class PushMsg implements Parcelable {
             return new PushMsg[size];
         }
     };
+
+    @Override
+    public String toString() {
+        return "PushMsg{" +
+                "cb='" + cb + '\'' +
+                ", des='" + des + '\'' +
+                ", id='" + id + '\'' +
+                ", f=" + f +
+                ", body='" + body + '\'' +
+                ", si=" + si +
+                ", ratio=" + ratio +
+                ", st='" + st + '\'' +
+                ", ms=" + ms +
+                '}';
+    }
 }

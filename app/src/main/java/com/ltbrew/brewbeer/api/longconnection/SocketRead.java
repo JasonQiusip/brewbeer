@@ -106,7 +106,7 @@ public class SocketRead implements Runnable {
             }
             List<String> listResult = decodeResp.finalResult.resultList;
             if (handlerError(listResult)) {
-                socketReadCallback.onServerRespError();
+                socketReadCallback.onServerRespError(listResult.get(0));
                 decodeResp.finalResult.remain = "";
                 continue;
             }
@@ -227,7 +227,8 @@ public class SocketRead implements Runnable {
                 case brew_session:
                     String tk = listResult.get(2);
                     String state = listResult.get(3);
-                    socketReadCallback.onGeBrewSessionResp(tk, state);
+                    Log.e("brew_session", tk + "   " + state);
+                    ((TransmitFileService.SocketReackCallback)socketReadCallback).onGeBrewSessionResp(tk, state);
 
                     break;
 
@@ -241,7 +242,7 @@ public class SocketRead implements Runnable {
                     String percent = listResult.get(2);
                     String seq_index = listResult.get(3);
                     String body = listResult.get(4);
-                    socketReadCallback.onGetCmnPrgs(percent, seq_index, body);
+                    ((TransmitFileService.SocketReackCallback)socketReadCallback).onGetCmnPrgs(percent, seq_index, body);
                     break;
                 default:
                     break;
@@ -272,7 +273,7 @@ public class SocketRead implements Runnable {
     }
 
     private boolean handlerError(List<String> listResult) {
-        if (listResult.size() >= 2 && ParsePackKits.checkIsError(listResult.get(1))) {
+        if (listResult.size() >= 3 && ParsePackKits.checkIsError(listResult.get(2))) {
             System.out.println("RECV------------- ERROR" + listResult.get(0));
             return true;
         }

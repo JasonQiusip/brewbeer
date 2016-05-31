@@ -43,7 +43,9 @@ public interface FileSocketReadyCallback {
 
     void onGetCmdPrgs(String percent, String seq_index, String body);
 
-    void onServerRespError();
+    void onServerRespError(String cmd);
 
     void onLongConnectionKickedOut();
+
+    void onGeBrewSessionResp(String tk, String state);
 }

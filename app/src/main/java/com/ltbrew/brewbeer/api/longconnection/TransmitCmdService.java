@@ -1,7 +1,5 @@
 package com.ltbrew.brewbeer.api.longconnection;
 
-import android.util.Log;
-
 import com.ltbrew.brewbeer.api.common.CSSLog;
 import com.ltbrew.brewbeer.api.common.TokenDispatcher;
 import com.ltbrew.brewbeer.api.longconnection.interfaces.FileSocketReadyCallback;
@@ -159,6 +157,7 @@ public class TransmitCmdService {
                 if(isCmdExist && CmdsConstant.CMDSTR.valueOf(command) == CmdsConstant.CMDSTR.kick){
                     TokenDispatcher.getInstance().setToken(null);
                     fileSocketReadyCallback.onLongConnectionKickedOut();
+                    return;
                 }
                 fileSocketReadyCallback.onCmdSocketReconnect();
                 initializeCmdLongConn();
@@ -195,20 +194,9 @@ public class TransmitCmdService {
             }
 
             @Override
-            public void onGeBrewSessionResp(String tk, String state) {
-
+            public void onServerRespError(String cmd) {
+                fileSocketReadyCallback.onServerRespError(cmd);
             }
-
-            @Override
-            public void onGetCmnPrgs(String percent, String seq_index, String body) {
-            }
-
-            @Override
-            public void onServerRespError() {
-                fileSocketReadyCallback.onServerRespError();
-            }
-
-
         });
 
         return cmdRead;
@@ -234,7 +222,8 @@ public class TransmitCmdService {
 
     public void closeSocket() {
         transmitFileService.closeFileSocketConnection();
-        cmdRead.endReadThread(false);
+        if(cmdRead != null)
+            cmdRead.endReadThread(false);
         closeCmdWriteSocket();
     }
 
@@ -303,11 +292,7 @@ public class TransmitCmdService {
 
         void getHeartHistory(String endindex, HashMap<String, ArrayList<Integer>> maps);
 
-        void onGeBrewSessionResp(String tk, String state);
-
-        void onGetCmnPrgs(String percent, String seq_index, String body);
-
-        void onServerRespError();
+        void onServerRespError(String s);
     }
 
     public interface SocketWriteCallback {
