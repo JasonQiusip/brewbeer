@@ -62,22 +62,55 @@ public class AddDevActivity extends BaseActivity implements AddDevView {
         if (requestCode == REQUEST_CODE_SCAN_DEV_QR) {
             if (resultCode == RESULT_OK) {
                 scanQrCode = data.getStringExtra("result");
-                setDevPhoneNumbDialog = new SetDevPhoneNumbDialog(this);
-                setDevPhoneNumbDialog.setOnSetPhoneNumbForDevListener(new SetDevPhoneNumbDialog.OnSetPhoneNumbForDevListener() {
-                    @Override
-                    public void onSetPhoneNumb(String phoneNumb) {
-                        if(scanQrCode != null)
-                            addDevPresenter.setPhoneNumb(scanQrCode, phoneNumb);
-                        setDevPhoneNumbDialog.dismiss();
-                        messageWindow = showMsgWindow("提醒", "正在设置设备号码...", null);
-                        KeyboardUtil.hideKeyboard(AddDevActivity.this, backIv);
+                messageWindow = showMsgWindow("提醒", "正在检测二维码...", null);
+                if(scanQrCode != null)
+                    addDevPresenter.verifyIot(scanQrCode);
 
-                    }
-                });
-                setDevPhoneNumbDialog.show();
             }
         }
     }
+    @Override
+    public void onReqIotFailed(String message) {
+
+    }
+
+    @Override
+    public void onReqIotSuccess(Integer state) {
+        switch (state){
+            case 0:
+                messageWindow.hidePopupWindow();
+                showSetPhoneNumbDialog();
+                break;
+            case 1:
+            case 3:
+                if(messageWindow != null)
+                    messageWindow.setMessage("正在请求绑定...");
+                else
+                    messageWindow = showMsgWindow("提醒", "正在请求绑定...", null);
+                addDevPresenter.addDev(scanQrCode);
+                break;
+            case 2:
+                showSnackBar("二维码错误");
+                break;
+        }
+    }
+
+    private void showSetPhoneNumbDialog() {
+        setDevPhoneNumbDialog = new SetDevPhoneNumbDialog(this);
+        setDevPhoneNumbDialog.setOnSetPhoneNumbForDevListener(new SetDevPhoneNumbDialog.OnSetPhoneNumbForDevListener() {
+            @Override
+            public void onSetPhoneNumb(String phoneNumb) {
+                if(scanQrCode != null)
+                    addDevPresenter.setPhoneNumb(scanQrCode, phoneNumb);
+                setDevPhoneNumbDialog.dismiss();
+                messageWindow = showMsgWindow("提醒", "正在设置设备号码...", null);
+                KeyboardUtil.hideKeyboard(AddDevActivity.this, backIv);
+
+            }
+        });
+        setDevPhoneNumbDialog.show();
+    }
+
 
     @Override
     public void onSetPhoneNumbSuccess() {
@@ -154,6 +187,7 @@ public class AddDevActivity extends BaseActivity implements AddDevView {
         hideMsgWindow();
         showErrorMsg(msg);
     }
+
 
 
     private void hideMsgWindow() {

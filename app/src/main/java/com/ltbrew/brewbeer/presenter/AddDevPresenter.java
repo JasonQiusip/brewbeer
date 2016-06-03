@@ -62,6 +62,34 @@ public class AddDevPresenter {
         });
     }
 
+    public void verifyIot(final String qrCode){
+        Observable.create(new Observable.OnSubscribe<Integer>() {
+            @Override
+            public void call(Subscriber<? super Integer> subscriber) {
+                HttpResponse httpResponse = DevApi.verifyIotByQr(qrCode);
+                if(httpResponse.isSuccess()){
+                    String content = httpResponse.getContent();
+                    JSONObject jsonObject = JSON.parseObject(content);
+                    Integer state = jsonObject.getInteger("state");
+                    String no = jsonObject.getString("no");
+                    subscriber.onNext(state);
+                }else{
+                    subscriber.onError(new Throwable(""+httpResponse.getCode()));
+                }
+            }
+        }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(new Action1<Integer>() {
+            @Override
+            public void call(Integer state) {
+                addDevView.onReqIotSuccess(state);
+            }
+        }, new Action1<Throwable>() {
+            @Override
+            public void call(Throwable throwable) {
+                addDevView.onReqIotFailed(throwable.getMessage());
+            }
+        });
+    }
+
     public void addDev(final String qrCode){
         Observable.create(new Observable.OnSubscribe<AddDevResp>() {
             @Override

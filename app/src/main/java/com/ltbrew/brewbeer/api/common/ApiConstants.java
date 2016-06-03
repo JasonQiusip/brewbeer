@@ -46,6 +46,7 @@ public interface ApiConstants {
     String PATCH_TID = "patch_tid";
     String LIST = "list";
     String INFO = "info";
+    String VERIFY_IOT = "verify_iot";
 
 
     final String ACC_SUFFIX = "@linktop.com.cn";

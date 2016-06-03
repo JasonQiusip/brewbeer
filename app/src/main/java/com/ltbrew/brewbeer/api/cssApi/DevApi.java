@@ -26,6 +26,14 @@ public class DevApi {
         return GeneralApi.dev(httpReqParam, ApiConstants.BIND);
     }
 
+    public static HttpResponse verifyIotByQr(String qrCode){
+        HashMap body = new HashMap();
+        body.put("qr", qrCode);
+        HttpReqParam httpReqParam = new HttpReqParam();
+        httpReqParam.setBody(body);
+        return GeneralApi.dev(httpReqParam, ApiConstants.VERIFY_IOT);
+    }
+
     public static HttpResponse setPhoneNo2Dev( String qr, String phoneNo){
         HashMap body = new HashMap();
         body.put("qr", qr);

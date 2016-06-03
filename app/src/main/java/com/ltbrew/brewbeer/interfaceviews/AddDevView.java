@@ -19,4 +19,8 @@ public interface AddDevView{
 
     void onFoundDevSuccess(ArrayList<Device> devices);
     void onFoundDevFailed(String msg);
+
+    void onReqIotFailed(String message);
+
+    void onReqIotSuccess(Integer state);
 }
