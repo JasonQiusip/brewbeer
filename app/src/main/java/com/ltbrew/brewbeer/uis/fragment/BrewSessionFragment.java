@@ -105,6 +105,9 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
                 }
                 brewHistory.setRatio(pushMsgObj.ratio);
                 brewHistory.setSi(pushMsgObj.si);
+                if(pushMsgObj.body != null && pushMsgObj.body.equals("-1")){
+                    pushMsgObj.body = "煮沸";
+                }
                 brewHistory.setBrewingState(pushMsgObj.body);
                 brewHistory.setSt(st);
                 brewingSessionAdapter.setData(brewingHistoryList);
