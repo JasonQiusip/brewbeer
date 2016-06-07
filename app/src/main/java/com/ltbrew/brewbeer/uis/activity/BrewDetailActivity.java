@@ -29,8 +29,8 @@ public class BrewDetailActivity extends BaseActivity {
     LinearLayout brewDetailContainer;
     @BindView(R.id.backIv)
     ImageView backIv;
-    @BindView(R.id.fab)
-    FloatingActionButton fab;
+//    @BindView(R.id.fab)
+//    FloatingActionButton fab;
 
 
     @Override
@@ -44,14 +44,14 @@ public class BrewDetailActivity extends BaseActivity {
         ButterKnife.bind(this);
 
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "功能还未开启，敬请期待", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+//        fab.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                Snackbar.make(view, "功能还未开启，敬请期待", Snackbar.LENGTH_LONG)
+//                        .setAction("Action", null).show();
+//            }
+//        });
 
         DBRecipe dbRecipe = ParamStoreUtil.getInstance().getDbRecipe();
         addItemToContainer("配方详情", "", true);

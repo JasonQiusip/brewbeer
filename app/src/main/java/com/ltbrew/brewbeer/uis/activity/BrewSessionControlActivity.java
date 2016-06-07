@@ -4,12 +4,15 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -20,7 +23,10 @@ import com.ltbrew.brewbeer.persistence.greendao.DBRecipe;
 import com.ltbrew.brewbeer.persistence.greendao.DBSlot;
 import com.ltbrew.brewbeer.presenter.model.BrewHistory;
 import com.ltbrew.brewbeer.service.LtPushService;
+import com.ltbrew.brewbeer.service.PldForCmnMsg;
 import com.ltbrew.brewbeer.service.PushMsg;
+import com.ltbrew.brewbeer.uis.utils.BrewSessionUtils;
+import com.ltbrew.brewbeer.uis.utils.DpSpPixUtils;
 import com.ltbrew.brewbeer.uis.utils.ParamStoreUtil;
 
 import java.util.List;
@@ -39,6 +45,7 @@ public class BrewSessionControlActivity extends AppCompatActivity {
     private DBRecipe dbRecipe;
     private ImageView backIv;
     private BrewHistory brewHistory;
+    private Handler mHandler = new Handler();
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -69,6 +76,22 @@ public class BrewSessionControlActivity extends AppCompatActivity {
                 View view = stepsContainer.getChildAt(si);
                 view.setBackgroundColor(getResources().getColor(R.color.colorAccent));
                 curState.setText(pushMsgObj.body);
+            }else if(LtPushService.CMN_MSG_PUSH_ACTION.equals(action)){
+                PushMsg pushMsgObj = intent.getParcelableExtra(LtPushService.PUSH_MSG_EXTRA);
+                Log.e("CMN_MSG_PUSH_ACTION", pushMsgObj.toString());
+                PldForCmnMsg pldForCmnMsg = intent.getParcelableExtra(LtPushService.PUSH_PLD_EXTRA);
+
+                int ms = pldForCmnMsg.ms;
+                if(ms > 100){
+                    pushMsgObj.body = "煮沸";
+                    BrewSessionUtils.storeBoilStartTimeStamp(System.currentTimeMillis()/1000);
+                }
+                brewHistory.setMs(ms);
+                if(ms < 100) {
+                    curState.setText("正在加热， 当前温度" + brewHistory.getMs() + "度");
+                }else{
+                    showTimeCountDown(brewHistory, brewHistory.getDbRecipe().getBrewSteps().get(brewHistory.getSi()));
+                }
             }
         }
     };
@@ -101,21 +124,38 @@ public class BrewSessionControlActivity extends AppCompatActivity {
         if(dbRecipe == null)
             return;
         recipeName.setText(dbRecipe.getName());
-        if(brewHistory.getBrewingState() != null) {
-            curState.setText(brewHistory.getBrewingState());
-        }
-        List<DBSlot> slots = dbRecipe.getSlots();
+        Integer si = brewHistory.getSi();
         List<DBBrewStep> brewSteps = dbRecipe.getBrewSteps();
+        if(brewHistory.getBrewingState() != null) {
+            if("煮沸".equals(brewHistory.getBrewingState())){
+                if(si != null) {
+                    showTimeCountDown(brewHistory, brewSteps.get(si));
+                }else{
+                    curState.setText("煮沸中");
+                }
+            }else {
+                if(brewHistory.getMs() != 0) {
+                    curState.setText("正在加热， 当前温度" + brewHistory.getMs() + "度");
+                }else{
+                    curState.setText("加热中");
+                }
+            }
+        }
+
+        List<DBSlot> slots = dbRecipe.getSlots();
+
         int i = 0;
         for (DBBrewStep dbBrewStep : brewSteps) {
+            View detailView;
             String stepId = dbBrewStep.getStepId();
             String act = dbBrewStep.getAct();
             if ("boil".equals(act)) {
                 int temp = dbBrewStep.getT() / 5;
                 if(temp < 100) {
-                    addItemToContainer("加热到" + temp + "度，" + dbBrewStep.getK() / 60 + "分钟", "");
+                    detailView = addItemToContainer("加热到" + temp + "度，" + dbBrewStep.getK() / 60 + "分钟", "");
+
                 }else{
-                    addItemToContainer("煮沸，" + dbBrewStep.getK() / 60 + "分钟", "");
+                    detailView = addItemToContainer("煮沸，" + dbBrewStep.getK() / 60 + "分钟", "");
                 }
 
             } else {
@@ -126,18 +166,42 @@ public class BrewSessionControlActivity extends AppCompatActivity {
                     continue;
                 DBSlot dbSlot = slots.get(slot - 1);
                 String addMaterialToSlot = "投放" + dbSlot.getName() + "到槽" + slot;
-                addItemToContainer(addMaterialToSlot, "");
+                detailView = addItemToContainer(addMaterialToSlot, "");
+            }
+            if(si != null) {
+                if (i < si) {
+                    detailView.setBackgroundColor(getResources().getColor(R.color.colorBlue));
+                } else if (i == si) {
+                    detailView.setBackgroundColor(getResources().getColor(R.color.colorGreen));
+                }
             }
             i++;
         }
 
     }
 
-    private void addItemToContainer(String title, String contentDes) {
-        addItemToContainer(title, contentDes, false);
+
+    private void showTimeCountDown(final BrewHistory brewHistory, DBBrewStep dbBrewStep) {
+        final Integer totalSecondsForThisStep = dbBrewStep.getK();
+        mHandler.postDelayed(new Runnable() {
+            int i = 0;
+            @Override
+            public void run() {
+
+                long tsCur = 0;
+                Integer ratio = brewHistory.getRatio();
+                tsCur = (long) (totalSecondsForThisStep * (1 - ratio/100f));
+                curState.setText(String.format("%02d", tsCur/(60*60))+":"+String.format("%02d", (tsCur/60)%60)+":"+String.format("%02d", tsCur%60));
+                this.i++;
+            }
+        }, 1000);
     }
 
-    private void addItemToContainer(String title, String contentDes, boolean isTitle) {
+    private View addItemToContainer(String title, String contentDes) {
+        return addItemToContainer(title, contentDes, false);
+    }
+
+    private View addItemToContainer(String title, String contentDes, boolean isTitle) {
 
         View view = LayoutInflater.from(this).inflate(R.layout.layout_brew_detail, stepsContainer, false);
         TextView brewDetailTitle = (TextView) view.findViewById(R.id.brewDetailTitleTv);
@@ -147,11 +211,16 @@ public class BrewSessionControlActivity extends AppCompatActivity {
             brewDetailTitle.setTextColor(getResources().getColor(R.color.colorAccent));
         brewDetailContentTv.setText(contentDes);
         stepsContainer.addView(view);
+        View viewLine = new View(this);
+        viewLine.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, DpSpPixUtils.dip2px(this, 0.5f)));
+        viewLine.setBackgroundColor(Color.parseColor("#777777"));
+        return view;
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         unregisterReceiver(broadcastReceiver);
+        mHandler.removeCallbacksAndMessages(null);
     }
 }

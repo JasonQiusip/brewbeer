@@ -33,6 +33,7 @@ import com.ltbrew.brewbeer.uis.activity.BrewSessionControlActivity;
 import com.ltbrew.brewbeer.uis.adapter.BrewingSessionAdapter;
 import com.ltbrew.brewbeer.uis.adapter.FinishedSessionAdapter;
 import com.ltbrew.brewbeer.uis.adapter.viewholder.BaseViewHolder;
+import com.ltbrew.brewbeer.uis.utils.BrewSessionUtils;
 import com.ltbrew.brewbeer.uis.utils.ParamStoreUtil;
 import com.ltbrew.brewbeer.uis.view.ReboundScrollView;
 
@@ -132,7 +133,10 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
                 if(brewHistory == null)
                     return;
                 Log.e("CMN_PRGS_PUSH_ACTION1", brewHistory.toString());
-
+                if(pushMsgObj.body != null && pushMsgObj.body.equals("-1")){
+                    pushMsgObj.body = "煮沸";
+                    BrewSessionUtils.storeBoilStartTimeStamp(System.currentTimeMillis()/1000);
+                }
                 brewHistory.setRatio(pldForCmnPrgs.ratio);
                 brewHistory.setSi(pldForCmnPrgs.si);
                 brewHistory.setBrewingState(pldForCmnPrgs.body);
@@ -151,6 +155,10 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
                 PldForCmnMsg pldForCmnMsg = intent.getParcelableExtra(LtPushService.PUSH_PLD_EXTRA);
 
                 int ms = pldForCmnMsg.ms;
+                if(ms > 100){
+                    pushMsgObj.body = "煮沸";
+                    BrewSessionUtils.storeBoilStartTimeStamp(System.currentTimeMillis()/1000);
+                }
                 BrewHistory brewHistory = brewingHistoryList.get(0);
                 brewHistory.setMs(ms);
                 brewingSessionAdapter.setData(brewingHistoryList);

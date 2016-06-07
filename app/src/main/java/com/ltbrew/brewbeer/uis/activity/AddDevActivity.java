@@ -13,6 +13,9 @@ import com.ltbrew.brewbeer.presenter.model.AddDevResp;
 import com.ltbrew.brewbeer.presenter.model.Device;
 import com.ltbrew.brewbeer.thirdpartylib.MessageWindow;
 import com.ltbrew.brewbeer.thirdpartylib.activity.CaptureActivity;
+import com.ltbrew.brewbeer.uis.dialog.NoticeDialog;
+import com.ltbrew.brewbeer.uis.dialog.OnNegativeButtonClickListener;
+import com.ltbrew.brewbeer.uis.dialog.OnPositiveButtonClickListener;
 import com.ltbrew.brewbeer.uis.dialog.SetDevPhoneNumbDialog;
 import com.ltbrew.brewbeer.uis.utils.KeyboardUtil;
 
@@ -153,7 +156,19 @@ public class AddDevActivity extends BaseActivity implements AddDevView {
                 showMsgWindow("提醒", "工厂未登记", null);
                 break;
             case 3:
-                showMsgWindow("提醒", "已被其他人绑定", null);
+                new NoticeDialog(this).setOnPositiveButtonClickListener(new OnPositiveButtonClickListener() {
+                    @Override
+                    public void onPositiveButtonClick() {
+                        Intent intent = new Intent(AddDevActivity.this, FollowActivity.class);
+                        intent.putExtra("qrCode", scanQrCode);
+                        startActivity(intent);
+                    }
+                }).setOnNegativeButtonClickListener(new OnNegativeButtonClickListener() {
+                    @Override
+                    public void onNegativeButtonClick() {
+
+                    }
+                }).show();
                 break;
             case 4:
                 showMsgWindow("提醒", "二维码格式错误", null);

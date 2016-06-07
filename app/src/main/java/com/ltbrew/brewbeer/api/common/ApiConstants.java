@@ -42,6 +42,8 @@ public interface ApiConstants {
     final String BREW_LS_FORMULA = "brew_ls_formula";
 
     final String BIND = "bind";
+    final String FOLLOW_REQ = "follow_req";
+    final String CHECK_FOLLOW_VAL_CODE = "check_follow_val_code";
     String UNBIND = "unbind";
     String PATCH_TID = "patch_tid";
     String LIST = "list";

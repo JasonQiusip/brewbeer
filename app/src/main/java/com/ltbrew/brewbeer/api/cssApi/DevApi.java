@@ -26,6 +26,26 @@ public class DevApi {
         return GeneralApi.dev(httpReqParam, ApiConstants.BIND);
     }
 
+    public static HttpResponse followDev(String qrCode){
+        HashMap body = new HashMap();
+        body.put("code", qrCode);
+        HttpReqParam httpReqParam = new HttpReqParam();
+        httpReqParam.setBody(body);
+        return GeneralApi.dev(httpReqParam, ApiConstants.FOLLOW_REQ);
+    }
+//    id	pid
+//    account	主帐号
+//    val	验证码
+    public static HttpResponse checkFollow(String pid, String acc, String val){
+        HashMap body = new HashMap();
+        body.put("id", pid);
+        body.put("account", acc);
+        body.put("val", val);
+        HttpReqParam httpReqParam = new HttpReqParam();
+        httpReqParam.setBody(body);
+        return GeneralApi.dev(httpReqParam, ApiConstants.CHECK_FOLLOW_VAL_CODE);
+    }
+
     public static HttpResponse verifyIotByQr(String qrCode){
         HashMap body = new HashMap();
         body.put("qr", qrCode);

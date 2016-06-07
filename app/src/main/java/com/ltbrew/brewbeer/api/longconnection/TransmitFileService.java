@@ -165,14 +165,17 @@ public class TransmitFileService {
     }
 
     private void closeFileWriteSocketConnection() {
-        cmdsWrite.setExcute(false);
+        if(cmdsWrite != null)
+            cmdsWrite.setExcute(false);
         fileSocketLocker.seqNo = 0;
         synchronized (fileSocketLocker) {
             fileSocketLocker.notifyAll();
         }
         try {
-            fileOutputStream.close();
-            fileSocket.close();
+            if(fileOutputStream != null)
+                fileOutputStream.close();
+            if(fileSocket != null)
+                fileSocket.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
