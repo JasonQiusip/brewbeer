@@ -91,7 +91,11 @@
             android:theme="@style/AppTheme" />
         <activity android:name=".uis.activity.AboutActivity" />
         <activity android:name=".thirdpartylib.activity.CaptureActivity" />
-        <activity android:name=".uis.activity.FollowActivity"></activity>
+        <activity android:name=".uis.activity.FollowActivity" />
+        <activity
+            android:name=".uis.activity.RecipeStepsActivity"
+            android:label="@string/title_activity_recipe_steps"
+            android:theme="@style/AppTheme"></activity>
     </application>
 
 </manifest>

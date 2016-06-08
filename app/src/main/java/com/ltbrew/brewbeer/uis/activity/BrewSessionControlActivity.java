@@ -59,9 +59,7 @@ public class BrewSessionControlActivity extends AppCompatActivity {
                     brewHistory.setBrewingState(pushMsgObj.body);
                     brewHistory.setSt(pushMsgObj.st);
                 }
-                View view = stepsContainer.getChildAt(si);
-                view.setBackgroundColor(getResources().getColor(R.color.colorAccent));
-                curState.setText(pushMsgObj.body);
+                showRecipe();
             }else if (LtPushService.CMN_PRGS_CHECK_ACTION.equals(action)) {
                 PushMsg pushMsgObj = intent.getParcelableExtra(LtPushService.PUSH_MSG_EXTRA);
                 Log.e("CMN_PRGS_PUSH_ACTION", pushMsgObj.toString());
@@ -73,9 +71,7 @@ public class BrewSessionControlActivity extends AppCompatActivity {
                     brewHistory.setSt(st);
                 }
                 int si = pushMsgObj.si;
-                View view = stepsContainer.getChildAt(si);
-                view.setBackgroundColor(getResources().getColor(R.color.colorAccent));
-                curState.setText(pushMsgObj.body);
+                showRecipe();
             }else if(LtPushService.CMN_MSG_PUSH_ACTION.equals(action)){
                 PushMsg pushMsgObj = intent.getParcelableExtra(LtPushService.PUSH_MSG_EXTRA);
                 Log.e("CMN_MSG_PUSH_ACTION", pushMsgObj.toString());
@@ -84,17 +80,13 @@ public class BrewSessionControlActivity extends AppCompatActivity {
                 int ms = pldForCmnMsg.ms;
                 if(ms > 100){
                     pushMsgObj.body = "煮沸";
-                    BrewSessionUtils.storeBoilStartTimeStamp(System.currentTimeMillis()/1000);
                 }
                 brewHistory.setMs(ms);
-                if(ms < 100) {
-                    curState.setText("正在加热， 当前温度" + brewHistory.getMs() + "度");
-                }else{
-                    showTimeCountDown(brewHistory, brewHistory.getDbRecipe().getBrewSteps().get(brewHistory.getSi()));
-                }
+                showRecipe();
             }
         }
     };
+    private TextView brewDetailContentTv;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,11 +107,13 @@ public class BrewSessionControlActivity extends AppCompatActivity {
                 finish();
             }
         });
+        brewHistory = ParamStoreUtil.getInstance().getBrewHistory();
         showRecipe();
     }
 
     private void showRecipe() {
-        brewHistory = ParamStoreUtil.getInstance().getBrewHistory();
+        if(brewHistory == null)
+            return;
         dbRecipe = brewHistory.getDbRecipe();
         if(dbRecipe == null)
             return;
@@ -137,7 +131,7 @@ public class BrewSessionControlActivity extends AppCompatActivity {
                 if(brewHistory.getMs() != 0) {
                     curState.setText("正在加热， 当前温度" + brewHistory.getMs() + "度");
                 }else{
-                    curState.setText("加热中");
+                    curState.setText("正在加热");
                 }
             }
         }
@@ -152,10 +146,10 @@ public class BrewSessionControlActivity extends AppCompatActivity {
             if ("boil".equals(act)) {
                 int temp = dbBrewStep.getT() / 5;
                 if(temp < 100) {
-                    detailView = addItemToContainer("加热到" + temp + "度，" + dbBrewStep.getK() / 60 + "分钟", "");
+                    detailView = addItemToContainer("糖化\n"+dbBrewStep.getK() / 60 + "minutes"+"@" + temp + "℃"  , "");
 
                 }else{
-                    detailView = addItemToContainer("煮沸，" + dbBrewStep.getK() / 60 + "分钟", "");
+                    detailView = addItemToContainer("煮沸\n" + dbBrewStep.getK() / 60 + "minutes", "");
                 }
 
             } else {
@@ -165,11 +159,13 @@ public class BrewSessionControlActivity extends AppCompatActivity {
                 if(slot - 1 < 0)
                     continue;
                 DBSlot dbSlot = slots.get(slot - 1);
-                String addMaterialToSlot = "投放" + dbSlot.getName() + "到槽" + slot;
+                String addMaterialToSlot = "往"+slot+"号槽投放" + dbSlot.getName();
                 detailView = addItemToContainer(addMaterialToSlot, "");
             }
             if(si != null) {
                 if (i < si) {
+                    TextView contentDes = (TextView) detailView.findViewById(R.id.brewDetailContentTv);
+                    contentDes.setText("完成");
                     detailView.setBackgroundColor(getResources().getColor(R.color.colorBlue));
                 } else if (i == si) {
                     detailView.setBackgroundColor(getResources().getColor(R.color.colorGreen));
@@ -205,7 +201,7 @@ public class BrewSessionControlActivity extends AppCompatActivity {
 
         View view = LayoutInflater.from(this).inflate(R.layout.layout_brew_detail, stepsContainer, false);
         TextView brewDetailTitle = (TextView) view.findViewById(R.id.brewDetailTitleTv);
-        TextView brewDetailContentTv = (TextView) view.findViewById(R.id.brewDetailContentTv);
+        brewDetailContentTv = (TextView) view.findViewById(R.id.brewDetailContentTv);
         brewDetailTitle.setText(title);
         if (isTitle)
             brewDetailTitle.setTextColor(getResources().getColor(R.color.colorAccent));
