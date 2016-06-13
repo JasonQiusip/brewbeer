@@ -7,12 +7,15 @@
     android:background="@drawable/bg_bottom_line"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp"
     android:minHeight="56dp">
 
     <TextView
         android:id="@+id/brewDetailTitleTv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:lineSpacingExtra="2dp"
         android:textSize="18sp"
         android:text="配方名称"/>
 

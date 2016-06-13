@@ -62,6 +62,9 @@ public class BrewHomeActivity extends BaseActivity
     @BindView(R.id.recipeRb)
     RadioButton recipeRb;
     public static final String ADD_DEV_SUCCESS_ACTION = "ADD_DEV_SUCCESS_ACTION";
+    public static final String PUSH_REQ_SESSION_ACTION = "push_action_to_queue";
+    public static final String PACK_ID_EXTRA = "packId";
+
     ImageView leftArrowIv;
     TextView devIdTv;
     ImageView rightArrowIv;
@@ -80,6 +83,7 @@ public class BrewHomeActivity extends BaseActivity
     private Handler handler = new Handler();
     private long recordTimeMillis = 0;
 
+
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -88,7 +92,14 @@ public class BrewHomeActivity extends BaseActivity
                 if (brewHomePresenter != null)
                     brewHomePresenter.getDevs();
                 return;
+            }else if(PUSH_REQ_SESSION_ACTION.equals(action)){
+                long packId = intent.getLongExtra(PACK_ID_EXTRA, 0);
+                if(packId == 0)
+                    return;
+                onReqBrewingSession(packId);
+                return;
             }
+
             ArrayList<Device> devs = intent.getParcelableArrayListExtra(AddDevActivity.DEVICES_EXTRA);
             devices = devs;
             positionCurrentDevInDevices = findWhereIsCurrentDevInDevices();
@@ -109,6 +120,7 @@ public class BrewHomeActivity extends BaseActivity
 
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(ADD_DEV_SUCCESS_ACTION);
+        intentFilter.addAction(PUSH_REQ_SESSION_ACTION);
         intentFilter.addAction(LtPushService.UNBIND_ACTION);
         registerReceiver(broadcastReceiver, intentFilter);
 
@@ -480,7 +492,11 @@ public class BrewHomeActivity extends BaseActivity
                 deleteOrRenameDevPopupWindow = null;
             }
         });
-//        deleteOrRenameDevPopupWindow.showAsDropDown(devIdTv, 0, 16);
+        try {
+            deleteOrRenameDevPopupWindow.showAsDropDown(devIdTv, 0, 16);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
 
     private void showChangeNameDialog() {

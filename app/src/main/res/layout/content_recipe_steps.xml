@@ -16,5 +16,18 @@
         android:id="@+id/brewStepDes"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:lineSpacingExtra="4dp"
         />
+
+    <Button
+        android:id="@+id/materialsReadyBtn"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginLeft="24dp"
+        android:layout_marginRight="24dp"
+        android:layout_marginBottom="64dp"
+        android:textSize="16sp"
+        style="@style/style_bg_btn_white_corn"
+        android:text="投放完毕"
+        android:layout_alignParentBottom="true"/>
 </RelativeLayout>

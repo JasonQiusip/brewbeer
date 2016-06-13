@@ -112,7 +112,7 @@ public class BrewSessionsPresenter {
         int month = calendar.get(Calendar.MONTH);
         int day = calendar.get(Calendar.DAY_OF_MONTH);
         String date_end = year +"-" + String.format("%02d", month + 1) + "-" + String.format("%02d", day);
-        calendar.set(Calendar.DAY_OF_MONTH, day - 7);
+        calendar.set(Calendar.DAY_OF_MONTH, day - 14);
         int year_begin = calendar.get(Calendar.YEAR);
         int month_begin = calendar.get(Calendar.MONTH);
         int day_begin = calendar.get(Calendar.DAY_OF_MONTH);

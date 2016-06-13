@@ -15,13 +15,18 @@ import android.widget.RadioButton;
 
 import com.ltbrew.brewbeer.R;
 import com.ltbrew.brewbeer.interfaceviews.AddPackView;
+import com.ltbrew.brewbeer.persistence.greendao.DBRecipe;
 import com.ltbrew.brewbeer.presenter.AddPackPresenter;
+import com.ltbrew.brewbeer.presenter.model.Recipe;
 import com.ltbrew.brewbeer.thirdpartylib.MessageWindow;
 import com.ltbrew.brewbeer.thirdpartylib.activity.CaptureActivity;
 import com.ltbrew.brewbeer.uis.OnAddActionListener;
 import com.ltbrew.brewbeer.uis.fragment.AddRecipeByIdFragment;
 import com.ltbrew.brewbeer.uis.fragment.AddRecipeByQrFragment;
 import com.ltbrew.brewbeer.uis.fragment.BrewSessionFragment;
+import com.ltbrew.brewbeer.uis.utils.ParamStoreUtil;
+
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -29,7 +34,7 @@ import butterknife.OnCheckedChanged;
 
 public class AddRecipeActivity extends BaseActivity implements OnAddActionListener,AddPackView {
 
-    public static final String PACK_ID_EXTRA = "packId";
+
     public static final String CHECK_RECIPE = "0";
     @BindView(R.id.scanRb)
     RadioButton scanRb;
@@ -37,8 +42,8 @@ public class AddRecipeActivity extends BaseActivity implements OnAddActionListen
     RadioButton byIdRb;
 
     private static final int REQUEST_CODE_SCAN_QR = 10;
-    public static final String FORMULA_ID_EXTRA = "formulat_id";
-    public static final String RECIPE_NAME_EXTRA = "name";
+    public static final String PACK_ID_EXTRA = "packId";
+
     private SectionsPagerAdapter mSectionsPagerAdapter;
     private ViewPager mViewPager;
     private AddRecipeByIdFragment addRecipeByIdFragment = new AddRecipeByIdFragment();
@@ -124,10 +129,8 @@ public class AddRecipeActivity extends BaseActivity implements OnAddActionListen
     @Override
     public void onAddRecipeToDevSuccess(Integer state, String formula_id, String name) {
         if(state == 0){
-            Intent intent = new Intent(BrewSessionFragment.PACK_IS_SENT);
-            intent.putExtra(FORMULA_ID_EXTRA, formula_id);
-            intent.putExtra(RECIPE_NAME_EXTRA, name);
-            sendBroadcast(intent);
+//
+            addPackPresenter.getRecipeAfterBrewBegin(formula_id);
             startRecipeDetail();
             finish();
 //            showMsgWindow("提醒", name + " 已同步 点击详情查看配方", new MessageWindow.OnMsgWindowActionListener() {
@@ -153,7 +156,7 @@ public class AddRecipeActivity extends BaseActivity implements OnAddActionListen
     void startRecipeDetail(){
         Intent intent = new Intent();
         intent.putExtra(PACK_ID_EXTRA, packId);
-        intent.setClass(this, RecipeDetailActivity.class);
+        intent.setClass(this, RecipeStepsActivity.class);
         startActivity(intent);
     }
 
@@ -162,6 +165,31 @@ public class AddRecipeActivity extends BaseActivity implements OnAddActionListen
         showErrorMsg(message);
     }
 
+    @Override
+    public void onGetRecipeSuccess(List<Recipe> recipes) {
+
+    }
+
+    @Override
+    public void onGetRecipeFailed() {
+
+    }
+
+    @Override
+    public void onDownloadRecipeSuccess(DBRecipe dbRecipe) {
+
+    }
+
+    @Override
+    public void onDownloadRecipeFailed() {
+        ParamStoreUtil.getInstance().setCurrentCreatingRecipe(null);
+
+    }
+
+    @Override
+    public void onDownLoadRecipeAfterBrewBegin(DBRecipe dbRecipe) {
+        ParamStoreUtil.getInstance().setCurrentCreatingRecipe(dbRecipe);
+    }
 
 
     public class SectionsPagerAdapter extends FragmentPagerAdapter {

@@ -94,7 +94,7 @@
         <activity android:name=".uis.activity.FollowActivity" />
         <activity
             android:name=".uis.activity.RecipeStepsActivity"
-            android:label="@string/title_activity_recipe_steps"
+            android:label=""
             android:theme="@style/AppTheme"></activity>
     </application>
 

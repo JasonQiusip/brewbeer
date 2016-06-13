@@ -17,6 +17,7 @@ import com.ltbrew.brewbeer.persistence.greendao.DBBrewStep;
 import com.ltbrew.brewbeer.persistence.greendao.DBRecipe;
 import com.ltbrew.brewbeer.persistence.greendao.DBSlot;
 import com.ltbrew.brewbeer.presenter.AddPackPresenter;
+import com.ltbrew.brewbeer.presenter.model.Recipe;
 import com.ltbrew.brewbeer.thirdpartylib.MessageWindow;
 import com.ltbrew.brewbeer.uis.utils.ParamSetObserver;
 import com.ltbrew.brewbeer.uis.utils.ParamStoreUtil;
@@ -203,5 +204,30 @@ public class RecipeDetailActivity extends BaseActivity implements AddPackView {
     @Override
     public void onAddRecipeToDevFailed(String message) {
         showErrorMsg(message);
+    }
+
+    @Override
+    public void onGetRecipeSuccess(List<Recipe> recipes) {
+
+    }
+
+    @Override
+    public void onGetRecipeFailed() {
+
+    }
+
+    @Override
+    public void onDownloadRecipeSuccess(DBRecipe dbRecipe) {
+
+    }
+
+    @Override
+    public void onDownloadRecipeFailed() {
+
+    }
+
+    @Override
+    public void onDownLoadRecipeAfterBrewBegin(DBRecipe dbRecipe) {
+
     }
 }

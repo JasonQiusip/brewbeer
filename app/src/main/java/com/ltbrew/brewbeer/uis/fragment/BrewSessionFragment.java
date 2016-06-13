@@ -71,13 +71,14 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
     private onBrewingSessionListener onBrewingSessionListener;
 
     public static final String PACK_IS_SENT = "com.ltbrew.beer.AddRecipeActivity.PACK_IS_SENT_TO_DEV";
+    private String packId;
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             if (PACK_IS_SENT.equals(action)) {
-                String formula_id = intent.getStringExtra(AddRecipeActivity.FORMULA_ID_EXTRA);
-                String recipeName = intent.getStringExtra(AddRecipeActivity.RECIPE_NAME_EXTRA);
+                String formula_id = intent.getStringExtra(BrewSessionControlActivity.FORMULA_ID_EXTRA);
+                packId = intent.getStringExtra(BrewSessionControlActivity.PACK_ID_EXTRA);
                 if (brewSessionsPresenter != null) {
                     brewSessionsPresenter.getRecipeAfterBrewBegin(formula_id);
                 }
@@ -212,9 +213,7 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
                 BrewHistory brewHistory = brewingHistoryList.get(layoutPosition);
                 ParamStoreUtil.getInstance().setBrewHistory(brewHistory); //store data to local cache
                 startBrewControlActivity();
-                Long package_id = brewHistory.getPackage_id();
-                if(package_id != null)
-                    onBrewingSessionListener.onReqBrewingSession(package_id);
+
             }
         });
         brewingSessionAdapter.setOnDeleteClickListener(new BrewingSessionAdapter.OnDeleteClickListener() {
@@ -422,6 +421,10 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
         ParamStoreUtil.getInstance().setCurrentCreatingRecipe(dbRecipe);
         BrewHistory brewHistory = new BrewHistory();
         brewHistory.setDbRecipe(dbRecipe);
+        if(packId != null) {
+            brewHistory.setPackage_id(Long.valueOf(packId));
+            packId = null;
+        }
         brewingHistoryList.add(0, brewHistory);
 
         if(brewingHistoryList.size() != 0){

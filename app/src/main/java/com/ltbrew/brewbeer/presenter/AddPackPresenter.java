@@ -20,9 +20,12 @@ import rx.functions.Action1;
 public class AddPackPresenter {
 
     private final AddPackView addPackView;
+    private RecipePresenter recipePresenter;
 
     public AddPackPresenter(AddPackView addPackView){
         this.addPackView = addPackView;
+        recipePresenter = new RecipePresenter(addPackView);
+
     }
 //    参数
 //    字段	说明
@@ -71,5 +74,11 @@ public class AddPackPresenter {
                 addPackView.onAddRecipeToDevFailed(throwable.getMessage());
             }
         });
+    }
+
+
+    public void getRecipeAfterBrewBegin(String formula_id){
+        recipePresenter.getRecipes(formula_id);
+        recipePresenter.setShowResultOnSeperateCb(true);
     }
 }
