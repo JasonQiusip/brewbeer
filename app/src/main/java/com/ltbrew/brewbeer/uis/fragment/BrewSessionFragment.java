@@ -136,7 +136,6 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
                 Log.e("CMN_PRGS_PUSH_ACTION1", brewHistory.toString());
                 if(pushMsgObj.body != null && pushMsgObj.body.equals("-1")){
                     pushMsgObj.body = "煮沸";
-                    BrewSessionUtils.storeBoilStartTimeStamp(System.currentTimeMillis()/1000);
                 }
                 brewHistory.setRatio(pldForCmnPrgs.ratio);
                 brewHistory.setSi(pldForCmnPrgs.si);
@@ -158,7 +157,7 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
                 int ms = pldForCmnMsg.ms;
                 if(ms > 100){
                     pushMsgObj.body = "煮沸";
-                    BrewSessionUtils.storeBoilStartTimeStamp(System.currentTimeMillis()/1000);
+
                 }
                 BrewHistory brewHistory = brewingHistoryList.get(0);
                 brewHistory.setMs(ms);

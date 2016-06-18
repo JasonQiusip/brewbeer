@@ -38,6 +38,7 @@ import com.ltbrew.brewbeer.uis.dialog.DeleteOrRenameDevPopupWindow;
 import com.ltbrew.brewbeer.uis.dialog.SetDevNameDialog;
 import com.ltbrew.brewbeer.uis.fragment.BrewSessionFragment;
 import com.ltbrew.brewbeer.uis.fragment.RecipeFragment;
+import com.ltbrew.brewbeer.uis.utils.AccUtils;
 import com.ltbrew.brewbeer.uis.utils.ReqSessionStateQueue;
 
 import java.util.ArrayList;
@@ -230,6 +231,7 @@ public class BrewHomeActivity extends BaseActivity
             startAboutActivity();
         } else if (id == R.id.nav_exit) {
             DeviceUtil.clearData();
+            AccUtils.clearData();
             stopService(new Intent(this, LtPushService.class));
             startLoginActivity();
         }

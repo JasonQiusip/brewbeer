@@ -14,11 +14,11 @@ public class BrewSessionUtils {
     public static final String START_TIME_STAMP = "boilStart";
     public static final String BREW_SESSION_SP = "brew_session_sp";
 
-    public static void storeBoilStartTimeStamp(long timeStamp){
+    public static void storeStepStartTimeStamp(long timeStamp){
         getSharedPreferences().edit().putLong(START_TIME_STAMP, timeStamp).commit();
     }
 
-    public static long getBoilStartTimeStamp(){
+    public static long getStepStartTimeStamp(){
         return getSharedPreferences().getLong(START_TIME_STAMP, 0);
     }
 

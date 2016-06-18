@@ -102,7 +102,7 @@ public class RecipeStepsActivity extends BaseActivity {
                 if (slots.size() < slot)
                     continue;
                 DBSlot dbSlot = slots.get(slot - 1);
-                desStr.append("步骤" + (++i) + "： 将" + dbSlot.getName() + "放在小槽" + slot + "中\n");
+                desStr.append("步骤" + (i++) + "： 将" + dbSlot.getName() + "放在小槽" + slot + "中\n");
             }
         }
         brewStepDes.setText(desStr.toString());

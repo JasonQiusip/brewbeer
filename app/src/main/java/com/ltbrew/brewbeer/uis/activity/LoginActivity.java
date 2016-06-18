@@ -108,6 +108,7 @@ public class LoginActivity extends BaseActivity implements LoginView {
     public void onLoginSuccess() {
         hideDialog();
         AccUtils.storeAcc(account.getText().toString());
+        AccUtils.storeCurPwd(password.getText().toString());
         startBrewSessionActivity();
     }
     private void startBrewSessionActivity() {

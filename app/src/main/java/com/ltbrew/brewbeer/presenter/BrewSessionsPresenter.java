@@ -78,9 +78,9 @@ public class BrewSessionsPresenter {
                         brewHistoryModel.setPackage_id(package_id);
                         brewHistoryModel.setPid(pid);
                         brewHistoryModel.setState(state);
-                        if(state == 0 || state == 1) {
+                        if(state == 0 || state == 1 || state == 3) {
                             brewingHistoryList.add(brewHistoryModel);
-                        }else if(state == 2 || state == 3){
+                        }else if(state == 2 ){
                             finishedHistoryList.add(brewHistoryModel);
                         }else{
 

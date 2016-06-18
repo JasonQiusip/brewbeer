@@ -38,7 +38,9 @@ public class AccUtils {
         return TextUtils.isEmpty(getCurPwd());
     }
 
-
+    public static void clearData(){
+        getSharedPreferences().edit().clear();
+    }
 
     private static SharedPreferences getSharedPreferences(){
         return BrewApp.getInstance().getSharedPreferences(ACC_SP, Context.MODE_PRIVATE);

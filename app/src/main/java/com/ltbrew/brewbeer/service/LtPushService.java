@@ -287,6 +287,7 @@ public class LtPushService extends IntentService implements FileSocketReadyCallb
             case cmn_prgs:
                 if (pld != null || !pld.equals("null")) {
                     String body = pld.getString("body");
+                    String des = pld.getString("des");
                     Integer si = pld.getInteger("si");
                     Integer ratio = pld.getInteger("ratio");
                     String st = pld.getString("st");
@@ -295,6 +296,7 @@ public class LtPushService extends IntentService implements FileSocketReadyCallb
                     pldForCmnPrgs.si = si;
                     pldForCmnPrgs.ratio = ratio;
                     pldForCmnPrgs.st = st;
+
                     intent.setAction(CMN_PRGS_PUSH_ACTION);
                     intent.putExtra(PUSH_MSG_EXTRA, pushMessage);
                     intent.putExtra(PUSH_PLD_EXTRA, pldForCmnPrgs);
