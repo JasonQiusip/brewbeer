@@ -28,8 +28,7 @@ public interface CmdsConstant {
         r_hrh,
         kick,
         cmn_prgs,
-        cmn_msg,
-        brew_session;
+       brew_session;
 
 
         public static final Map lookup = new HashMap();

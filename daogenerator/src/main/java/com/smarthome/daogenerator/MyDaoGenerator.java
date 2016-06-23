@@ -9,7 +9,7 @@ import de.greenrobot.daogenerator.ToMany;
 public class MyDaoGenerator {
 
     public static void main(String[] args) throws Exception {
-        Schema schema = new Schema(1001, "com.ltbrew.brewbeer.persistence.greendao");
+        Schema schema = new Schema(1004, "com.ltbrew.brewbeer.persistence.greendao");
 
         addRecipe(schema);
 
@@ -26,6 +26,7 @@ public class MyDaoGenerator {
         recipe.addStringProperty("idForFn").unique();
         recipe.addStringProperty("ref");
         recipe.addStringProperty("cus");
+        recipe.addStringProperty("ndrops");
         recipe.addIntProperty("wr");
         recipe.addIntProperty("wq");
 
@@ -45,9 +46,9 @@ public class MyDaoGenerator {
 
         Entity dbSlot = schema.addEntity("DBSlot");
         dbSlot.addIdProperty();
-        dbSlot.addStringProperty("slotStepId");
+        dbSlot.addStringProperty("slotStepId").notNull().unique();
         dbSlot.addIntProperty("slotId");
-        dbSlot.addStringProperty("name").notNull().unique();
+        dbSlot.addStringProperty("name");
         Property recipeId1 = dbSlot.addLongProperty("recipeId").notNull().getProperty();
         dbSlot.addToOne(recipe, recipeId1);
 
@@ -58,7 +59,19 @@ public class MyDaoGenerator {
         recipeToSlot.setName("slots");
 
     }
-
+//
+//    Long formula_id;
+//    String begin_time;
+//    String end_time;
+//    Long package_id;
+//    Long pid;
+//    Integer state;
+//    Integer ratio;
+//    Integer si;
+//    String brewingState;
+//    String st;
+//    int ms;
+//    String brewingCmnMsg;
 
 
 }

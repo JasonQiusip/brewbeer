@@ -18,15 +18,16 @@
             style="@style/toolbarStyle"
             app:popupTheme="@style/AppTheme.PopupOverlay">
 
-            <TextView
+            <ImageView
                 android:id="@+id/homeCenterTitle"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:maxWidth="160dp"
+                android:maxWidth="120dp"
+                android:padding="8dp"
                 android:singleLine="true"
                 android:gravity="center"
-                android:text="LinkBrew"
+                android:src="@mipmap/title_bar_logo"
                 android:textColor="#ffffff"
                 android:textSize="20dp" />
 

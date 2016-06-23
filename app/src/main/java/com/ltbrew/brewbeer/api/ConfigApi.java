@@ -4,6 +4,7 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import com.ltbrew.brewbeer.api.common.TokenDispatcher;
+import com.ltbrew.brewbeer.api.common.utils.HostUtil;
 import com.ltbrew.brewbeer.api.common.utils.SharePrefUtil;
 import com.ltbrew.brewbeer.api.longconnection.TransmitCmdService;
 import com.ltbrew.brewbeer.api.longconnection.interfaces.FileSocketReadyCallback;

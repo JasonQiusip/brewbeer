@@ -94,8 +94,9 @@ public class RecipePresenter {
             recipe.setCus(cus);
             recipe.setRef(ref);
             recipesList.add(recipe);
-            downloadSingleRecipe(devId, recipe);
+//            downloadSingleRecipe(devId, recipe);
         }
+        orderlyDownloadReceipe(devId, recipesList);
         return recipesList;
     }
     //数据结构：
@@ -113,14 +114,39 @@ public class RecipePresenter {
     // "sc": 6,
     // "id": 67615779}}
     private static final String STEP_PREFIX = "s_";
-    private void downloadSingleRecipe(final String devId, final Recipe recipe){
-        Observable.create(new Observable.OnSubscribe<DBRecipe>() {
+
+    private void orderlyDownloadReceipe(final  String devId, List<Recipe> recipes){
+        Observable.from(recipes).flatMap(new Func1<Recipe, Observable<DBRecipe>>() {
+            @Override
+            public Observable<DBRecipe> call(Recipe recipe) {
+                return downloadSingleRecipe(devId, recipe);
+            }
+        }).subscribe(new Action1<DBRecipe>() {
+            @Override
+            public void call(DBRecipe dbRecipe) {
+                if(mShowResultOnSeperateCb){
+                    recipeView.onDownLoadRecipeAfterBrewBegin(dbRecipe);
+                }else{
+                    recipeView.onDownloadRecipeSuccess(dbRecipe);
+                }
+            }
+        }, new Action1<Throwable>() {
+            @Override
+            public void call(Throwable throwable) {
+                throwable.printStackTrace();
+                recipeView.onGetRecipeFailed();
+            }
+        });
+    }
+
+    private Observable<DBRecipe> downloadSingleRecipe(final String devId, final Recipe recipe){
+
+        return Observable.create(new Observable.OnSubscribe<DBRecipe>() {
             @Override
             public void call(Subscriber<? super DBRecipe> subscriber) {
                 String fn = recipe.getId();
 
                 DBRecipe dbRecipe = checkLocalDb(subscriber, fn);
-
                 String ref = recipe.getRef();
                 if(TextUtils.isEmpty(ref)){
                     subscriber.onCompleted();
@@ -132,12 +158,12 @@ public class RecipePresenter {
                     byte[] file = httpResponse.getFile();
                     if(file == null)
                         return;
-                    String recipe = new String(file);
-                    System.out.println(recipe);
+                    String recipeFile = new String(file);
+                    System.out.println(recipeFile);
 
-                    if(TextUtils.isEmpty(recipe))
+                    if(TextUtils.isEmpty(recipeFile))
                         return;
-                    JSONObject jsonObject = JSON.parseObject(recipe);
+                    JSONObject jsonObject = JSON.parseObject(recipeFile);
                     if(jsonObject == null)
                         return;
                     JSONObject formula = jsonObject.getJSONObject("formula");
@@ -155,27 +181,13 @@ public class RecipePresenter {
                     parseSlots(slots, dbRecipe);
                     parseSteps(formula, dbRecipe);
 
-                    System.out.print(dbRecipe);
+                    Log.e("dbRecipe", dbRecipe.toString());
                     subscriber.onNext(dbRecipe);
                 }else{
                     subscriber.onCompleted();
                 }
             }
-        }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(new Action1<DBRecipe>() {
-            @Override
-            public void call(DBRecipe dbRecipe) {
-                if(mShowResultOnSeperateCb){
-                    recipeView.onDownLoadRecipeAfterBrewBegin(dbRecipe);
-                }else{
-                    recipeView.onDownloadRecipeSuccess(dbRecipe);
-                }
-            }
-        }, new Action1<Throwable>() {
-            @Override
-            public void call(Throwable throwable) {
-                recipeView.onGetRecipeFailed();
-            }
-        });
+        }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
 
     }
 
@@ -199,11 +211,13 @@ public class RecipePresenter {
         String name = formula.getString("name");
         Integer wr = formula.getInteger("wr");
         Integer wq = formula.getInteger("wq");
+        String ndrops = formula.getString("ndrops");
         dbRecipe.setFormulaId(id);
         dbRecipe.setCus(cus);
         dbRecipe.setName(name);
         dbRecipe.setWr(wr);
         dbRecipe.setWq(wq);
+        dbRecipe.setNdrops(ndrops);
         DBManager.getInstance().getDBRecipeDao().insertOrReplace(dbRecipe);
     }
 
@@ -216,14 +230,14 @@ public class RecipePresenter {
             int id = slot.getInteger("id");
             String name = slot.getString("name");
             DBSlot dbSlot = new DBSlot();
-            dbSlot.setSlotStepId(slotStepId);
+            dbSlot.setSlotStepId(dbRecipe.getIdForFn()+slotStepId);
             dbSlot.setName(name);
             dbSlot.setSlotId(id);
             dbSlot.setRecipeId(dbRecipe.getId());
             dbSlot.setDBRecipe(dbRecipe);
-            DBManager.getInstance().getDbSlotDao().insertOrReplace(dbSlot);
             dbSlots.add(dbSlot);
         }
+        DBManager.getInstance().getDbSlotDao().insertOrReplaceInTx(dbSlots);
         dbRecipe.__setDaoSession(DBManager.getInstance().getDaoSession());
         return dbRecipe.getSlots();
     }

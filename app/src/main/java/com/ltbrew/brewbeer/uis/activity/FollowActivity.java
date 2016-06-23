@@ -43,12 +43,16 @@ public class FollowActivity extends BaseActivity {
     private String admin;
     private Timer reGetCodeTimer;
     private int resetTime = 120;
+    private String akey;
+    private String devId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_follow);
         qrCode = getIntent().getStringExtra("qrCode");
+        devId = getIntent().getStringExtra("pid");
+        akey = getIntent().getStringExtra("akey");
         ButterKnife.bind(this);
     }
 //    0	成功，同时返回值里包含id（表示pid），account(主帐号)
@@ -70,8 +74,8 @@ public class FollowActivity extends BaseActivity {
         Observable.create(new Observable.OnSubscribe<FollowReqResp>() {
             @Override
             public void call(Subscriber<? super FollowReqResp> subscriber) {
-                if(qrCode != null) {
-                    HttpResponse httpResponse = DevApi.followDev(qrCode);
+                if(qrCode != null || (devId != null && akey != null)) {
+                    HttpResponse httpResponse = DevApi.followDev(qrCode, devId, akey);
                     if(httpResponse.isSuccess()){
                         String content = httpResponse.getContent();
                         JSONObject jsonObject = JSON.parseObject(content);
@@ -153,7 +157,8 @@ public class FollowActivity extends BaseActivity {
                             tvGetVerifyCode.setEnabled(true);
                             tvGetVerifyCode.setClickable(true);
                             tvGetVerifyCode.setText("重新获取");
-                            reGetCodeTimer.cancel();
+                            if(reGetCodeTimer != null)
+                                reGetCodeTimer.cancel();
                             resetTime = 120;
                         } else
                             tvGetVerifyCode.setText(String.format("%d s", resetTime--));
@@ -203,6 +208,7 @@ public class FollowActivity extends BaseActivity {
                         Intent intent = new Intent(FollowActivity.this, BrewHomeActivity.class);
                         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        intent.putExtra("from", "afaterFollowSuccess");
                         startActivity(intent);
                         break;
                     case 1:
@@ -241,6 +247,7 @@ public class FollowActivity extends BaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        reGetCodeTimer.cancel();
+        if(reGetCodeTimer != null)
+            reGetCodeTimer.cancel();
     }
 }

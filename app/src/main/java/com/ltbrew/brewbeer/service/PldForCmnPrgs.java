@@ -42,4 +42,14 @@ public class PldForCmnPrgs implements Parcelable {
                 return new PldForCmnPrgs[size];
             }
         };
+
+    @Override
+    public String toString() {
+        return "PldForCmnPrgs{" +
+                "body='" + body + '\'' +
+                ", si=" + si +
+                ", ratio=" + ratio +
+                ", st='" + st + '\'' +
+                '}';
     }
+}

@@ -82,12 +82,13 @@ public class TransmitCmdService {
     }
 
     private void initCmdTransmitSocket() throws IOException {
-//        if(ManageLongConnIp.ipHost == null)
+//        if(ManageLongConnIp.getInstance().ipHost == null)
 //        serverAddress = InetAddress.getByName(ManageLongConnIp.getInstance().ipHost); // "27.154.54.242"
 //        cmdSocket = new Socket(serverAddress, ManageLongConnIp.getInstance().port); //25712
-//        serverAddress = InetAddress.getByName("27.154.54.242"); // "27.154.54.242"
         if(cmdSocket != null && !cmdSocket.isClosed())
             return;
+//        serverAddress = InetAddress.getByName("117.28.254.73"); // "27.154.54.242"
+//        cmdSocket = new Socket(serverAddress, 26012); //25712
         serverAddress = InetAddress.getByName("218.5.96.6"); // "27.154.54.242"
         cmdSocket = new Socket(serverAddress, 25712); //25712
         CSSLog.showLog("serverAddress:" + serverAddress, "cmdSocket:" + cmdSocket);

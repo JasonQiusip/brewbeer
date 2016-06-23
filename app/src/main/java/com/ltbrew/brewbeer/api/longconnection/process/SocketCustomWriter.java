@@ -105,7 +105,7 @@ public abstract class SocketCustomWriter {
                         synchronized (hblocker) {
                             hblocker.wait();
                         }
-                        Thread.sleep(300000);
+                        Thread.sleep(5*60*1000);
                     } catch (IOException e) {
                         excute = false;
                         if(socketWriteCb != null)

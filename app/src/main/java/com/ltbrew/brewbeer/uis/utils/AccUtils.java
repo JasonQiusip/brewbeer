@@ -39,7 +39,7 @@ public class AccUtils {
     }
 
     public static void clearData(){
-        getSharedPreferences().edit().clear();
+        storeCurPwd("");
     }
 
     private static SharedPreferences getSharedPreferences(){

@@ -39,4 +39,5 @@
 
     <include layout="@layout/content_add_dev" />
 
+
 </android.support.design.widget.CoordinatorLayout>

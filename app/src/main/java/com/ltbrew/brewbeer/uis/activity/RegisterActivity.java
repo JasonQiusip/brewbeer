@@ -137,7 +137,7 @@ public class RegisterActivity extends BaseActivity implements RegisterView {
             return;
         }
         if(!pwd.equals(pwdConfirm)){
-            showSnackBar("两次输入的密码不一致请确认");
+            showSnackBar("两次输入的密码不一致, 请确认");
             return;
         }
         showDialog("正在进行注册...");

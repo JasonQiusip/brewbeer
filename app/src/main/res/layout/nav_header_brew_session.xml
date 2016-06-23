@@ -1,56 +1,106 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/nav_header_height"
-    android:gravity="center"
-    >
-    <ImageView
+    android:layout_height="wrap_content"
+    android:background="@mipmap/bg_sidebar"
+    android:gravity="center">
+
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:scaleType="centerCrop"
-        android:visibility="gone"
-        android:src="@mipmap/sidebar_bg"/>
-<LinearLayout
-    android:layout_width="match_parent"
-    android:layout_height="@dimen/nav_header_height"
-    android:gravity="center"
-    android:orientation="horizontal"
-    android:theme="@style/ThemeOverlay.AppCompat.Dark">
+        android:layout_height="wrap_content">
 
-    <ImageView
-        android:id="@+id/leftArrowIv"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:padding="8dp"
-        android:paddingTop="@dimen/nav_header_vertical_spacing"
-        android:background="@drawable/bg_btn"
-        android:src="@mipmap/prev_white" />
+        <LinearLayout
+            android:id="@+id/avatarLl"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/nav_header_height"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:theme="@style/ThemeOverlay.AppCompat.Dark">
 
-    <TextView
-        android:id="@+id/devIdTv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:minWidth="100dp"
-        android:singleLine="true"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:gravity="center"
-        android:textColor="#000000"
-        android:text="没有设备"
-        android:textSize="20sp"
-        android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+            <ImageView
+                android:id="@+id/accAvatar"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:layout_marginLeft="32dp"
+                android:background="@drawable/bg_btn"
+                android:padding="8dp"
+                android:paddingTop="@dimen/nav_header_vertical_spacing"
+                android:src="@mipmap/ic_launcher" />
 
-    <ImageView
-        android:id="@+id/rightArrowIv"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:padding="8dp"
-        android:background="@drawable/bg_btn"
-        android:paddingTop="@dimen/nav_header_vertical_spacing"
-        android:src="@mipmap/next_white" />
+            <TextView
+                android:id="@+id/accTv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:gravity="center"
+                android:minWidth="100dp"
+                android:singleLine="true"
+                android:text=""
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                android:textColor="#000000"
+                android:textSize="20sp" />
 
+            <ImageView
+                android:id="@+id/rightArrowIv"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/bg_btn"
+                android:visibility="gone"
+                android:padding="8dp"
+                android:paddingTop="@dimen/nav_header_vertical_spacing"
+                android:src="@mipmap/next_white" />
 
-</LinearLayout>
+        </LinearLayout>
 
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/devsRv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/sideBottomLl"
+            android:layout_below="@+id/avatarLl">
+        </android.support.v7.widget.RecyclerView>
+        <LinearLayout
+            android:id="@+id/sideBottomLl"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:paddingBottom="24dp"
+            android:orientation="vertical">
+        <TextView
+            android:id="@+id/nav_add_dev"
+            android:drawableLeft="@mipmap/add"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:drawablePadding="16dp"
+            android:textColor="#000000"
+            android:paddingLeft="24dp"
+            android:gravity="center_vertical"
+            android:textSize="16sp"
+            android:text="添加设备" />
+
+        <TextView
+            android:id="@+id/nav_about"
+            android:drawableLeft="@mipmap/info"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:paddingLeft="24dp"
+            android:gravity="center_vertical"
+            android:drawablePadding="16dp"
+            android:textColor="#000000"
+            android:textSize="16sp"
+            android:text="关于我们" />
+        <TextView
+            android:id="@+id/nav_exit"
+            android:drawableLeft="@mipmap/exit"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:paddingLeft="24dp"
+            android:gravity="center_vertical"
+            android:drawablePadding="16dp"
+            android:textColor="#000000"
+            android:textSize="16sp"
+            android:text="退出登录" />
+        </LinearLayout>
+    </RelativeLayout>
 </FrameLayout>

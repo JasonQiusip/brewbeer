@@ -31,7 +31,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:textSize="20dp"
-                android:text="投放原料说明"
+                android:text="原料投放说明"
                 android:textColor="#ffffff"/>
         </android.support.v7.widget.Toolbar>
 

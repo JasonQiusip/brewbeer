@@ -164,6 +164,12 @@ public class TransmitFileService {
         }
     }
 
+    public void closeFileSocketConnection() {
+        if(cmdRead != null)
+            cmdRead.endReadThread(false);
+        closeFileWriteSocketConnection();
+    }
+
     private void closeFileWriteSocketConnection() {
         if(cmdsWrite != null)
             cmdsWrite.setExcute(false);
@@ -179,12 +185,6 @@ public class TransmitFileService {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public void closeFileSocketConnection() {
-        if(cmdRead != null)
-            cmdRead.endReadThread(false);
-        closeFileWriteSocketConnection();
     }
 
     public boolean isfileSocketClose() {

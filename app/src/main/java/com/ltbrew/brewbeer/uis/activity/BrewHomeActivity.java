@@ -16,8 +16,11 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
@@ -25,7 +28,6 @@ import android.widget.PopupWindow;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
-import com.ltbrew.brewbeer.BrewApp;
 import com.ltbrew.brewbeer.R;
 import com.ltbrew.brewbeer.interfaceviews.BrewHomeView;
 import com.ltbrew.brewbeer.presenter.BrewHomePresenter;
@@ -33,7 +35,9 @@ import com.ltbrew.brewbeer.presenter.model.Device;
 import com.ltbrew.brewbeer.presenter.util.DeviceUtil;
 import com.ltbrew.brewbeer.service.LtPushService;
 import com.ltbrew.brewbeer.uis.Constants;
+import com.ltbrew.brewbeer.uis.adapter.DevsAdapter;
 import com.ltbrew.brewbeer.uis.adapter.SectionsPagerAdapter;
+import com.ltbrew.brewbeer.uis.adapter.viewholder.BaseViewHolder;
 import com.ltbrew.brewbeer.uis.dialog.DeleteOrRenameDevPopupWindow;
 import com.ltbrew.brewbeer.uis.dialog.SetDevNameDialog;
 import com.ltbrew.brewbeer.uis.fragment.BrewSessionFragment;
@@ -41,7 +45,6 @@ import com.ltbrew.brewbeer.uis.fragment.RecipeFragment;
 import com.ltbrew.brewbeer.uis.utils.AccUtils;
 import com.ltbrew.brewbeer.uis.utils.ReqSessionStateQueue;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
@@ -55,7 +58,7 @@ public class BrewHomeActivity extends BaseActivity
         implements NavigationView.OnNavigationItemSelectedListener, BrewHomeView, View.OnClickListener, BrewSessionFragment.onBrewingSessionListener {
 
     @BindView(R.id.homeCenterTitle)
-    TextView homeCenterTitle;
+    ImageView homeCenterTitle;
     @BindView(R.id.homeCreateBrewSession)
     TextView homeCreateBrewSession;
     @BindView(R.id.brewRb)
@@ -66,9 +69,21 @@ public class BrewHomeActivity extends BaseActivity
     public static final String PUSH_REQ_SESSION_ACTION = "push_action_to_queue";
     public static final String PACK_ID_EXTRA = "packId";
 
-    ImageView leftArrowIv;
-    TextView devIdTv;
+    @BindView(R.id.accAvatar)
+    ImageView accAvatar;
+    @BindView(R.id.accTv)
+    TextView accTv;
+    @BindView(R.id.rightArrowIv)
     ImageView rightArrowIv;
+    @BindView(R.id.devsRv)
+    RecyclerView devsRv;
+    @BindView(R.id.nav_add_dev)
+    TextView navAddDev;
+    @BindView(R.id.nav_about)
+    TextView navAbout;
+    @BindView(R.id.nav_exit)
+    TextView navExit;
+
     private BrewSessionFragment brewSessionFragment = new BrewSessionFragment();
     private RecipeFragment recipeFragment = new RecipeFragment();
     private Fragment[] fragments = new Fragment[]{brewSessionFragment, recipeFragment};
@@ -93,21 +108,24 @@ public class BrewHomeActivity extends BaseActivity
                 if (brewHomePresenter != null)
                     brewHomePresenter.getDevs();
                 return;
-            }else if(PUSH_REQ_SESSION_ACTION.equals(action)){
+            } else if (PUSH_REQ_SESSION_ACTION.equals(action)) {
                 long packId = intent.getLongExtra(PACK_ID_EXTRA, 0);
-                if(packId == 0)
+                if (packId == 0)
                     return;
                 onReqBrewingSession(packId);
                 return;
             }
-
-            ArrayList<Device> devs = intent.getParcelableArrayListExtra(AddDevActivity.DEVICES_EXTRA);
-            devices = devs;
-            positionCurrentDevInDevices = findWhereIsCurrentDevInDevices();
-            updateUIForDev();
-            reqDataFromServer();
+            if (brewHomePresenter != null)
+                brewHomePresenter.getDevs();
+//            ArrayList<Device> devs = intent.getParcelableArrayListExtra(AddDevActivity.DEVICES_EXTRA);
+//            devices = devs;
+//            positionCurrentDevInDevices = findWhereIsCurrentDevInDevices();
+//            updateUIForDev();
+//            reqDataFromServer();
         }
     };
+    private DevsAdapter devsAdapter;
+    private View selectedView;
 
 
     @Override
@@ -117,7 +135,8 @@ public class BrewHomeActivity extends BaseActivity
         ButterKnife.bind(this);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        homeCenterTitle.setTypeface(BrewApp.getInstance().textFont);
+//        homeCenterTitle.setTypeface(BrewApp.getInstance().textFont);
+
 
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(ADD_DEV_SUCCESS_ACTION);
@@ -127,7 +146,7 @@ public class BrewHomeActivity extends BaseActivity
 
         setupViewPager();
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        final DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         if (drawer != null) {
@@ -135,24 +154,46 @@ public class BrewHomeActivity extends BaseActivity
         }
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        if (navigationView != null) {
-            navigationView.setNavigationItemSelectedListener(this);
-        }
-        if (navigationView != null) {
-            View view = navigationView.getHeaderView(0);
-            leftArrowIv = (ImageView) view.findViewById(R.id.leftArrowIv);
-            devIdTv = (TextView) view.findViewById(R.id.devIdTv);
-            rightArrowIv = (ImageView) view.findViewById(R.id.rightArrowIv);
-            leftArrowIv.setOnClickListener(this);
-            devIdTv.setOnClickListener(this);
-            rightArrowIv.setOnClickListener(this);
-        }
+        devsRv.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+        devsAdapter = new DevsAdapter(this);
+        devsAdapter.setData(devices);
+        devsRv.setAdapter(devsAdapter);
+        devsAdapter.setOnItemClickListener(new BaseViewHolder.OnRvItemClickListener() {
+            @Override
+            public void onRvItemClick(View v, int layoutPosition) {
+                selectedView = v;
+                Device device = devices.get(layoutPosition);
+                if (drawer != null) {
+                    drawer.closeDrawer(GravityCompat.START);
+                }
+                DeviceUtil.storeCurrentDevId(device.getId());
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        reqDataFromServer();
+                    }
+                }, 1000);
+            }
+        });
+        devsAdapter.setOnItemLongClickListener(new DevsAdapter.OnRvItemLongClickListener(){
+
+            @Override
+            public void onItemLongClick(View v, int position) {
+                showPopupToChangeNameOrDelete(v);
+            }
+        });
+        accTv.setText(AccUtils.getAcc());
+//        leftArrowIv.setOnClickListener(this);
+//        devIdTv.setOnClickListener(this);
+//        rightArrowIv.setOnClickListener(this);
+        navAddDev.setOnClickListener(this);
+        navAbout.setOnClickListener(this);
+        navExit.setOnClickListener(this);
+//        }
         brewHomePresenter = new BrewHomePresenter(this);
         brewHomePresenter.getDevs();
         initMessageQueue();
     }
-
 
     //初始化ViewPager
     private void setupViewPager() {
@@ -190,6 +231,17 @@ public class BrewHomeActivity extends BaseActivity
         reqSessionStateQueue.start();
     }
 
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        String from = intent.getStringExtra("from");
+        if ("afaterFollowSuccess".equals(from)) {
+            brewHomePresenter.getDevs();
+        } else {
+            startService(new Intent(this, LtPushService.class));
+        }
+    }
+
     //点击底部酿造的按钮
     @OnCheckedChanged(R.id.brewRb)
     public void brewRb(boolean checked) {
@@ -212,7 +264,7 @@ public class BrewHomeActivity extends BaseActivity
         if (drawer != null && drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            if(System.currentTimeMillis() - recordTimeMillis < 2000){
+            if (System.currentTimeMillis() - recordTimeMillis < 2000) {
                 super.onBackPressed();
             }
             recordTimeMillis = System.currentTimeMillis();
@@ -224,17 +276,6 @@ public class BrewHomeActivity extends BaseActivity
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if (id == R.id.nav_add_dev) {
-            startAddDevActivity();
-        } else if (id == R.id.nav_about) {
-            startAboutActivity();
-        } else if (id == R.id.nav_exit) {
-            DeviceUtil.clearData();
-            AccUtils.clearData();
-            stopService(new Intent(this, LtPushService.class));
-            startLoginActivity();
-        }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer != null) {
@@ -270,12 +311,16 @@ public class BrewHomeActivity extends BaseActivity
     //点击新建酿造按钮
     @OnClick(R.id.homeCreateBrewSession)
     public void createBrewSession() {
-        if (devices.size() == 0 || DeviceUtil.getCurrentDevId() == null) {
+        if (devices.size() == 0 || TextUtils.isEmpty(DeviceUtil.getCurrentDevId())) {
             showMsgWindow("提醒", "您还未添加任何设备， 请先添加", null);
             return;
         }
-        if(brewSessionFragment.getBrewingSessionCount() == 6){
+        if (brewSessionFragment.getBrewingSessionCount() == 6) {
             showMsgWindow("提醒", "您已创建了六个酿造任务， 无法再创建更多", null);
+            return;
+        }
+        if (brewSessionFragment.getBrewingSessionCount() != 0) {
+            showMsgWindow("提醒", "当前有正在酿造的任务，无法添加更多", null);
             return;
         }
         startAddRecipeActivity();
@@ -292,26 +337,22 @@ public class BrewHomeActivity extends BaseActivity
     //设备列表获得成功
     @Override
     public void onGetDevsSuccess(List<Device> devices) {
-        updateUIForDev();
         this.devices = devices;
+
+//        if (this.devices != null && this.devices.size() == 0) {
+//            devIdTv.setText("没有设备");
+//            DeviceUtil.storeCurrentDevId("");
+//            brewSessionFragment.clearData();
+//            return;
+//        }
+        Log.e("onGetDevsSuccess", devices.toString());
+
         startPushService();
         reqDataFromServer();
         positionCurrentDevInDevices = findWhereIsCurrentDevInDevices();
-    }
-
-    private void updateUIForDev() {
-        String currentDevId = DeviceUtil.getCurrentDevId();
-        if (!TextUtils.isEmpty(currentDevId)) {
-            homeCenterTitle.setTypeface(null);
-            String devNickName = DeviceUtil.getDevNickName(currentDevId);
-            if (!TextUtils.isEmpty(devNickName)) {
-                setDeviceName(devNickName);
-
-            } else {
-                setDeviceName(currentDevId);
-
-            }
-        }
+        devsAdapter.setSelectedPosition(positionCurrentDevInDevices);
+        devsAdapter.setData(devices);
+        devsAdapter.notifyDataSetChanged();
     }
 
 
@@ -364,11 +405,11 @@ public class BrewHomeActivity extends BaseActivity
         if (Constants.NETWORK_ERROR.equals(message)) {
             showSnackBar("设备获取失败，请确认网络");
             return;
-        }else if(Constants.PASSWORD_ERROR.equals(message)){
+        } else if (Constants.PASSWORD_ERROR.equals(message)) {
             showSnackBar("用户名或密码出错，请重试！");
             return;
         }
-        showSnackBar("获取设备失败，服务器或APP出错："+message+"， 请联系客服");
+        showSnackBar("获取设备失败，服务器或APP出错：" + message + "， 请联系客服");
 
     }
 
@@ -386,10 +427,10 @@ public class BrewHomeActivity extends BaseActivity
     //    6	设备io参数以及主帐号不匹配（实际上和2有些重复）
     @Override
     public void onReqDeleteDevSuccess(int state) {
-        switch (state){
+        switch (state) {
             case 0:
                 showSnackBar("设备解绑成功");
-                switchToNextDevInList();
+                brewHomePresenter.getDevs();
                 break;
             case 1:
                 showSnackBar("帐号格式不对");
@@ -416,6 +457,7 @@ public class BrewHomeActivity extends BaseActivity
     public void onDeleteDevFailed(String message) {
         showSnackBar(message);
     }
+
     //============================删除设备回调==========================
     @Override
     protected void onDestroy() {
@@ -424,52 +466,38 @@ public class BrewHomeActivity extends BaseActivity
             unregisterReceiver(broadcastReceiver);
         if (mServiceConnection != null && serviceIsConnected)
             unbindService(mServiceConnection);
-        stopService(new Intent(this, LtPushService.class));
+//        stopService(new Intent(this, LtPushService.class));
     }
 
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
-            case R.id.leftArrowIv:
-                switchToPrevDevInList();
+            case R.id.accAvatar:
+//                switchToPrevDevInList();
                 break;
-            case R.id.devIdTv:
-                showPopupToChangeNameOrDelete();
+            case R.id.accTv:
 
                 break;
             case R.id.rightArrowIv:
-                switchToNextDevInList();
+//                switchToNextDevInList();
+                break;
+            case R.id.nav_add_dev:
+                startAddDevActivity();
+                break;
+            case R.id.nav_about:
+                startAboutActivity();
+                break;
+            case R.id.nav_exit:
+                DeviceUtil.clearData();
+                AccUtils.clearData();
+                stopService(new Intent(this, LtPushService.class));
+                startLoginActivity();
                 break;
         }
     }
-    //点击向左的箭头切换上一个设备
-    private void switchToPrevDevInList() {
-        if (devices.size() == 0 || positionCurrentDevInDevices == -1)
-            return;
-        handler.removeCallbacksAndMessages(null);
-        if (positionCurrentDevInDevices == 0) {
-            positionCurrentDevInDevices = devices.size() - 1;
-        } else {
-            positionCurrentDevInDevices--;
-        }
-        Device device = devices.get(positionCurrentDevInDevices);
-        DeviceUtil.storeCurrentDevId(device.getId());
-        String devNickName = DeviceUtil.getDevNickName(device.getId());
-        if (!TextUtils.isEmpty(devNickName)) {
-            setDeviceName(devNickName);
-        } else {
-            setDeviceName(device.getId());
-        }
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                reqDataFromServer();
-            }
-        }, 500);
 
-    }
     //点击设备id显示弹出框
-    private void showPopupToChangeNameOrDelete() {
+    private void showPopupToChangeNameOrDelete(View view) {
         if (TextUtils.isEmpty(DeviceUtil.getCurrentDevId()))
             return;
         if (deleteOrRenameDevPopupWindow != null)
@@ -486,7 +514,7 @@ public class BrewHomeActivity extends BaseActivity
                 deleteDevice();
             }
         });
-        deleteOrRenameDevPopupWindow.setWidth(devIdTv.getWidth());
+        deleteOrRenameDevPopupWindow.setWidth(view.getWidth());
         deleteOrRenameDevPopupWindow.setHeight(ViewPager.LayoutParams.WRAP_CONTENT);
         deleteOrRenameDevPopupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
             @Override
@@ -495,8 +523,8 @@ public class BrewHomeActivity extends BaseActivity
             }
         });
         try {
-            deleteOrRenameDevPopupWindow.showAsDropDown(devIdTv, 0, 16);
-        }catch(Exception e){
+            deleteOrRenameDevPopupWindow.showAsDropDown(view, 0, 8);
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -507,47 +535,18 @@ public class BrewHomeActivity extends BaseActivity
             @Override
             public void onSetDevName(String name) {
                 DeviceUtil.setDevNickName(DeviceUtil.getCurrentDevId(), name);
-                setDeviceName(DeviceUtil.getDevNickName(DeviceUtil.getCurrentDevId()));
+                devsAdapter.notifyDataSetChanged();
             }
         });
         setDevNameDialog.show();
     }
 
     private void deleteDevice() {
-        if(brewHomePresenter != null)
+        if (brewHomePresenter != null)
             brewHomePresenter.unbindDev();
     }
-    //点击向右的箭头切换下一个设备
-    private void switchToNextDevInList() {
-        if (devices.size() == 0 || positionCurrentDevInDevices == -1)
-            return;
-        handler.removeCallbacksAndMessages(null);
-        if (positionCurrentDevInDevices == devices.size() - 1) {
-            positionCurrentDevInDevices = 0;
-        } else {
-            positionCurrentDevInDevices++;
-        }
-        Device device = devices.get(positionCurrentDevInDevices);
-        DeviceUtil.storeCurrentDevId(device.getId());
-        String devNickName = DeviceUtil.getDevNickName(device.getId());
-        if (!TextUtils.isEmpty(devNickName)) {
-            setDeviceName(devNickName);
-        } else {
-            setDeviceName(device.getId());
-        }
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                reqDataFromServer();
-            }
-        }, 500);
-    }
 
 
-    private void setDeviceName(String devNickName) {
-        devIdTv.setText(devNickName);
-        homeCenterTitle.setText(devNickName);
-    }
     @Override
     public void onReqBrewingSession(Long package_id) {
         Message msg = new Message();

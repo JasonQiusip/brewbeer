@@ -12,6 +12,7 @@ import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import com.alibaba.fastjson.JSON;
@@ -23,15 +24,19 @@ import com.ltbrew.brewbeer.api.longconnection.interfaces.FileSocketReadyCallback
 import com.ltbrew.brewbeer.api.longconnection.process.ParsePackKits;
 import com.ltbrew.brewbeer.api.longconnection.process.cmdconnection.CmdsConstant;
 import com.ltbrew.brewbeer.uis.activity.BrewHomeActivity;
+import com.ltbrew.brewbeer.uis.utils.BrewSessionUtils;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
 /**
  * Created by qiusiping on 16/5/8.
  */
-public class LtPushService extends IntentService implements FileSocketReadyCallback {
+public class LtPushService extends Service implements FileSocketReadyCallback {
     private static final String TAG = "LtPushService";
     public static final String CMN_PRGS_PUSH_ACTION = "CMN_PRGS_PUSH";
     public static final String CMN_MSG_PUSH_ACTION = "CMN_MSG_PUSH";
@@ -45,17 +50,18 @@ public class LtPushService extends IntentService implements FileSocketReadyCallb
     public static final String REQUEST_BREW_SESSION_FAILED = "reqBrewSessionFailed";
     private int tryAgain = 3;
     private TransmitCmdService transmitCmdService;
-    private final static int GRAY_SERVICE_ID = 1001;
+    private final static int GRAY_SERVICE_ID = 2016;
     ServiceBinder serviceBinder = new ServiceBinder();
     private int state;
     private int starting = 0;
     private int started = 1;
     private Thread startLongConnectionThread;
     private Thread reconnectThread;
+    private NotificationCompat.Builder notificationBuilder;
 
-    public LtPushService() {
-        super("LtPushService");
-    }
+//    public LtPushService() {
+//        super("LtPushService");
+//    }
 
     @Nullable
     @Override
@@ -69,21 +75,28 @@ public class LtPushService extends IntentService implements FileSocketReadyCallb
         }
     }
 
-    @Override
-    protected void onHandleIntent(Intent intent) {
-    }
+//    @Override
+//    protected void onHandleIntent(Intent intent) {
+//    }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.e(TAG, "======onStartCommand=====");
         startConnectionOnNewThread();
-        if (Build.VERSION.SDK_INT < 18) {
-            startForeground(GRAY_SERVICE_ID, new Notification());//API < 18 ，此方法能有效隐藏Notification上的图标
-        } else {
-            Intent innerIntent = new Intent(this, GrayInnerService.class);
-            startService(innerIntent);
-            startForeground(GRAY_SERVICE_ID, new Notification());
-        }
+//        if (Build.VERSION.SDK_INT < 18) {
+            Intent brewHomeIntent = new Intent(this, BrewHomeActivity.class);
+            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, brewHomeIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+            notificationBuilder = new NotificationCompat.Builder(this).setContentTitle("精酿大师")
+                    .setContentText("服务正在运行").setTicker("").setSmallIcon(R.mipmap.ic_launcher)
+                    .setWhen(System.currentTimeMillis()).setContentIntent(pendingIntent);
+
+            startForeground(GRAY_SERVICE_ID, notificationBuilder.build());//API < 18 ，此方法能有效隐藏Notification上的图标
+//        } else {
+//            Intent innerIntent = new Intent(this, GrayInnerService.class);
+//            startService(innerIntent);
+//            startForeground(GRAY_SERVICE_ID, new Notification());
+//        }
 
         return super.onStartCommand(intent, flags, startId);
     }
@@ -91,23 +104,23 @@ public class LtPushService extends IntentService implements FileSocketReadyCallb
     /**
      * 给 API >= 18 的平台上用的灰色保活手段
      */
-    public static class GrayInnerService extends Service {
-
-        @Override
-        public int onStartCommand(Intent intent, int flags, int startId) {
-            startForeground(GRAY_SERVICE_ID, new Notification());
-            stopForeground(true);
-            stopSelf();
-            return super.onStartCommand(intent, flags, startId);
-        }
-
-        @Nullable
-        @Override
-        public IBinder onBind(Intent intent) {
-            return null;
-        }
-
-    }
+//    public static class GrayInnerService extends Service {
+//
+//        @Override
+//        public int onStartCommand(Intent intent, int flags, int startId) {
+//            startForeground(GRAY_SERVICE_ID, new Notification());
+//            stopForeground(true);
+//            stopSelf();
+//            return super.onStartCommand(intent, flags, startId);
+//        }
+//
+//        @Nullable
+//        @Override
+//        public IBinder onBind(Intent intent) {
+//            return null;
+//        }
+//
+//    }
 
     @Override
     public void onCreate() {
@@ -118,11 +131,15 @@ public class LtPushService extends IntentService implements FileSocketReadyCallb
     @Override
     public void onDestroy() {
         super.onDestroy();
+        Log.e("", "===onDestroy====");
+        startLongConnectionThread = null;
         transmitCmdService.closeSocket();
     }
 
     private void startConnectionOnNewThread() {
-        if(startLongConnectionThread != null && startLongConnectionThread.isAlive())
+        Log.e("", "===startConnectionOnNewThread===="+startLongConnectionThread);
+
+        if(startLongConnectionThread != null)
             return;
         startLongConnectionThread = new Thread(new Runnable() {
             @Override
@@ -190,7 +207,9 @@ public class LtPushService extends IntentService implements FileSocketReadyCallb
     @Override
     public void onInitializeLongConnFailed() {
         Log.e("", "======================onInitializeLongConnFailed=========================");
-
+        Intent intent = new Intent(this, BrewHomeActivity.class);
+        showNotification(this, "连接服务初始化失败，请点击重连", intent);
+        startLongConnectionThread = null;
     }
 
     @Override
@@ -259,21 +278,25 @@ public class LtPushService extends IntentService implements FileSocketReadyCallb
             String[] splittedStr = cb.split(":");
             cb = splittedStr[1];
         }
-        Object obj = CmdsConstant.CMDSTR.lookup.get(cb);
+        System.out.println("CMD:  "+cb);
+        Object obj = PushCommand.lookup.get(cb);
         if (obj == null) {
             System.out.println("未识别的指令");
             return;
         }
         if(isBackground(this)){
             Intent intent = new Intent(this, BrewHomeActivity.class);
-            showNotification(this, pushMessage.des, 11, intent);
-            return;
+            showNotification(this, pushMessage.des, intent);
         }
         JSONObject pld = jsonObject.getJSONObject("_pld");
 
 
         Intent intent = new Intent();
         switch (PushCommand.valueOf(cb)) {
+            case follow:
+                intent.setAction(BrewHomeActivity.ADD_DEV_SUCCESS_ACTION);
+                sendBroadcast(intent);
+                break;
             case bind:
                 break;
             case unbind:
@@ -285,6 +308,8 @@ public class LtPushService extends IntentService implements FileSocketReadyCallb
                 sendBroadcast(intent);
                 break;
             case cmn_prgs:
+
+
                 if (pld != null || !pld.equals("null")) {
                     String body = pld.getString("body");
                     String des = pld.getString("des");
@@ -296,7 +321,7 @@ public class LtPushService extends IntentService implements FileSocketReadyCallb
                     pldForCmnPrgs.si = si;
                     pldForCmnPrgs.ratio = ratio;
                     pldForCmnPrgs.st = st;
-
+                    Log.e("pushmsg -> cmn_prgs", pldForCmnPrgs.toString());
                     intent.setAction(CMN_PRGS_PUSH_ACTION);
                     intent.putExtra(PUSH_MSG_EXTRA, pushMessage);
                     intent.putExtra(PUSH_PLD_EXTRA, pldForCmnPrgs);
@@ -307,7 +332,11 @@ public class LtPushService extends IntentService implements FileSocketReadyCallb
                 if(pld != null || !pld.equals("null")){
                     PldForCmnMsg pldForCmnMsg = new PldForCmnMsg();
                     int ms = pld.getInteger("ms");
+                    String tk = pld.getString("tk");
                     pldForCmnMsg.ms = ms;
+                    pldForCmnMsg.tk = tk;
+                    Log.e("pushmsg -> cmn_prgs", pldForCmnMsg.toString());
+
                     intent.setAction(CMN_MSG_PUSH_ACTION);
                     intent.putExtra(PUSH_MSG_EXTRA, pushMessage);
                     intent.putExtra(PUSH_PLD_EXTRA, pldForCmnMsg);
@@ -332,12 +361,41 @@ public class LtPushService extends IntentService implements FileSocketReadyCallb
 
     }
 
+    private String getStartTSOfSteps(String des) {
+        String timeStamp = null;
+        if (des.contains("糖化中 ")) {
+            //获取糖化开始时间
+            timeStamp = des.replace("糖化中 ", "");
+            des = "糖化中";
+
+        }
+
+        if (des.contains("煮沸中 ")){
+            timeStamp = des.replace("煮沸中 ", "");
+            des = "煮沸中";
+        }
+
+        if(timeStamp != null) {
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            try {
+                Date date = simpleDateFormat.parse(timeStamp);
+                BrewSessionUtils.storeStepStartTimeStamp(date.getTime());
+
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+        return des;
+    }
+
     private PushMsg parsePushMsg(JSONObject jsonObject) {
         PushMsg pushMessage = new PushMsg();
         String cb = jsonObject.getString("cb");
         String description = jsonObject.getString("description");
         String id = jsonObject.getString("id");
         Integer f = jsonObject.getInteger("f");
+        description = getStartTSOfSteps(description);
+
         pushMessage.cb = cb;
         pushMessage.des = description;
         pushMessage.id = id;
@@ -365,7 +423,8 @@ public class LtPushService extends IntentService implements FileSocketReadyCallb
         pushMessage.si = Integer.valueOf(seq_index);
         pushMessage.st = tk;
         byte[] bytes = ParsePackKits.charToByteArray(body.toCharArray()); //utf8中文串通过转字符串再转String会出现乱码， 所以在次将String转会byte数组， 再用系统的方法转为中文
-        pushMessage.body = new String(bytes);
+        pushMessage.des = new String(bytes);
+        pushMessage.des = getStartTSOfSteps(pushMessage.des);
         Intent intent = new Intent();
         intent.setAction(CMN_PRGS_CHECK_ACTION);
         intent.putExtra(PUSH_MSG_EXTRA, pushMessage);
@@ -373,25 +432,21 @@ public class LtPushService extends IntentService implements FileSocketReadyCallb
     }
 
 
-    public void showNotification(Context context, String txt, int notificationId, Intent intent) {
+    public void showNotification(Context context, String txt, Intent intent) {
+        Log.e(TAG+" showNotification", txt);
+
         NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         // 下面需兼容Android 2.x版本是的处理方式
-        Notification.Builder nb = new Notification.Builder(context).setContentTitle("来自LinkBrew")
-                .setContentText(txt).setNumber(1).setTicker(txt).setSmallIcon(R.mipmap.ic_launcher)
+        NotificationCompat.Builder nb = new NotificationCompat.Builder(context).setContentTitle("精酿过程")
+                .setContentText(txt).setTicker(txt).setSmallIcon(R.mipmap.ic_launcher)
                 .setWhen(System.currentTimeMillis()).setContentIntent(pendingIntent);
         Notification notify1 = null;
-        if (Build.VERSION.SDK_INT > 11 && Build.VERSION.SDK_INT < 16) {
-            notify1 = nb.getNotification();
-        } else if (Build.VERSION.SDK_INT >= 16) {
-            nb.build();
-        }
-        if (notify1 == null) {
-            return;
-        }
-        notify1.flags |= Notification.FLAG_AUTO_CANCEL; // FLAG_AUTO_CANCEL表明当通知被用户点击时，通知将被清除。
+        notify1 = nb.build();
+
+        notify1.flags |= Notification.DEFAULT_ALL; // FLAG_AUTO_CANCEL表明当通知被用户点击时，通知将被清除。
         // 通过通知管理器来发起通知。如果id不同，则每click，在statu那里增加一个提示
-        manager.notify(notificationId, notify1);
+        manager.notify(GRAY_SERVICE_ID, notify1);
     }
 
 
@@ -404,7 +459,9 @@ public class LtPushService extends IntentService implements FileSocketReadyCallb
 
     @Override
     public void onLongConnectionKickedOut() {
-
+        Intent intent = new Intent(this, BrewHomeActivity.class);
+        showNotification(this, "后台连接已被移除，请点击重连", intent);
+        startLongConnectionThread = null;
     }
 
 

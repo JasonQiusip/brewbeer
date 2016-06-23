@@ -130,9 +130,9 @@ public class BrewSessionsPresenter {
     }
 
     public void getRecipeInfo(String formula_id){
-        if(checkLocalDb(formula_id)){
-            return;
-        }
+//        if(checkLocalDb(formula_id)){
+//            return;
+//        }
         recipePresenter.getRecipes(formula_id);
     }
 

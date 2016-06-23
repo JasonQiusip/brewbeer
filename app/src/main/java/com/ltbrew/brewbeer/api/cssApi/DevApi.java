@@ -26,9 +26,23 @@ public class DevApi {
         return GeneralApi.dev(httpReqParam, ApiConstants.BIND);
     }
 
-    public static HttpResponse followDev(String qrCode){
+    public static HttpResponse bindDev(String devId, String ak){
         HashMap body = new HashMap();
-        body.put("code", qrCode);
+        body.put("pid", devId);
+        body.put("ak", ak);
+        HttpReqParam httpReqParam = new HttpReqParam();
+        httpReqParam.setBody(body);
+        return GeneralApi.dev(httpReqParam, ApiConstants.BIND_PID);
+    }
+
+    public static HttpResponse followDev(String qrCode, String pid, String ak){
+        HashMap body = new HashMap();
+        if(qrCode != null)
+            body.put("code", qrCode);
+        if(pid != null)
+            body.put("pid", pid);
+        if(ak != null)
+            body.put("ak", ak);
         HttpReqParam httpReqParam = new HttpReqParam();
         httpReqParam.setBody(body);
         return GeneralApi.dev(httpReqParam, ApiConstants.FOLLOW_REQ);
@@ -54,6 +68,15 @@ public class DevApi {
         return GeneralApi.dev(httpReqParam, ApiConstants.VERIFY_IOT);
     }
 
+    public static HttpResponse verifyIotById(String devId, String akey){
+        HashMap body = new HashMap();
+        body.put("pid", devId);
+        body.put("ak", akey);
+        HttpReqParam httpReqParam = new HttpReqParam();
+        httpReqParam.setBody(body);
+        return GeneralApi.dev(httpReqParam, ApiConstants.VERIFY_IOT);
+    }
+
     public static HttpResponse setPhoneNo2Dev( String qr, String phoneNo){
         HashMap body = new HashMap();
         body.put("qr", qr);
@@ -73,5 +96,15 @@ public class DevApi {
 
     public static HttpResponse getDevInfo(String devId){
         return GeneralApi.res(null, devId, ApiConstants.INFO);
+    }
+
+    public static HttpResponse setPhoneNo2DevById(String devId, String akey, String phoneNumb) {
+        HashMap body = new HashMap();
+        body.put("pid", devId);
+        body.put("ak", akey);
+        body.put("no", phoneNumb);
+        HttpReqParam httpReqParam = new HttpReqParam();
+        httpReqParam.setBody(body);
+        return GeneralApi.dev(httpReqParam, ApiConstants.PATCH_TID);
     }
 }

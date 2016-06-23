@@ -30,8 +30,9 @@ public class DBRecipeDao extends AbstractDao<DBRecipe, Long> {
         public final static Property IdForFn = new Property(4, String.class, "idForFn", false, "ID_FOR_FN");
         public final static Property Ref = new Property(5, String.class, "ref", false, "REF");
         public final static Property Cus = new Property(6, String.class, "cus", false, "CUS");
-        public final static Property Wr = new Property(7, Integer.class, "wr", false, "WR");
-        public final static Property Wq = new Property(8, Integer.class, "wq", false, "WQ");
+        public final static Property Ndrops = new Property(7, String.class, "ndrops", false, "NDROPS");
+        public final static Property Wr = new Property(8, Integer.class, "wr", false, "WR");
+        public final static Property Wq = new Property(9, Integer.class, "wq", false, "WQ");
     };
 
     private DaoSession daoSession;
@@ -57,8 +58,9 @@ public class DBRecipeDao extends AbstractDao<DBRecipe, Long> {
                 "\"ID_FOR_FN\" TEXT UNIQUE ," + // 4: idForFn
                 "\"REF\" TEXT," + // 5: ref
                 "\"CUS\" TEXT," + // 6: cus
-                "\"WR\" INTEGER," + // 7: wr
-                "\"WQ\" INTEGER);"); // 8: wq
+                "\"NDROPS\" TEXT," + // 7: ndrops
+                "\"WR\" INTEGER," + // 8: wr
+                "\"WQ\" INTEGER);"); // 9: wq
     }
 
     /** Drops the underlying database table. */
@@ -103,14 +105,19 @@ public class DBRecipeDao extends AbstractDao<DBRecipe, Long> {
             stmt.bindString(7, cus);
         }
  
+        String ndrops = entity.getNdrops();
+        if (ndrops != null) {
+            stmt.bindString(8, ndrops);
+        }
+ 
         Integer wr = entity.getWr();
         if (wr != null) {
-            stmt.bindLong(8, wr);
+            stmt.bindLong(9, wr);
         }
  
         Integer wq = entity.getWq();
         if (wq != null) {
-            stmt.bindLong(9, wq);
+            stmt.bindLong(10, wq);
         }
     }
 
@@ -137,8 +144,9 @@ public class DBRecipeDao extends AbstractDao<DBRecipe, Long> {
             cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4), // idForFn
             cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5), // ref
             cursor.isNull(offset + 6) ? null : cursor.getString(offset + 6), // cus
-            cursor.isNull(offset + 7) ? null : cursor.getInt(offset + 7), // wr
-            cursor.isNull(offset + 8) ? null : cursor.getInt(offset + 8) // wq
+            cursor.isNull(offset + 7) ? null : cursor.getString(offset + 7), // ndrops
+            cursor.isNull(offset + 8) ? null : cursor.getInt(offset + 8), // wr
+            cursor.isNull(offset + 9) ? null : cursor.getInt(offset + 9) // wq
         );
         return entity;
     }
@@ -153,8 +161,9 @@ public class DBRecipeDao extends AbstractDao<DBRecipe, Long> {
         entity.setIdForFn(cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4));
         entity.setRef(cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5));
         entity.setCus(cursor.isNull(offset + 6) ? null : cursor.getString(offset + 6));
-        entity.setWr(cursor.isNull(offset + 7) ? null : cursor.getInt(offset + 7));
-        entity.setWq(cursor.isNull(offset + 8) ? null : cursor.getInt(offset + 8));
+        entity.setNdrops(cursor.isNull(offset + 7) ? null : cursor.getString(offset + 7));
+        entity.setWr(cursor.isNull(offset + 8) ? null : cursor.getInt(offset + 8));
+        entity.setWq(cursor.isNull(offset + 9) ? null : cursor.getInt(offset + 9));
      }
     
     /** @inheritdoc */

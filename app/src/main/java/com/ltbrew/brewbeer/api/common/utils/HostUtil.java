@@ -23,9 +23,11 @@ public class HostUtil {
     private static int portSize;
     private static ArrayList<HostPorts> hostPort;
     private static HostPorts currentHostPorts;
+//    private static String HOST = "117.28.254.73:8000";
+//    private static String DOWNHOST = "117.28.254.73:8004";
+//    private static String GET_TOKEN_HOST = "117.28.254.73:8002";
     private static String HOST = "218.5.96.6:8300";
     private static String DOWNHOST = "218.5.96.6:8304";
-    private static String AUTHORIZE_URL;
     private static String GET_TOKEN_HOST = "218.5.96.6:8302";
     private static String GEN_TK = "http://" + GET_TOKEN_HOST + "/gen_tk";
 

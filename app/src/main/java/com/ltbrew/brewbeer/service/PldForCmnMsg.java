@@ -5,10 +5,24 @@ import android.os.Parcelable;
 
 public class PldForCmnMsg implements Parcelable{
         public int ms;
+    public String tk;
 
     public PldForCmnMsg(){}
+
     protected PldForCmnMsg(Parcel in) {
         ms = in.readInt();
+        tk = in.readString();
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(ms);
+        dest.writeString(tk);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
     }
 
     public static final Creator<PldForCmnMsg> CREATOR = new Creator<PldForCmnMsg>() {
@@ -24,12 +38,9 @@ public class PldForCmnMsg implements Parcelable{
     };
 
     @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel parcel, int i) {
-        parcel.writeInt(ms);
+    public String toString() {
+        return "PldForCmnMsg{" +
+                "ms=" + ms +
+                '}';
     }
 }

@@ -53,9 +53,9 @@ public class DBSlotDao extends AbstractDao<DBSlot, Long> {
         String constraint = ifNotExists? "IF NOT EXISTS ": "";
         db.execSQL("CREATE TABLE " + constraint + "\"DBSLOT\" (" + //
                 "\"_id\" INTEGER PRIMARY KEY ," + // 0: id
-                "\"SLOT_STEP_ID\" TEXT," + // 1: slotStepId
+                "\"SLOT_STEP_ID\" TEXT NOT NULL UNIQUE ," + // 1: slotStepId
                 "\"SLOT_ID\" INTEGER," + // 2: slotId
-                "\"NAME\" TEXT NOT NULL UNIQUE ," + // 3: name
+                "\"NAME\" TEXT," + // 3: name
                 "\"RECIPE_ID\" INTEGER NOT NULL );"); // 4: recipeId
     }
 
@@ -74,17 +74,17 @@ public class DBSlotDao extends AbstractDao<DBSlot, Long> {
         if (id != null) {
             stmt.bindLong(1, id);
         }
- 
-        String slotStepId = entity.getSlotStepId();
-        if (slotStepId != null) {
-            stmt.bindString(2, slotStepId);
-        }
+        stmt.bindString(2, entity.getSlotStepId());
  
         Integer slotId = entity.getSlotId();
         if (slotId != null) {
             stmt.bindLong(3, slotId);
         }
-        stmt.bindString(4, entity.getName());
+ 
+        String name = entity.getName();
+        if (name != null) {
+            stmt.bindString(4, name);
+        }
         stmt.bindLong(5, entity.getRecipeId());
     }
 
@@ -105,9 +105,9 @@ public class DBSlotDao extends AbstractDao<DBSlot, Long> {
     public DBSlot readEntity(Cursor cursor, int offset) {
         DBSlot entity = new DBSlot( //
             cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0), // id
-            cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1), // slotStepId
+            cursor.getString(offset + 1), // slotStepId
             cursor.isNull(offset + 2) ? null : cursor.getInt(offset + 2), // slotId
-            cursor.getString(offset + 3), // name
+            cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3), // name
             cursor.getLong(offset + 4) // recipeId
         );
         return entity;
@@ -117,9 +117,9 @@ public class DBSlotDao extends AbstractDao<DBSlot, Long> {
     @Override
     public void readEntity(Cursor cursor, DBSlot entity, int offset) {
         entity.setId(cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0));
-        entity.setSlotStepId(cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1));
+        entity.setSlotStepId(cursor.getString(offset + 1));
         entity.setSlotId(cursor.isNull(offset + 2) ? null : cursor.getInt(offset + 2));
-        entity.setName(cursor.getString(offset + 3));
+        entity.setName(cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3));
         entity.setRecipeId(cursor.getLong(offset + 4));
      }
     

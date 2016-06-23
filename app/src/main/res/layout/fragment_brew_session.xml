@@ -19,7 +19,7 @@
                 android:id="@+id/brewStateTitle"
                 style="@style/subTitleStyle"
                 android:layout_width="match_parent"
-                android:text="酿造状态" />
+                android:text="正在进行的酿造" />
 
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/brewStateRv"
@@ -35,9 +35,58 @@
                 android:background="@android:color/white"
                 android:gravity="center_vertical"
                 android:paddingLeft="16dp"
-                android:text="无激活的酿造状态"
+                android:text="无正在进行的酿造任务"
                 android:textSize="16sp"
                  />
+
+
+            <TextView
+                style="@style/subTitleStyle"
+                android:layout_width="match_parent"
+                android:text="正在发酵的酿造" />
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/fermentingBrewRv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/white"
+                 />
+
+            <TextView
+                android:id="@+id/noFermentingTaskTv"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:background="@android:color/white"
+                android:gravity="center_vertical"
+                android:paddingLeft="16dp"
+                android:text="无正在发酵的酿造任务"
+                android:textSize="16sp"
+                />
+
+
+            <TextView
+                style="@style/subTitleStyle"
+                android:layout_width="match_parent"
+                android:text="中断的酿造" />
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/suspendBrewRv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/white"
+                />
+
+            <TextView
+                android:id="@+id/suspendTaskTv"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:background="@android:color/white"
+                android:gravity="center_vertical"
+                android:paddingLeft="16dp"
+                android:text="无中断的酿造任务"
+                android:textSize="16sp"
+                />
+
 
             <TextView
                 style="@style/subTitleStyle"
@@ -49,7 +98,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@android:color/white"
-                 />
+                />
 
             <TextView
                 android:id="@+id/noFinishedTaskTv"

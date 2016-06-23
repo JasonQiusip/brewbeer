@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#e19702</color>
-    <color name="colorPrimaryDark">#c78502</color>
+    <color name="colorPrimary">#ff7d1d</color>
+    <color name="colorPrimaryDark">#ff5e3a</color>
     <color name="colorAccent">#f59b45</color>
     <color name="result_view">#b0000000</color>
     <color name="viewfinder_mask">#60000000</color>
     <color name="possible_result_points">#c0ffff00</color>
-    <color name="btn_bg">#e19702</color>
-    <color name="btn_bg_pressed">#c78502</color>
+    <color name="btn_bg">#ff7d1d</color>
+    <color name="btn_bg_pressed">#ff5e3a</color>
     <color name="colorBlue">#00b0f0</color>
     <color name="colorGreen">#92d050</color>
 </resources>

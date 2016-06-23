@@ -32,7 +32,7 @@ public class DeviceUtil {
     }
 
     public static void clearData(){
-        getSharedPreferences().edit().clear();
+        storeCurrentDevId("");
     }
 
     private static SharedPreferences getSharedPreferences(){

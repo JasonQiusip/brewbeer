@@ -47,6 +47,13 @@ public class SocketRead implements Runnable {
 
     public void endReadThread(boolean excute) {
         this.excute = excute;
+        if(inputStream != null){
+            try {
+                inputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /**

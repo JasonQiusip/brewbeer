@@ -1,0 +1,37 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    tools:context="com.ltbrew.brewbeer.uis.fragment.AddRecipeByQrFragment">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:background="@mipmap/bg_add_dev"
+        android:gravity="center"
+        android:text="@string/add_dev_info"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <Button
+        android:id="@+id/btn_scan"
+        android:layout_width="286dp"
+        android:layout_height="44dp"
+        android:layout_marginBottom="24dp"
+        android:layout_marginTop="52dp"
+        android:background="@drawable/bg_btn_primary_corn"
+        android:textColor="#ffffff"
+        android:text="@string/scan_qrcode"
+        android:textSize="18sp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
+        android:gravity="center"
+        android:text="请扫描设备上的二维码以添加设备"
+        android:textSize="18sp" />
+
+</LinearLayout>

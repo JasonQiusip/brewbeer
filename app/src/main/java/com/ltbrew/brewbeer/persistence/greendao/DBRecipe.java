@@ -17,6 +17,7 @@ public class DBRecipe {
     private String idForFn;
     private String ref;
     private String cus;
+    private String ndrops;
     private Integer wr;
     private Integer wq;
 
@@ -36,7 +37,7 @@ public class DBRecipe {
         this.id = id;
     }
 
-    public DBRecipe(Long id, int formulaId, String id_type, String name, String idForFn, String ref, String cus, Integer wr, Integer wq) {
+    public DBRecipe(Long id, int formulaId, String id_type, String name, String idForFn, String ref, String cus, String ndrops, Integer wr, Integer wq) {
         this.id = id;
         this.formulaId = formulaId;
         this.id_type = id_type;
@@ -44,6 +45,7 @@ public class DBRecipe {
         this.idForFn = idForFn;
         this.ref = ref;
         this.cus = cus;
+        this.ndrops = ndrops;
         this.wr = wr;
         this.wq = wq;
     }
@@ -108,6 +110,14 @@ public class DBRecipe {
 
     public void setCus(String cus) {
         this.cus = cus;
+    }
+
+    public String getNdrops() {
+        return ndrops;
+    }
+
+    public void setNdrops(String ndrops) {
+        this.ndrops = ndrops;
     }
 
     public Integer getWr() {
@@ -193,4 +203,5 @@ public class DBRecipe {
         }    
         myDao.refresh(this);
     }
+
 }

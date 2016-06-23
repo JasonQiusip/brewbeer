@@ -13,6 +13,7 @@ public class BrewSessionUtils {
 
     public static final String START_TIME_STAMP = "boilStart";
     public static final String BREW_SESSION_SP = "brew_session_sp";
+    public static final String FERMENTING_TS = "fermenting_ts";
 
     public static void storeStepStartTimeStamp(long timeStamp){
         getSharedPreferences().edit().putLong(START_TIME_STAMP, timeStamp).commit();
@@ -20,6 +21,14 @@ public class BrewSessionUtils {
 
     public static long getStepStartTimeStamp(){
         return getSharedPreferences().getLong(START_TIME_STAMP, 0);
+    }
+
+    public static void storeFermentingStartTimeStamp(Long package_id, long timeStamp){
+        getSharedPreferences().edit().putLong(package_id+FERMENTING_TS, timeStamp).commit();
+    }
+
+    public static long getFermentingStartTimeStamp(Long package_id){
+        return getSharedPreferences().getLong(package_id+FERMENTING_TS, 0);
     }
 
     private static SharedPreferences getSharedPreferences(){

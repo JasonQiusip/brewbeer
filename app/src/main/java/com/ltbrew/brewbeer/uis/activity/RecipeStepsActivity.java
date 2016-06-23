@@ -62,7 +62,7 @@ public class RecipeStepsActivity extends BaseActivity {
                 return;
             showRecipe();
         } else {
-            messageWindow = showMsgWindow("提醒", "正在获取配方数据， 请稍后...", null);
+//            messageWindow = showMsgWindow("提醒", "正在获取配方数据， 请稍后...", null);
             ParamStoreUtil.getInstance().setParamSetObserver(new ParamSetObserver() {
                 @Override
                 public void onSetRecipe() {

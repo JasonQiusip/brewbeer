@@ -172,4 +172,88 @@ public class AddDevPresenter {
             }
         }).subscribeOn(Schedulers.io());
     }
+
+    public void verifyIotById(final String devId, final String akey) {
+        Observable.create(new Observable.OnSubscribe<Integer>() {
+            @Override
+            public void call(Subscriber<? super Integer> subscriber) {
+                HttpResponse httpResponse = DevApi.verifyIotById(devId, akey);
+                if(httpResponse.isSuccess()){
+                    String content = httpResponse.getContent();
+                    JSONObject jsonObject = JSON.parseObject(content);
+                    Integer state = jsonObject.getInteger("state");
+                    String no = jsonObject.getString("no");
+                    subscriber.onNext(state);
+                }else{
+                    subscriber.onError(new Throwable(""+httpResponse.getCode()));
+                }
+            }
+        }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(new Action1<Integer>() {
+            @Override
+            public void call(Integer state) {
+                addDevView.onReqIotSuccess(state);
+            }
+        }, new Action1<Throwable>() {
+            @Override
+            public void call(Throwable throwable) {
+                addDevView.onReqIotFailed(throwable.getMessage());
+            }
+        });
+    }
+
+    public void setPhoneNumbById(final String devId, final String akey, final String phoneNumb){
+        RxUtil.create(new Observable.OnSubscribe<String>() {
+            @Override
+            public void call(Subscriber<? super String> subscriber) {
+                HttpResponse httpResponse = DevApi.setPhoneNo2DevById(devId, akey, phoneNumb);
+                if(httpResponse.isSuccess()){
+                    String content = httpResponse.getContent();
+                    subscriber.onNext(content);
+                }else{
+                    subscriber.onError(new Throwable(""+httpResponse.getCode()));
+                }
+            }
+        }).subscribe(new Action1<String>() {
+            @Override
+            public void call(String state) {
+                addDevView.onSetPhoneNumbSuccess();
+            }
+        }, new Action1<Throwable>() {
+            @Override
+            public void call(Throwable throwable) {
+                addDevView.onSetPhoneNumbFailed(throwable.getMessage());
+            }
+        });
+    }
+
+    public void addDevById(final String devId, final String akey){
+        Observable.create(new Observable.OnSubscribe<AddDevResp>() {
+            @Override
+            public void call(Subscriber<? super AddDevResp> subscriber) {
+                HttpResponse httpResponse = DevApi.bindDev(devId, akey);
+                if(httpResponse.isSuccess()){
+                    String content = httpResponse.getContent();
+                    JSONObject jsonObject = JSON.parseObject(content);
+                    Integer state = jsonObject.getInteger("state");
+                    String id = jsonObject.getString("id");
+                    AddDevResp addDevResp = new AddDevResp();
+                    addDevResp.id = id;
+                    addDevResp.state = state;
+                    subscriber.onNext(addDevResp);
+                }else{
+                    subscriber.onError(new Throwable(""+httpResponse.getCode()));
+                }
+            }
+        }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(new Action1<AddDevResp>() {
+            @Override
+            public void call(AddDevResp addDevResp) {
+                addDevView.onReqAddDevSuccess(addDevResp);
+            }
+        }, new Action1<Throwable>() {
+            @Override
+            public void call(Throwable throwable) {
+                addDevView.onAddDevFailed(throwable.getMessage());
+            }
+        });
+    }
 }

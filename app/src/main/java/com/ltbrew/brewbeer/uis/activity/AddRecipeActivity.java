@@ -1,6 +1,10 @@
 package com.ltbrew.brewbeer.uis.activity;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.Toolbar;
 
 import android.support.v4.app.Fragment;
@@ -20,10 +24,9 @@ import com.ltbrew.brewbeer.presenter.AddPackPresenter;
 import com.ltbrew.brewbeer.presenter.model.Recipe;
 import com.ltbrew.brewbeer.thirdpartylib.MessageWindow;
 import com.ltbrew.brewbeer.thirdpartylib.activity.CaptureActivity;
-import com.ltbrew.brewbeer.uis.OnAddActionListener;
+import com.ltbrew.brewbeer.uis.OnAddRecipeActionListener;
 import com.ltbrew.brewbeer.uis.fragment.AddRecipeByIdFragment;
 import com.ltbrew.brewbeer.uis.fragment.AddRecipeByQrFragment;
-import com.ltbrew.brewbeer.uis.fragment.BrewSessionFragment;
 import com.ltbrew.brewbeer.uis.utils.ParamStoreUtil;
 
 import java.util.List;
@@ -32,10 +35,11 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnCheckedChanged;
 
-public class AddRecipeActivity extends BaseActivity implements OnAddActionListener,AddPackView {
+public class AddRecipeActivity extends BaseActivity implements OnAddRecipeActionListener,AddPackView {
 
 
     public static final String CHECK_RECIPE = "0";
+    private static final int CAMERA = 11;
     @BindView(R.id.scanRb)
     RadioButton scanRb;
     @BindView(R.id.byIdRb)
@@ -52,6 +56,7 @@ public class AddRecipeActivity extends BaseActivity implements OnAddActionListen
     private AddPackPresenter addPackPresenter;
     private ImageView backIv;
     private String packId;
+    private MessageWindow messageWindow;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,7 +105,27 @@ public class AddRecipeActivity extends BaseActivity implements OnAddActionListen
     }
 
     public void startQrScan() {
-        startActivityForResult(new Intent(this, CaptureActivity.class), REQUEST_CODE_SCAN_QR);
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+            //申请CAMERA权限
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA},
+                    CAMERA);
+        }else{
+            startActivityForResult(new Intent(this, CaptureActivity.class), REQUEST_CODE_SCAN_QR);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == CAMERA) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission Granted
+                startActivityForResult(new Intent(this, CaptureActivity.class), REQUEST_CODE_SCAN_QR);
+            } else {
+                // Permission Denied
+            }
+        }
     }
 
     @Override
@@ -110,7 +135,7 @@ public class AddRecipeActivity extends BaseActivity implements OnAddActionListen
             if (resultCode == RESULT_OK) {
                 String scanQrCode = data.getStringExtra("result");
                 this.packId = scanQrCode;
-                showMsgWindow("提醒", "同步原料包数据并获取酿造配方", null);
+                messageWindow = showMsgWindow("提醒", "同步原料包数据并获取酿造配方", null);
                 addPackPresenter.addPackToDev(scanQrCode, CHECK_RECIPE);
             }
         }
@@ -123,30 +148,21 @@ public class AddRecipeActivity extends BaseActivity implements OnAddActionListen
             return;
         }
         this.packId = pack_id;
+        messageWindow = showMsgWindow("提醒", "同步原料包数据并获取酿造配方", null);
         addPackPresenter.addPackToDev(pack_id, CHECK_RECIPE);
     }
 
     @Override
     public void onAddRecipeToDevSuccess(Integer state, String formula_id, String name) {
+        if(messageWindow != null)
+            messageWindow.hidePopupWindow();
+
         if(state == 0){
-//
             addPackPresenter.getRecipeAfterBrewBegin(formula_id);
             startRecipeDetail();
             finish();
-//            showMsgWindow("提醒", name + " 已同步 点击详情查看配方", new MessageWindow.OnMsgWindowActionListener() {
-//                @Override
-//                public void onCloseWindow() {
-//                    finish();
-//                }
-//
-//                @Override
-//                public void onClickDetail() {
-//                    startRecipeDetail();
-//                    finish();
-//                }
-//            }).showTvDetail().hideTvClose();
         }else if(state == 1){
-            showMsgWindow("提醒", "原料包无效已被使用", null);
+            showMsgWindow("提醒", "原料包无效, 已被使用", null);
         }else if(state == 2){
             showMsgWindow("提醒", "请求参数错误， 请联系客服", null);
         }else{
@@ -162,6 +178,8 @@ public class AddRecipeActivity extends BaseActivity implements OnAddActionListen
 
     @Override
     public void onAddRecipeToDevFailed(String message) {
+        if(messageWindow != null)
+            messageWindow.hidePopupWindow();
         showErrorMsg(message);
     }
 

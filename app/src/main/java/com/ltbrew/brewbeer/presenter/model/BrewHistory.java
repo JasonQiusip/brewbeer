@@ -18,7 +18,10 @@ public class BrewHistory {
     String brewingState;
     String st;
     int ms;
+    String brewingCmnMsg;
     DBRecipe dbRecipe;
+    boolean showStepInfo;
+    String brewingStageInfo;
 
     public DBRecipe getDbRecipe() {
         return dbRecipe;
@@ -114,5 +117,46 @@ public class BrewHistory {
 
     public void setMs(int ms) {
         this.ms = ms;
+    }
+
+    public String getBrewingCmnMsg() {
+        return brewingCmnMsg;
+    }
+
+    public void setBrewingCmnMsg(String brewingCmnMsg) {
+        this.brewingCmnMsg = brewingCmnMsg;
+    }
+
+    public boolean isShowStepInfo() {
+        return showStepInfo;
+    }
+
+    public void setShowStepInfo(boolean showStepInfo) {
+        this.showStepInfo = showStepInfo;
+    }
+
+    public String getBrewingStageInfo() {
+        return brewingStageInfo;
+    }
+
+    public void setBrewingStageInfo(String brewingStageInfo) {
+        this.brewingStageInfo = brewingStageInfo;
+    }
+
+    @Override
+    public String toString() {
+        return "BrewHistory{" +
+                "formula_id=" + formula_id +
+                ", begin_time='" + begin_time + '\'' +
+                ", end_time='" + end_time + '\'' +
+                ", package_id=" + package_id +
+                ", pid=" + pid +
+                ", state=" + state +
+                ", ratio=" + ratio +
+                ", si=" + si +
+                ", brewingState='" + brewingState + '\'' +
+                ", st='" + st + '\'' +
+                ", ms=" + ms +
+                '}';
     }
 }

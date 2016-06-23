@@ -10,9 +10,9 @@ import de.greenrobot.dao.DaoException;
 public class DBSlot {
 
     private Long id;
+    /** Not-null value. */
     private String slotStepId;
     private Integer slotId;
-    /** Not-null value. */
     private String name;
     private long recipeId;
 
@@ -55,10 +55,12 @@ public class DBSlot {
         this.id = id;
     }
 
+    /** Not-null value. */
     public String getSlotStepId() {
         return slotStepId;
     }
 
+    /** Not-null value; ensure this value is available before it is saved to the database. */
     public void setSlotStepId(String slotStepId) {
         this.slotStepId = slotStepId;
     }
@@ -71,12 +73,10 @@ public class DBSlot {
         this.slotId = slotId;
     }
 
-    /** Not-null value. */
     public String getName() {
         return name;
     }
 
-    /** Not-null value; ensure this value is available before it is saved to the database. */
     public void setName(String name) {
         this.name = name;
     }

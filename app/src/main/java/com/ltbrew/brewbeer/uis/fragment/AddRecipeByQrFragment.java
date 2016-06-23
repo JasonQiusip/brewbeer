@@ -9,7 +9,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 
 import com.ltbrew.brewbeer.R;
-import com.ltbrew.brewbeer.uis.OnAddActionListener;
+import com.ltbrew.brewbeer.uis.OnAddRecipeActionListener;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -21,7 +21,7 @@ public class AddRecipeByQrFragment extends Fragment {
 
     @BindView(R.id.btn_scan)
     Button btnScan;
-    private OnAddActionListener onAddActionListener;
+    private OnAddRecipeActionListener onAddActionListener;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -45,7 +45,7 @@ public class AddRecipeByQrFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        onAddActionListener = (OnAddActionListener) context;
+        onAddActionListener = (OnAddRecipeActionListener) context;
     }
 
     @Override

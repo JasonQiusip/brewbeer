@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    >
+
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:textSize="20sp"
+            android:textColor="@color/colorAccent"
+            android:gravity="center"
+            android:text="提醒"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:paddingLeft="16dp"
+            android:gravity="center"
+            android:textSize="16sp"
+            android:lineSpacingExtra="4dp"
+            android:text="酿造完成， 请排出麦汁！刚酿造完成， 麦汁温度较高，排出时请注意不要烫伤！"
+            android:background="@drawable/bg_btn_white_corn"
+            android:id="@+id/tv_notice" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:layout_marginTop="8dp"
+            android:background="#aaa"/>
+
+                <Button
+                    android:id="@+id/okBtn"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@android:color/white"
+                    android:text="确认"
+                    />
+</LinearLayout>

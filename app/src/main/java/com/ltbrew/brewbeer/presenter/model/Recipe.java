@@ -10,6 +10,7 @@ public class Recipe {
     String id_type;
     String name;
     String ref;
+    String ndrops;
     boolean checked;
 
     public String getCus() {
@@ -60,5 +61,13 @@ public class Recipe {
 
     public void setChecked(boolean checked) {
         this.checked = checked;
+    }
+
+    public String getNdrops() {
+        return ndrops;
+    }
+
+    public void setNdrops(String ndrops) {
+        this.ndrops = ndrops;
     }
 }

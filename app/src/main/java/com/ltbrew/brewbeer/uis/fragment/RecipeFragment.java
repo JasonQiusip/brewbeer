@@ -58,6 +58,8 @@ public class RecipeFragment extends Fragment implements RecipeView, BaseViewHold
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+        recipePresenter = new RecipePresenter(this);
+
     }
 
     @Override
@@ -81,7 +83,6 @@ public class RecipeFragment extends Fragment implements RecipeView, BaseViewHold
         recipeRv.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
         recipeAdapter = new RecipeAdapter(getContext());
         recipeRv.setAdapter(recipeAdapter);
-        recipePresenter = new RecipePresenter(this);
         recipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -93,13 +94,15 @@ public class RecipeFragment extends Fragment implements RecipeView, BaseViewHold
     }
 
     public void getAllRecipes() {
-        recipeRefreshLayout.setRefreshing(true);
+        if(recipeRefreshLayout != null)
+            recipeRefreshLayout.setRefreshing(true);
         final String devId = DeviceUtil.getCurrentDevId();
-        if (TextUtils.isEmpty(devId)) {
+        if (TextUtils.isEmpty(devId) && recipeRefreshLayout != null) {
             recipeRefreshLayout.setRefreshing(false);
             return;
         }
-        recipePresenter.getRecipes("");
+        if(recipePresenter != null)
+            recipePresenter.getRecipes("");
     }
 
 
@@ -191,4 +194,7 @@ public class RecipeFragment extends Fragment implements RecipeView, BaseViewHold
         startActivity(intent);
     }
 
+    public void clearData() {
+
+    }
 }

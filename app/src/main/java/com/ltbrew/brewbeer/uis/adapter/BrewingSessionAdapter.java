@@ -47,7 +47,8 @@ public class BrewingSessionAdapter extends RecyclerView.Adapter<BrewingVH> {
     public void onBindViewHolder(final BrewingVH holder, final int position) {
 
         BrewHistory brewHistory = brewingHitories.get(position);
-        DBRecipe recipe = brewHistory.getDbRecipe();
+        DBRecipe dbRecipe = brewHistory.getDbRecipe();
+        DBRecipe recipe = dbRecipe;
         if (recipe != null) {
             holder.brewingSessionItemTv.setText(recipe.getName());
         }
@@ -110,12 +111,15 @@ public class BrewingSessionAdapter extends RecyclerView.Adapter<BrewingVH> {
             holder.swipeLayout.open(true);
         }
         Integer si = brewHistory.getSi();
-        if(si != null) {
-            List<DBBrewStep> brewSteps = brewHistory.getDbRecipe().getBrewSteps();
+        String brewingStageInfo = brewHistory.getBrewingStageInfo();
+        if(si != null && dbRecipe != null && brewingStageInfo == null) {
+            List<DBBrewStep> brewSteps = dbRecipe.getBrewSteps();
             if(brewSteps != null && brewSteps.size() > si) {
                 String stageInfo = getStageInfo(brewSteps.get(si));
                 holder.brewingStage.setText(stageInfo);
             }
+        }else{
+            holder.brewingStage.setText(brewingStageInfo);
         }
     }
 

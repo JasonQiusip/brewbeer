@@ -26,15 +26,15 @@ import com.ltbrew.brewbeer.presenter.model.BrewHistory;
 import com.ltbrew.brewbeer.presenter.model.Recipe;
 import com.ltbrew.brewbeer.service.LtPushService;
 import com.ltbrew.brewbeer.service.PldForCmnMsg;
+import com.ltbrew.brewbeer.service.PldForCmnPrgs;
 import com.ltbrew.brewbeer.service.PushMsg;
+import com.ltbrew.brewbeer.uis.dialog.NoticeForBrewEndDialog;
+import com.ltbrew.brewbeer.uis.dialog.OnPositiveButtonClickListener;
 import com.ltbrew.brewbeer.uis.fragment.BrewSessionFragment;
 import com.ltbrew.brewbeer.uis.utils.BrewSessionUtils;
 import com.ltbrew.brewbeer.uis.utils.DpSpPixUtils;
 import com.ltbrew.brewbeer.uis.utils.ParamStoreUtil;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 
 import butterknife.BindView;
@@ -61,73 +61,77 @@ public class BrewSessionControlActivity extends BaseActivity implements AddPackV
     private TextView brewDetailDes;
     private boolean showStrartToBrewTxt;
     private AddPackPresenter addPackPresenter;
+    private String tag = this.getClass().getName();
 
     private Handler mHandler = new Handler();
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
-            if(LtPushService.CMN_PRGS_PUSH_ACTION.equals(action)){
+            if(LtPushService.CMN_PRGS_PUSH_ACTION.equals(action)) { //酿酒状态上报
 
                 PushMsg pushMsgObj = intent.getParcelableExtra(LtPushService.PUSH_MSG_EXTRA);
-                Log.e("CMN_PRGS control", pushMsgObj.toString());
-                pushMsgObj.body = pushMsgObj.body == null ? pushMsgObj.des : pushMsgObj.body;
+                PldForCmnPrgs pldForCmnPrgs = intent.getParcelableExtra(LtPushService.PUSH_PLD_EXTRA);
 
-                if(pushMsgObj.body.contains("糖化中 ")){
-                    String timeStamp = pushMsgObj.body.replace("糖化中 ", "");
-                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                    try {
-                        Date date = simpleDateFormat.parse(timeStamp);
-                        BrewSessionUtils.storeStepStartTimeStamp(date.getTime());
+                if(brewHistory != null && pldForCmnPrgs != null) {
 
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                    }
+                    brewHistory.setRatio(pldForCmnPrgs.ratio);
+                    brewHistory.setSi(pldForCmnPrgs.si);
+                    brewHistory.setBrewingState(pushMsgObj.des);
+                    brewHistory.setSt(pldForCmnPrgs.st);
                 }
-                if(brewHistory != null) {
+                Log.e("CMN_PRGS control", brewHistory.toString());
 
-                    brewHistory.setRatio(pushMsgObj.ratio);
-                    brewHistory.setSi(pushMsgObj.si);
-                    brewHistory.setBrewingState(pushMsgObj.body);
-                    brewHistory.setSt(pushMsgObj.st);
-                }
-                showRecipeState();
-            }else if (LtPushService.CMN_PRGS_CHECK_ACTION.equals(action)) {
+                changeRecipeState();
+            }else if (LtPushService.CMN_PRGS_CHECK_ACTION.equals(action)) {//主动查询酿酒状态回复
                 PushMsg pushMsgObj = intent.getParcelableExtra(LtPushService.PUSH_MSG_EXTRA);
                 Log.e("CMN_PRGS_CHECK_ACTION", pushMsgObj.toString());
+
                 String st = pushMsgObj.st;
                 if(brewHistory != null) {
                     brewHistory.setRatio(pushMsgObj.ratio);
                     brewHistory.setSi(pushMsgObj.si);
-                    brewHistory.setBrewingState(pushMsgObj.body);
+                    brewHistory.setBrewingState(pushMsgObj.des);
                     brewHistory.setSt(st);
                 }
-                showRecipeState();
-            }else if(LtPushService.CMN_MSG_PUSH_ACTION.equals(action)){
+                changeRecipeState();
+            }else if(LtPushService.CMN_MSG_PUSH_ACTION.equals(action)){//温度状态上报
                 PushMsg pushMsgObj = intent.getParcelableExtra(LtPushService.PUSH_MSG_EXTRA);
                 Log.e("CMN_MSG_PUSH_ACTION", pushMsgObj.toString());
                 PldForCmnMsg pldForCmnMsg = intent.getParcelableExtra(LtPushService.PUSH_PLD_EXTRA);
 
                 int ms = pldForCmnMsg.ms;
-                if(ms > 100){
-                    pushMsgObj.body = "煮沸";
+                if(ms > 90){
+                    pushMsgObj.des = "煮沸";
                 }
                 if(brewHistory != null) {
-                    brewHistory.setBrewingState(pushMsgObj.body);
+                    brewHistory.setBrewingCmnMsg(pushMsgObj.des);
                     brewHistory.setMs(ms);
                 }
-                showRecipeState();
+                changeRecipeState();
             }
         }
     };
 
-    private void showRecipeState() {
+    private void changeRecipeState() {
         Integer si = brewHistory.getSi();
+        dbRecipe = brewHistory.getDbRecipe();
+        if(dbRecipe == null)
+            return;
         List<DBBrewStep> brewSteps = dbRecipe.getBrewSteps();
+        if(brewSteps == null)
+            return;
+        int totalStepCount = brewSteps.size();
         showCurState(si, brewSteps);
-        for(int i = 0; i < si*2; i ++) {
+        if(si == null)
+            return;
+        Log.e(tag+"changeRecipeState", totalStepCount+"   si : "+si +  " brewstate "+brewHistory.getBrewingState());
+        //修改每个步骤的内容
+        for(int i = 0; i <= si; i ++) {
+
             if (si != null) {
-                View childAtIndex = stepsContainer.getChildAt(i);
+                //此处乘以2是因为一个行的view包含两个子view： 一个view显示内容的， 一个是内容下面的横线, 内容的view都在偶数位置
+                View childAtIndex = stepsContainer.getChildAt(i * 2);
                 if(childAtIndex == null)
                     continue;
                 TextView contentDes = (TextView) childAtIndex.findViewById(R.id.brewDetailContentTv);
@@ -137,16 +141,30 @@ public class BrewSessionControlActivity extends BaseActivity implements AddPackV
                 if (i < si) {
                     contentDes.setText("完成");
                     childAtIndex.setBackgroundColor(getResources().getColor(R.color.colorBlue));
-                } else if (i == si) {
+                } else if (i <= totalStepCount - 1) {
                     if(brewHistory.getRatio() == 100){
                         childAtIndex.setBackgroundColor(getResources().getColor(R.color.colorBlue));
                         contentDes.setText("完成");
+                        final NoticeForBrewEndDialog noticeForBrewEndDialog = new NoticeForBrewEndDialog(this);
+                        noticeForBrewEndDialog.show();
+                        noticeForBrewEndDialog.setOnPositiveButtonClickListener(new OnPositiveButtonClickListener() {
+                            @Override
+                            public void onPositiveButtonClick() {
+                                noticeForBrewEndDialog.setMsg("麦汁排出完成， 待麦汁冷却到18℃时投放酵母");
+                                noticeForBrewEndDialog.setOnPositiveButtonClickListener(null);
+                            }
+                        });
                     }else {
                         childAtIndex.setBackgroundColor(getResources().getColor(R.color.colorGreen));
-                        contentDes.setText(curState.getText().toString());
+                        contentDes.setText(brewHistory.getBrewingState());
                         brewDetailDes = contentDes;
                     }
 
+                }else if(i > totalStepCount - 1){
+
+                    childAtIndex.setBackgroundColor(getResources().getColor(R.color.colorGreen));
+                    contentDes.setText(brewHistory.getBrewingState());
+                    brewDetailDes = contentDes;
                 }
             }
         }
@@ -167,6 +185,7 @@ public class BrewSessionControlActivity extends BaseActivity implements AddPackV
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(LtPushService.CMN_PRGS_CHECK_ACTION);
         intentFilter.addAction(LtPushService.CMN_PRGS_PUSH_ACTION);
+        intentFilter.addAction(LtPushService.CMN_MSG_PUSH_ACTION);
         intentFilter.addAction(LtPushService.FILE_SOCKET_IS_READY_ACTION);
         registerReceiver(broadcastReceiver, intentFilter);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -193,6 +212,9 @@ public class BrewSessionControlActivity extends BaseActivity implements AddPackV
         if("开始酿造".equals(curState.getText().toString())){
             curState.setBackgroundDrawable(null);
             addPackPresenter.addPackToDev(brewHistory.getPackage_id()+"", OPEN_DEV_START_BREWING);
+        }else if("开始发酵".equals(curState.getText().toString())){
+            BrewSessionUtils.storeFermentingStartTimeStamp(brewHistory.getPackage_id(), System.currentTimeMillis());
+            showFermentingCountDown();
         }
     }
 
@@ -216,13 +238,7 @@ public class BrewSessionControlActivity extends BaseActivity implements AddPackV
             String stepId = dbBrewStep.getStepId();
             String act = dbBrewStep.getAct();
             if ("boil".equals(act)) {
-                int temp = dbBrewStep.getT() / 5;
-                if(temp < 100) {
-                    detailView = addItemToContainer("糖化\n"+dbBrewStep.getK() / 60 + "分钟"+"@" + temp + "℃"  , "");
-
-                }else{
-                    detailView = addItemToContainer("煮沸\n" + dbBrewStep.getK() / 60 + "分钟", "");
-                }
+                detailView = showBoilStep(dbBrewStep);
 
             } else {
                 Integer slot = dbBrewStep.getSlot();
@@ -234,52 +250,92 @@ public class BrewSessionControlActivity extends BaseActivity implements AddPackV
                 String addMaterialToSlot = "增补\n往"+slot+"号槽投放" + dbSlot.getName();
                 detailView = addItemToContainer(addMaterialToSlot, "");
             }
-            if(si != null) {
-                TextView contentDes = (TextView) detailView.findViewById(R.id.brewDetailContentTv);
-                if (i < si) {
-                    contentDes.setText("完成");
-                    detailView.setBackgroundColor(getResources().getColor(R.color.colorBlue));
-                } else if (i == si) {
-                    if(brewHistory.getRatio() == 100){
-                        detailView.setBackgroundColor(getResources().getColor(R.color.colorBlue));
-                        contentDes.setText("完成");
-                    }else {
-                        detailView.setBackgroundColor(getResources().getColor(R.color.colorGreen));
-                        contentDes.setText(curState.getText().toString());
-                        brewDetailDes = contentDes;
-                    }
 
-                }
+            if(si != null) {
+                showStepState(si, i, detailView);
             }
             i++;
         }
+        addItemToContainer("发酵\n" + "10天@18℃", "");
 
     }
 
-    private void showCurState(Integer si, List<DBBrewStep> brewSteps) {
-        if(brewHistory.getBrewingState() != null) {
+    private View showBoilStep(DBBrewStep dbBrewStep) {
+        View detailView;
+        int temp = dbBrewStep.getT() / 5;
+        if(temp < 90) {
+            detailView = addItemToContainer("糖化\n"+dbBrewStep.getK() / 60 + "分钟"+"@" + temp + "℃"  , "");
+
+        }else{
+            detailView = addItemToContainer("煮沸\n" + dbBrewStep.getK() / 60 + "分钟", "");
+        }
+        return detailView;
+    }
+
+    private void showStepState(Integer si, int i, View detailView) {
+        TextView contentDes = (TextView) detailView.findViewById(R.id.brewDetailContentTv);
+        if (i < si) {
+            contentDes.setText("完成");
+            detailView.setBackgroundColor(getResources().getColor(R.color.colorBlue));
+        } else if (i == si) {
             if(brewHistory.getRatio() == 100){
+                detailView.setBackgroundColor(getResources().getColor(R.color.colorBlue));
+                contentDes.setText("完成");
+            }else {
+                detailView.setBackgroundColor(getResources().getColor(R.color.colorGreen));
+                if(brewHistory.getBrewingState() != null) {
+                    contentDes.setText(brewHistory.getBrewingState());
+                }
+                brewDetailDes = contentDes;
+            }
+        }
+    }
+
+
+    private void showCurState(Integer si, List<DBBrewStep> brewSteps) {
+        if(brewSteps.size() == 0)
+            return;
+        //发酵
+        if(si != null && si == brewSteps.size() && brewHistory.getRatio() != null && brewHistory.getRatio() == 100){
+            showFermentingInfo();
+            return;
+        }
+        //如果有温度数据上报
+        if(brewHistory.getBrewingCmnMsg() != null){
+            curState.setText(brewHistory.getBrewingCmnMsg());
+            if(brewHistory.getBrewingState() != null) {
+                //状态为糖化加热中， 或者煮沸加热中， 不修改当前状态显示； 保留温度显示
+                if (brewHistory.getBrewingState().contains("加热中"))
+                    return;
+                if (brewHistory.getBrewingState().contains("准备"))
+                    return;
+            }
+        }
+        //如果是正常的状态上报
+        if(brewHistory.getBrewingState() != null) {
+
+            brewHistory.setBrewingCmnMsg(null);
+            if(brewHistory.getRatio() != null && brewHistory.getRatio() == 100){
                 curState.setText("完成");
                 return;
             }
             curState.setBackgroundDrawable(null);
-            if(brewHistory.getBrewingState().equals("糖化中")){
 
+            if(brewHistory.getBrewingState().contains("糖化中")){
+                mHandler.removeCallbacksAndMessages(null);
+                showTimeCountDown(brewHistory, brewSteps.get(si));
+                return;
             }
 
-
-            if("煮沸".equals(brewHistory.getBrewingState())){
+            mHandler.removeCallbacksAndMessages(null);
+            if(brewHistory.getBrewingState().contains("煮沸")){
                 if(si != null) {
                     showTimeCountDown(brewHistory, brewSteps.get(si));
                 }else{
                     curState.setText("煮沸中");
                 }
             }else {
-                if(brewHistory.getMs() != 0) {
-                    curState.setText("正在加热， 当前温度" + brewHistory.getMs() + "度");
-                }else{
-                    curState.setText("正在加热");
-                }
+                curState.setText(brewHistory.getBrewingState());
             }
         }else if(showStrartToBrewTxt){
             curState.setBackgroundResource(R.drawable.bg_btn_red_corn_nomal);
@@ -287,11 +343,37 @@ public class BrewSessionControlActivity extends BaseActivity implements AddPackV
         }
     }
 
+    private void showFermentingInfo() {
+        if (showFermentingCountDown()) return;
+
+        mHandler.removeCallbacksAndMessages(null);
+        curState.setBackgroundResource(R.drawable.bg_btn_red_corn_nomal);
+        curState.setText("开始发酵");
+        if(brewDetailDes != null)
+            brewDetailDes.setText("发酵准备");
+        return;
+    }
+
+    private boolean showFermentingCountDown() {
+        long fermentingStartTimeStamp = BrewSessionUtils.getFermentingStartTimeStamp(brewHistory.getPackage_id());
+        if(fermentingStartTimeStamp != 0){
+            countdown(10 * 24 * 60 * 60, fermentingStartTimeStamp);
+            return true;
+        }
+        return false;
+    }
+
 
     private void showTimeCountDown(final BrewHistory brewHistory, DBBrewStep dbBrewStep) {
         final Integer totalSecondsForThisStep = dbBrewStep.getK();
+        if(totalSecondsForThisStep == null)
+            return;
         final long stepStartTimeStamp = BrewSessionUtils.getStepStartTimeStamp();
 
+        countdown(totalSecondsForThisStep, stepStartTimeStamp);
+    }
+
+    private void countdown(final Integer totalSecondsForThisStep, final long stepStartTimeStamp) {
         mHandler.postDelayed(new Runnable() {
             int i = 0;
             @Override
@@ -299,11 +381,21 @@ public class BrewSessionControlActivity extends BaseActivity implements AddPackV
                 long tsCur = 0;
                 long timePassed = System.currentTimeMillis() - stepStartTimeStamp;
                 tsCur = (long) (totalSecondsForThisStep - timePassed/1000);
-                curState.setText(String.format("%02d", tsCur/(60*60))+":"+String.format("%02d", (tsCur/60)%60)+":"+String.format("%02d", tsCur%60));
+                if(tsCur <= 0){
+                    mHandler.removeCallbacksAndMessages(null);
+                    return;
+                }
+                String dayStr="";
+                long day = tsCur / (60 * 60) / 24;
+                if(day != 0){
+                    dayStr = day+"天";
+                }
+                curState.setText(dayStr + String.format("%02d", (tsCur/(60*60))%24)+":"+String.format("%02d", (tsCur/60)%60)+":"+String.format("%02d", tsCur%60));
                 if(brewDetailDes != null){
                     brewDetailDes.setText(curState.getText().toString());
                 }
                 this.i++;
+                mHandler.postDelayed(this, 1000);
             }
         }, 1000);
     }
