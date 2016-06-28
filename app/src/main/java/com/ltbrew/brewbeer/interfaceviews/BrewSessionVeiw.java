@@ -1,6 +1,6 @@
 package com.ltbrew.brewbeer.interfaceviews;
 
-import com.ltbrew.brewbeer.presenter.model.BrewHistory;
+import com.ltbrew.brewbeer.persistence.greendao.DBBrewHistory;
 
 import java.util.List;
 
@@ -9,6 +9,8 @@ import java.util.List;
  */
 public interface BrewSessionVeiw extends RecipeView {
 
-    void onGetBrewSessionSuccess(List<BrewHistory> brewingHistoryList, List<BrewHistory> finishedHistoryList);
+    void onGetBrewSessionSuccess(List<DBBrewHistory> brewingHistoryList, List<DBBrewHistory> finishedHistoryList);
+    void onGetFinishedSession(List<DBBrewHistory> finishedBrewHistories);
+    void onGetSuspendSession(List<DBBrewHistory> suspendBrewHistories);
     void onGetBrewSessionFailed(String code);
 }

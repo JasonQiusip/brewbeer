@@ -35,6 +35,21 @@
                 android:textSize="20dp"
                 android:text="酿造时间"/>
 
+            <TextView
+                android:id="@+id/controlOpTv"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="right"
+                android:layout_marginBottom="12dp"
+                android:layout_marginRight="16dp"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/bg_round_btn"
+                android:gravity="center"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
+                android:text="选项"
+                android:visibility="gone"
+                android:textColor="@color/colorPrimaryDark" />
             </android.support.v7.widget.Toolbar>
 
     </android.support.design.widget.AppBarLayout>

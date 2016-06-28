@@ -7,8 +7,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.ltbrew.brewbeer.R;
+import com.ltbrew.brewbeer.persistence.greendao.DBBrewHistory;
 import com.ltbrew.brewbeer.persistence.greendao.DBRecipe;
-import com.ltbrew.brewbeer.presenter.model.BrewHistory;
 import com.ltbrew.brewbeer.uis.adapter.viewholder.BaseViewHolder;
 import com.ltbrew.brewbeer.uis.adapter.viewholder.FinishedBrewVH;
 import com.ltbrew.brewbeer.uis.view.SwipeRevealLayout;
@@ -16,8 +16,6 @@ import com.ltbrew.brewbeer.uis.view.SwipeRevealLayout;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-
-import butterknife.BindView;
 
 /**
  * Created by 151117a on 2016/5/4.
@@ -28,7 +26,7 @@ public class FinishedSessionAdapter extends RecyclerView.Adapter<FinishedBrewVH>
 
 
     private BaseViewHolder.OnRvItemClickListener onRvItemClickListener;
-    private List<BrewHistory> finishedHistoryList = Collections.EMPTY_LIST;
+    private List<DBBrewHistory> finishedHistoryList = Collections.EMPTY_LIST;
     private OnDeleteClickListener mOnDeleteClickListener;
     private HashMap<Integer, Integer> openOrCloseState = new HashMap<>();
 
@@ -46,8 +44,8 @@ public class FinishedSessionAdapter extends RecyclerView.Adapter<FinishedBrewVH>
 
     @Override
     public void onBindViewHolder(final FinishedBrewVH holder, final int position) {
-        BrewHistory brewHistory = finishedHistoryList.get(position);
-        DBRecipe recipe = brewHistory.getDbRecipe();
+        DBBrewHistory DBBrewHistory = finishedHistoryList.get(position);
+        DBRecipe recipe = DBBrewHistory.getDBRecipe();
         if (recipe != null) {
             holder.finishedSessionItemTv.setText(recipe.getName());
         }
@@ -120,7 +118,7 @@ public class FinishedSessionAdapter extends RecyclerView.Adapter<FinishedBrewVH>
         this.onRvItemClickListener = onRvItemClickListener;
     }
 
-    public void setData(List<BrewHistory> finishedHistoryList) {
+    public void setData(List<DBBrewHistory> finishedHistoryList) {
         this.finishedHistoryList = finishedHistoryList;
     }
 

@@ -1,30 +1,35 @@
 package com.ltbrew.brewbeer.service;
 
 import android.app.ActivityManager;
-import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Binder;
-import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.RemoteException;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.ltbrew.brewbeer.BrewApp;
 import com.ltbrew.brewbeer.R;
 import com.ltbrew.brewbeer.api.ConfigApi;
+import com.ltbrew.brewbeer.api.longconnection.SOCKETSTATE;
 import com.ltbrew.brewbeer.api.longconnection.TransmitCmdService;
 import com.ltbrew.brewbeer.api.longconnection.interfaces.FileSocketReadyCallback;
 import com.ltbrew.brewbeer.api.longconnection.process.ParsePackKits;
-import com.ltbrew.brewbeer.api.longconnection.process.cmdconnection.CmdsConstant;
 import com.ltbrew.brewbeer.uis.activity.BrewHomeActivity;
 import com.ltbrew.brewbeer.uis.utils.BrewSessionUtils;
+import com.ltbrew.brewbeer.uis.utils.NetworkConnectionUtil;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -48,20 +53,46 @@ public class LtPushService extends Service implements FileSocketReadyCallback {
     public static final String FILE_SOCKET_IS_READY_ACTION = "fileSocketIsReadyAction";
     public static final String PUSH_PLD_EXTRA = "pld";
     public static final String REQUEST_BREW_SESSION_FAILED = "reqBrewSessionFailed";
+    public static final String ANDROID_NET_CONN_CONNECTIVITY_CHANGE = "android.net.conn.CONNECTIVITY_CHANGE";
+    public static final String ANDROID_INTENT_ACTION_USER_PRESENT = "android.intent.action.USER_PRESENT";
+    private static final int SYSTEM_ALERT = 20;
+    public static final String SOCKET_IS_KICKED_OUT = "socket_is_kicked";
     private int tryAgain = 3;
     private TransmitCmdService transmitCmdService;
     private final static int GRAY_SERVICE_ID = 2016;
-    ServiceBinder serviceBinder = new ServiceBinder();
+//    ServiceBinder serviceBinder = new ServiceBinder();
     private int state;
     private int starting = 0;
     private int started = 1;
     private Thread startLongConnectionThread;
     private Thread reconnectThread;
     private NotificationCompat.Builder notificationBuilder;
+    private Handler handler = new Handler();
 
-//    public LtPushService() {
-//        super("LtPushService");
-//    }
+    private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if(ANDROID_NET_CONN_CONNECTIVITY_CHANGE.equals(action)){
+                if (NetworkConnectionUtil.isNetworkAvailable()) {// unconn
+                    if(transmitCmdService != null && transmitCmdService.isSocketClosed() != SOCKETSTATE.socket_alive){
+                        transmitCmdService.closeSocket();
+                        startLongConnectionThread = null;
+                    }
+                    startConnectionOnNewThread();
+                }else{
+                    startLongConnectionThread = null;
+                }
+
+            }else if(ANDROID_INTENT_ACTION_USER_PRESENT.equals(action)){
+                if(transmitCmdService != null && transmitCmdService.isSocketClosed() != SOCKETSTATE.socket_alive){
+                    transmitCmdService.closeSocket();
+                    startLongConnectionThread = null;
+                    startConnectionOnNewThread();
+                }
+            }
+        }
+    };
 
     @Nullable
     @Override
@@ -69,63 +100,38 @@ public class LtPushService extends Service implements FileSocketReadyCallback {
         return serviceBinder;
     }
 
-    public class ServiceBinder extends Binder {
-        public LtPushService getService() {
-            return LtPushService.this;
-        }
-    }
+    ILtPushServiceAidlInterface.Stub serviceBinder = new ILtPushServiceAidlInterface.Stub(){
 
-//    @Override
-//    protected void onHandleIntent(Intent intent) {
-//    }
+        @Override
+        public void sendBrewSessionCmd(long pack_id) throws RemoteException {
+            sendBrewSession(pack_id);
+        }
+    };
+
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.e(TAG, "======onStartCommand=====");
         startConnectionOnNewThread();
-//        if (Build.VERSION.SDK_INT < 18) {
-            Intent brewHomeIntent = new Intent(this, BrewHomeActivity.class);
-            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, brewHomeIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        Intent brewHomeIntent = new Intent(this, BrewHomeActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, brewHomeIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-            notificationBuilder = new NotificationCompat.Builder(this).setContentTitle("精酿大师")
-                    .setContentText("服务正在运行").setTicker("").setSmallIcon(R.mipmap.ic_launcher)
-                    .setWhen(System.currentTimeMillis()).setContentIntent(pendingIntent);
+        notificationBuilder = new NotificationCompat.Builder(this).setContentTitle("精酿大师")
+                .setContentText("服务正在运行").setTicker("").setSmallIcon(R.mipmap.ic_launcher)
+                .setWhen(System.currentTimeMillis()).setContentIntent(pendingIntent);
 
-            startForeground(GRAY_SERVICE_ID, notificationBuilder.build());//API < 18 ，此方法能有效隐藏Notification上的图标
-//        } else {
-//            Intent innerIntent = new Intent(this, GrayInnerService.class);
-//            startService(innerIntent);
-//            startForeground(GRAY_SERVICE_ID, new Notification());
-//        }
+        startForeground(GRAY_SERVICE_ID, notificationBuilder.build());//API < 18 ，此方法能有效隐藏Notification上的图标
 
-        return super.onStartCommand(intent, flags, startId);
+        return START_STICKY;
     }
-
-    /**
-     * 给 API >= 18 的平台上用的灰色保活手段
-     */
-//    public static class GrayInnerService extends Service {
-//
-//        @Override
-//        public int onStartCommand(Intent intent, int flags, int startId) {
-//            startForeground(GRAY_SERVICE_ID, new Notification());
-//            stopForeground(true);
-//            stopSelf();
-//            return super.onStartCommand(intent, flags, startId);
-//        }
-//
-//        @Nullable
-//        @Override
-//        public IBinder onBind(Intent intent) {
-//            return null;
-//        }
-//
-//    }
 
     @Override
     public void onCreate() {
         super.onCreate();
-
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(ANDROID_NET_CONN_CONNECTIVITY_CHANGE);
+        intentFilter.addAction(ANDROID_INTENT_ACTION_USER_PRESENT);
+        registerReceiver(broadcastReceiver, intentFilter);
     }
 
     @Override
@@ -134,10 +140,15 @@ public class LtPushService extends Service implements FileSocketReadyCallback {
         Log.e("", "===onDestroy====");
         startLongConnectionThread = null;
         transmitCmdService.closeSocket();
+        unregisterReceiver(broadcastReceiver);
     }
 
     private void startConnectionOnNewThread() {
         Log.e("", "===startConnectionOnNewThread===="+startLongConnectionThread);
+        if(transmitCmdService != null && transmitCmdService.isSocketClosed() != SOCKETSTATE.socket_alive){
+            transmitCmdService.closeSocket();
+            startLongConnectionThread = null;
+        }
 
         if(startLongConnectionThread != null)
             return;
@@ -153,7 +164,7 @@ public class LtPushService extends Service implements FileSocketReadyCallback {
     }
 
 
-    public void sendBrewSessionCmd(Long package_id) {
+    public void sendBrewSession(Long package_id) {
         Log.e("", "===###################sendBrewSessionCmd####################====");
 
         if (transmitCmdService != null)
@@ -210,6 +221,10 @@ public class LtPushService extends Service implements FileSocketReadyCallback {
         Intent intent = new Intent(this, BrewHomeActivity.class);
         showNotification(this, "连接服务初始化失败，请点击重连", intent);
         startLongConnectionThread = null;
+        if(transmitCmdService != null)
+            transmitCmdService.closeSocket();
+        Toast.makeText(getApplicationContext(), "服务初始化失败，请点击通知栏通知重连服务", Toast.LENGTH_SHORT).show();
+
     }
 
     @Override
@@ -417,6 +432,11 @@ public class LtPushService extends Service implements FileSocketReadyCallback {
     }
 
     @Override
+    public void onWritingHb() {
+
+    }
+
+    @Override
     public void onGetCmdPrgs(String percent, String seq_index, String body) {
         PushMsg pushMessage = new PushMsg();
         pushMessage.ratio = Integer.valueOf(percent);
@@ -460,11 +480,12 @@ public class LtPushService extends Service implements FileSocketReadyCallback {
     @Override
     public void onLongConnectionKickedOut() {
         Intent intent = new Intent(this, BrewHomeActivity.class);
-        showNotification(this, "后台连接已被移除，请点击重连", intent);
+        showNotification(this, "服务未连上，请点击重连", intent);
+        sendBroadcast(new Intent(SOCKET_IS_KICKED_OUT));
         startLongConnectionThread = null;
+        if(transmitCmdService != null)
+            transmitCmdService.closeSocket();
     }
-
-
 
     public static boolean isBackground(Context context) {
         ActivityManager activityManager = (ActivityManager) context

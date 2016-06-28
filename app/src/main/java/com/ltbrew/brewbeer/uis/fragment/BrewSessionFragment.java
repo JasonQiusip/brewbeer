@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,24 +13,27 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.TextView;
 
 import com.github.ybq.android.spinkit.SpinKitView;
 import com.ltbrew.brewbeer.R;
 import com.ltbrew.brewbeer.interfaceviews.BrewSessionVeiw;
+import com.ltbrew.brewbeer.persistence.greendao.DBBrewHistory;
 import com.ltbrew.brewbeer.persistence.greendao.DBBrewStep;
 import com.ltbrew.brewbeer.persistence.greendao.DBRecipe;
 import com.ltbrew.brewbeer.presenter.BrewSessionsPresenter;
-import com.ltbrew.brewbeer.presenter.model.BrewHistory;
 import com.ltbrew.brewbeer.presenter.model.Recipe;
+import com.ltbrew.brewbeer.presenter.util.DBManager;
 import com.ltbrew.brewbeer.service.LtPushService;
 import com.ltbrew.brewbeer.service.PldForBrewSession;
 import com.ltbrew.brewbeer.service.PldForCmnMsg;
 import com.ltbrew.brewbeer.service.PldForCmnPrgs;
 import com.ltbrew.brewbeer.service.PushMsg;
+import com.ltbrew.brewbeer.uis.Constants;
 import com.ltbrew.brewbeer.uis.activity.BrewSessionControlActivity;
 import com.ltbrew.brewbeer.uis.adapter.BrewingSessionAdapter;
-import com.ltbrew.brewbeer.uis.adapter.viewholder.BaseViewHolder;
+import com.ltbrew.brewbeer.uis.fragment.viewcontroller.BrewSessionRvController;
 import com.ltbrew.brewbeer.uis.utils.BrewSessionUtils;
 import com.ltbrew.brewbeer.uis.utils.ParamStoreUtil;
 import com.ltbrew.brewbeer.uis.view.ReboundScrollView;
@@ -39,12 +41,20 @@ import com.ltbrew.brewbeer.uis.view.ReboundScrollView;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import rx.Observable;
+import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
+import rx.functions.Func1;
 
 public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
 
+    public static final String PACK_IS_SENT = "com.ltbrew.beer.AddRecipeActivity.PACK_IS_SENT_TO_DEV";
+    public String TAG = this.getClass().getName();
     @BindView(R.id.brewStateRv)
     RecyclerView brewStateRv;
     @BindView(R.id.fermentingBrewRv)
@@ -52,27 +62,37 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
     @BindView(R.id.noBrewingTaskTv)
     TextView noBrewingTaskTv;
     @BindView(R.id.noFermentingTaskTv)
-    TextView noFinishedTaskTv;
+    TextView noFermentingTaskTv;
     @BindView(R.id.reboundScrollView)
     ReboundScrollView reboundScrollView;
     @BindView(R.id.brewStateTitle)
     TextView brewStateTitle;
     @BindView(R.id.spin_kit)
     SpinKitView spinKit;
-    public String TAG = this.getClass().getName();
-
+    @BindView(R.id.suspendBrewRv)
+    RecyclerView suspendBrewRv;
+    @BindView(R.id.suspendTaskTv)
+    TextView suspendTaskTv;
+    @BindView(R.id.finishedBrewRv)
+    RecyclerView finishedBrewRv;
+    @BindView(R.id.noFinishedTaskTv)
+    TextView noFinishedTaskTv;
+    int i = 20;
     private BrewingSessionAdapter brewingSessionAdapter;
     private BrewingSessionAdapter fermentingSessionAdapter;
-
+    private BrewingSessionAdapter suspendSessionAdapter;
+    private BrewingSessionAdapter finishedSessionAdapter;
     private BrewSessionsPresenter brewSessionsPresenter;
     private HashMap<String, Integer> brewingFormulaIdToPosition = new HashMap<>();
     private HashMap<String, Integer> fermentingFormulaIdToPosition = new HashMap<>();
-    private List<BrewHistory> brewingHistoryList = Collections.EMPTY_LIST;
-    private List<BrewHistory> fermentingHistoryList = Collections.EMPTY_LIST;
+    private HashMap<Long, Boolean> sessionProcessingMap = new HashMap<>();
+    private List<DBBrewHistory> brewingHistoryList = Collections.EMPTY_LIST;
+    private List<DBBrewHistory> fermentingHistoryList = Collections.EMPTY_LIST;
+    private List<DBBrewHistory> suspendHistoryList = Collections.EMPTY_LIST;
+    private List<DBBrewHistory> finishedHistoryList = Collections.EMPTY_LIST;
     private onBrewingSessionListener onBrewingSessionListener;
-
-    public static final String PACK_IS_SENT = "com.ltbrew.beer.AddRecipeActivity.PACK_IS_SENT_TO_DEV";
     private String packId;
+
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -86,31 +106,33 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
             } else if (LtPushService.FILE_SOCKET_IS_READY_ACTION.equals(action)) {
                 if (brewingHistoryList.size() != 0) {
                     for (int i = 0, size = brewingHistoryList.size(); i < size; i++) {
-                        BrewHistory brewHistory = brewingHistoryList.get(i);
+                        DBBrewHistory brewHistory = brewingHistoryList.get(i);
                         onBrewingSessionListener.onReqBrewingSession(brewHistory.getPackage_id());
                     }
                 }
 
             } else if (LtPushService.CMN_PRGS_CHECK_ACTION.equals(action)) {
-                if(onBrewingSessionListener != null)
+                if (onBrewingSessionListener != null)
                     onBrewingSessionListener.unlockLockerToExecuteNextMsg();
                 PushMsg pushMsgObj = intent.getParcelableExtra(LtPushService.PUSH_MSG_EXTRA);
-                Log.e(TAG+"CMN_PRGS_CHECK_ACTION", pushMsgObj.toString());
+                Log.e(TAG + "CMN_PRGS_CHECK_ACTION", pushMsgObj.toString());
                 String st = pushMsgObj.st;
-                BrewHistory brewHistory;
-                if(st != null) {
+                DBBrewHistory brewHistory;
+                if (st != null) {
                     String package_id = st.split(":")[1];
                     brewHistory = findBrewHistory(package_id);
-                    if(brewHistory == null)
+                    if (brewHistory == null)
                         return;
-                }else{
+                } else {
                     brewHistory = brewingHistoryList.get(0);
                 }
                 brewHistory.setRatio(pushMsgObj.ratio);
                 brewHistory.setSi(pushMsgObj.si);
-                if(pushMsgObj.des != null && pushMsgObj.des.equals("-1")){
+                if (pushMsgObj.des != null && pushMsgObj.des.equals("-1")) {
                     pushMsgObj.des = "煮沸";
                 }
+                Log.e(TAG + "CMN_PRGS_CHECK_ACTION", brewHistory+"");
+
                 brewHistory.setBrewingState(pushMsgObj.des);
                 brewHistory.setBrewingStageInfo(null);
                 setTimeLeft(pushMsgObj, brewHistory);
@@ -121,23 +143,23 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
 
                 PushMsg pushMsgObj = intent.getParcelableExtra(LtPushService.PUSH_MSG_EXTRA);
                 PldForCmnPrgs pldForCmnPrgs = intent.getParcelableExtra(LtPushService.PUSH_PLD_EXTRA);
-                Log.e(TAG+"CMN_PRGS_PUSH_ACTION", pushMsgObj.toString());
+                Log.e(TAG + "CMN_PRGS_PUSH_ACTION", pushMsgObj.toString());
                 String st = pldForCmnPrgs.st;
-                BrewHistory brewHistory;
-                if(st != null) {
+                DBBrewHistory brewHistory;
+                if (st != null) {
                     String package_id = st.split(":")[1];
                     brewHistory = findBrewHistory(package_id);
-                    if(brewHistory == null)
+                    if (brewHistory == null)
                         return;
-                }else{
-                    if(brewingHistoryList.size() == 0)
+                } else {
+                    if (brewingHistoryList.size() == 0)
                         return;
                     brewHistory = brewingHistoryList.get(0);
                 }
-                if(brewHistory == null)
+                if (brewHistory == null)
                     return;
-                Log.e(TAG+"CMN_PRGS_PUSH_ACTION1", brewHistory.toString());
-                if(pushMsgObj.des != null && pushMsgObj.des.equals("-1")){
+                Log.e(TAG + "CMN_PRGS_PUSH_ACTION1", brewHistory+"");
+                if (pushMsgObj.des != null && pushMsgObj.des.equals("-1")) {
                     pushMsgObj.des = "煮沸";
                 }
                 brewHistory.setRatio(pldForCmnPrgs.ratio);
@@ -148,78 +170,115 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
                 brewHistory.setSt(st);
                 brewingSessionAdapter.setData(brewingHistoryList);
                 brewingSessionAdapter.notifyDataSetChanged();
-            } else if (LtPushService.CMD_RPT_ACTION.equals(action)) {
-
-//                BrewHistory brewHistory = brewingHistoryList.get(0);
-//                brewHistory.setBrewingState("等待设备开始酿酒");
-//                brewingSessionAdapter.notifyDataSetChanged();
-            } else if(LtPushService.CMN_MSG_PUSH_ACTION.equals(action)){
-                if(onBrewingSessionListener != null)
+            } else if (LtPushService.CMN_MSG_PUSH_ACTION.equals(action)) {
+                if (onBrewingSessionListener != null)
                     onBrewingSessionListener.unlockLockerToExecuteNextMsg();
                 PushMsg pushMsgObj = intent.getParcelableExtra(LtPushService.PUSH_MSG_EXTRA);
-                Log.e(TAG+"CMN_MSG_PUSH_ACTION", pushMsgObj.toString());
+                Log.e(TAG + "CMN_MSG_PUSH_ACTION", pushMsgObj.toString());
                 PldForCmnMsg pldForCmnMsg = intent.getParcelableExtra(LtPushService.PUSH_PLD_EXTRA);
 
                 int ms = pldForCmnMsg.ms;
-                if(ms >= 90){
+                if (ms >= 90) {
                     pushMsgObj.des = "煮沸";
                 }
                 String tk = pldForCmnMsg.tk;
-                BrewHistory brewHistory;
-                if(tk != null) {
+                DBBrewHistory brewHistory;
+                if (tk != null) {
                     String package_id = tk.split(":")[1];
                     brewHistory = findBrewHistory(package_id);
-                    if(brewHistory == null)
+                    if (brewHistory == null)
                         return;
-                }else{
+                } else {
                     brewHistory = brewingHistoryList.get(0);
                 }
                 brewHistory.setMs(ms);
                 brewHistory.setBrewingCmnMsg(pushMsgObj.des);
                 brewingSessionAdapter.setData(brewingHistoryList);
                 brewingSessionAdapter.notifyDataSetChanged();
-            }else if(LtPushService.BREW_SESSION_PUSH_ACTION.equals(action)){
+            } else if (LtPushService.BREW_SESSION_PUSH_ACTION.equals(action)) {
                 PushMsg pushMsgObj = intent.getParcelableExtra(LtPushService.PUSH_MSG_EXTRA);
-                Log.e(TAG+"CMN_MSG_PUSH_ACTION", pushMsgObj.toString());
+                Log.e(TAG + "CMN_MSG_PUSH_ACTION", pushMsgObj.toString());
                 PldForBrewSession pldForBrewSession = intent.getParcelableExtra(LtPushService.PUSH_PLD_EXTRA);
-                if(pldForBrewSession.state == 1){
+                if (pldForBrewSession.state == 1) {
                     brewSessionsPresenter.getBrewHistory();
                 }
 
-            }else if(LtPushService.REQUEST_BREW_SESSION_FAILED.equals(action)){
-                if(onBrewingSessionListener != null)
+            } else if (LtPushService.REQUEST_BREW_SESSION_FAILED.equals(action)) {
+                if (onBrewingSessionListener != null)
                     onBrewingSessionListener.unlockLockerToExecuteNextMsg();
             }
         }
 
-        private void setTimeLeft(PushMsg pushMsgObj, BrewHistory brewHistory) {
-            if(brewHistory == null)
+        private void setTimeLeft(final PushMsg pushMsgObj, final DBBrewHistory brewHistory) {
+            Boolean sessionProcessing = sessionProcessingMap.get(brewHistory.getPackage_id());
+            Log.e("setTimeLeft call", "=======sessionProcessing=" + sessionProcessing + "===========");
+
+            if (brewHistory == null || (sessionProcessing != null && sessionProcessing))
                 return;
-            if("糖化中".equals(pushMsgObj.des) || "煮沸中".equals(pushMsgObj.des)){
-                long timePassed = System.currentTimeMillis() - BrewSessionUtils.getStepStartTimeStamp();
-                DBRecipe dbRecipe = brewHistory.getDbRecipe();
-                if(dbRecipe == null)
-                    return;
-                List<DBBrewStep> brewSteps = dbRecipe.getBrewSteps();
-                if(brewSteps != null && brewSteps.size() > pushMsgObj.si) {
-                    DBBrewStep dbBrewStep = brewSteps.get(pushMsgObj.si);
-                    Integer k = dbBrewStep.getK(); //总时间
-                    if(k != null){
-                        long timeLeft = k / 60 - timePassed / (60 * 1000);
-                        long hourLeft = timeLeft / 60;
-                        if(timeLeft > 0) {
-                            brewHistory.setBrewingStageInfo("剩" + (hourLeft==0 ? "" : hourLeft+"小时") + timeLeft%60 + "分钟");
-                        }
+            if ("糖化中".equals(pushMsgObj.des) || "煮沸中".equals(pushMsgObj.des)) {
+                Observable.interval(0, 30, TimeUnit.SECONDS).flatMap(new Func1<Long, Observable<Long>>() {
+                    @Override
+                    public Observable<Long> call(Long aLong) {
+                        return calTimeLeftAndShowOb(brewHistory, pushMsgObj);
                     }
-                }
+                }).subscribe(new Action1<Long>() {
+                    @Override
+                    public void call(Long aLong) {
+                        Log.e("setTimeLeft call", "========" + aLong + "===========");
+                        if(brewingSessionAdapter != null)
+                            brewingSessionAdapter.notifyDataSetChanged();
+                        sessionProcessingMap.put(brewHistory.getPackage_id(), true);
+
+                    }
+                }, new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                        sessionProcessingMap.put(brewHistory.getPackage_id(), false);
+
+                        Log.e("setTimeLeft call", "========stop===========");
+                        throwable.printStackTrace();
+                    }
+                });
             }
         }
     };
 
-    private BrewHistory findBrewHistory(String package_id){
+    private Observable<Long> calTimeLeftAndShowOb(final DBBrewHistory brewHistory, final PushMsg pushMsgObj) {
+        return Observable.create(new Observable.OnSubscribe<Long>() {
+            @Override
+            public void call(Subscriber<? super Long> subscriber) {
+                long timePassed = System.currentTimeMillis() - BrewSessionUtils.getStepStartTimeStamp();
+                DBRecipe dbRecipe = brewHistory.getDBRecipe();
+                if (dbRecipe == null)
+                    return;
+                List<DBBrewStep> brewSteps = dbRecipe.getBrewSteps();
+                if (brewSteps != null && brewSteps.size() > pushMsgObj.si) {
+                    DBBrewStep dbBrewStep = brewSteps.get(pushMsgObj.si);
+                    Integer k = dbBrewStep.getK(); //总时间
+                    if (k != null) {
+                        long timeLeft = k / 60 - timePassed / (60 * 1000);
+                        long hourLeft = timeLeft / 60;
+                        if (timeLeft > 0) {
+                            brewHistory.setBrewingStageInfo("剩" + (hourLeft == 0 ? "" : hourLeft + "小时") + timeLeft % 60 + "分钟");
+                            subscriber.onNext(timeLeft);
+                        }else{
+                            subscriber.onError(new Throwable("session end"));
+                        }
+                    }
+                }
+            }
+        }).subscribeOn(AndroidSchedulers.mainThread());
+    }
+
+    private BrewSessionRvController brewingController;
+    private BrewSessionRvController fermentingController;
+    private BrewSessionRvController suspendController;
+    private BrewSessionRvController finishedController;
+
+    private DBBrewHistory findBrewHistory(String package_id) {
         for (int i = 0, size = brewingHistoryList.size(); i < size; i++) {
-            BrewHistory brewHistory = brewingHistoryList.get(i);
-            if(String.valueOf(brewHistory.getPackage_id()).equals(package_id)){
+            DBBrewHistory brewHistory = brewingHistoryList.get(i);
+            if (String.valueOf(brewHistory.getPackage_id()).equals(package_id)) {
                 return brewHistory;
             }
         }
@@ -242,38 +301,17 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_brew_session, container, false);
         ButterKnife.bind(this, view);
-        brewStateRv.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
-        brewingSessionAdapter = new BrewingSessionAdapter(getContext());
-        brewingSessionAdapter.setOnItemClickListener(new BaseViewHolder.OnRvItemClickListener() {
-            @Override
-            public void onRvItemClick(View v, int layoutPosition) {
-                BrewHistory brewHistory = brewingHistoryList.get(layoutPosition);
-                ParamStoreUtil.getInstance().setBrewHistory(brewHistory); //store data to local cache
-                startBrewControlActivity();
 
-            }
-        });
-        brewingSessionAdapter.setOnDeleteClickListener(new BrewingSessionAdapter.OnDeleteClickListener() {
-            @Override
-            public void onDeleteClick(View v, int layoutPosition) {
-                brewingHistoryList.remove(layoutPosition);
-                brewingSessionAdapter.notifyItemRemoved(layoutPosition);
-            }
-        });
-        brewStateRv.setAdapter(brewingSessionAdapter);
+        brewingController = new BrewSessionRvController(brewingHistoryList, Constants.BrewSessionType.BREWING);
+        fermentingController = new BrewSessionRvController(fermentingHistoryList, Constants.BrewSessionType.FERMENTING);
+        suspendController = new BrewSessionRvController(suspendHistoryList, Constants.BrewSessionType.SUSPEND);
+        finishedController = new BrewSessionRvController(finishedHistoryList, Constants.BrewSessionType.FINSHED);
 
-        fermentingBrewRv.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
-        fermentingSessionAdapter = new BrewingSessionAdapter(getContext());
-        fermentingSessionAdapter.setOnItemClickListener(new BaseViewHolder.OnRvItemClickListener() {
-            @Override
-            public void onRvItemClick(View v, int layoutPosition) {
-                BrewHistory brewHistory = fermentingHistoryList.get(layoutPosition);
-                ParamStoreUtil.getInstance().setBrewHistory(brewHistory); //store data to local cache
-                startBrewControlActivity();
-            }
-        });
-        fermentingBrewRv.setAdapter(fermentingSessionAdapter);
-
+        brewingSessionAdapter = brewingController.buildRv(this.getActivity(), brewStateRv);
+        fermentingSessionAdapter = fermentingController.buildRv(this.getActivity(), fermentingBrewRv);
+        suspendSessionAdapter = suspendController.buildRv(this.getActivity(), suspendBrewRv);
+        finishedSessionAdapter = finishedController.buildRv(this.getActivity(), finishedBrewRv);
+        Log.e("oncreateView", brewingSessionAdapter + " <- brewingSessionAdapter" + brewStateRv + " <- brewStateRv");
 
         brewSessionsPresenter = new BrewSessionsPresenter(this);
 
@@ -290,10 +328,8 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
 
         decideWeatherReboundScrollViewShouldMove();
         setRefreshListener();
-
         return view;
     }
-
 
     private void decideWeatherReboundScrollViewShouldMove() {
         brewStateTitle.setOnTouchListener(new View.OnTouchListener() {
@@ -332,17 +368,10 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
 
             @Override
             public void onShowProgress() {
-                if(!spinKit.isShown())
+                if (!spinKit.isShown())
                     animateProgressView(View.VISIBLE, R.anim.anim_popup_open_progress);
             }
         });
-    }
-
-
-    private void startBrewControlActivity() {
-        Intent intent = new Intent();
-        intent.setClass(this.getActivity(), BrewSessionControlActivity.class);
-        startActivity(intent);
     }
 
     @Override
@@ -351,82 +380,180 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
         this.getActivity().unregisterReceiver(broadcastReceiver);
     }
 
-
     public void getBrewHistory() {
-        if(brewSessionsPresenter != null)
+        if (brewSessionsPresenter != null)
             brewSessionsPresenter.getBrewHistory();
     }
 
     @Override
-    public void onGetBrewSessionSuccess(List<BrewHistory> brewingHistories, List<BrewHistory> finishedHistories) {
+    public void onGetBrewSessionSuccess(List<DBBrewHistory> brewingHistories, List<DBBrewHistory> fermentingHistories) {
         brewingHistoryList.clear();
         fermentingHistoryList.clear();
         this.brewingHistoryList = brewingHistories;
-        this.fermentingHistoryList = finishedHistories;
+        this.fermentingHistoryList = fermentingHistories;
         this.getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if(spinKit.isShown())
+                if (spinKit.isShown())
                     animateProgressView(View.GONE, R.anim.anim_popup_close_progress);
-                if(brewingHistoryList.size() != 0){
+                if (brewingHistoryList.size() != 0) {
                     noBrewingTaskTv.setVisibility(View.GONE);
-                }else{
+                } else {
                     noBrewingTaskTv.setVisibility(View.VISIBLE);
                 }
-                if(fermentingHistoryList.size() != 0){
-                    noFinishedTaskTv.setVisibility(View.GONE);
+                if (fermentingHistoryList.size() != 0) {
+                    noFermentingTaskTv.setVisibility(View.GONE);
+                } else {
+                    noFermentingTaskTv.setVisibility(View.VISIBLE);
                 }
-
+                brewingController.setBrewHistories(brewingHistoryList);
                 brewingSessionAdapter.setData(brewingHistoryList);
                 brewingSessionAdapter.notifyDataSetChanged();
 
+                fermentingController.setBrewHistories(fermentingHistoryList);
                 fermentingSessionAdapter.setData(fermentingHistoryList);
                 fermentingSessionAdapter.notifyDataSetChanged();
 
-                for (int i = 0, size = brewingHistoryList.size(); i < size; i++) {
-                    BrewHistory brewHistory = brewingHistoryList.get(i);
-                    Long formula_id = brewHistory.getFormula_id();
-                    String formulaId = String.format("%08x", formula_id);
-                    brewingFormulaIdToPosition.put(formulaId, i);
-                    brewSessionsPresenter.getRecipeInfo(formulaId);
-                    onBrewingSessionListener.onReqBrewingSession(brewHistory.getPackage_id());
-                }
+                reqSessionStateByTcpReqQueue();
 
-                int fermentTotalTime = 10 * 24 * 60;
-                for (int i = 0, size = fermentingHistoryList.size(); i < size; i++) {
-                    BrewHistory brewHistory = fermentingHistoryList.get(i);
-                    brewHistory.setShowStepInfo(false);
-
-                    long fermentingStartTimeStamp = BrewSessionUtils.getFermentingStartTimeStamp(brewHistory.getPackage_id());
-                    if(fermentingStartTimeStamp != 0){
-                        long timePassed = System.currentTimeMillis() - fermentingStartTimeStamp;
-                        long timeLeft = fermentTotalTime - timePassed / (60 * 1000);
-                        if(timeLeft > 0) {
-                            long day = timeLeft/60/24;
-                            long hour = timeLeft/60;
-                            long minute = timeLeft%60;
-                            String hourStr = hour == 0 ? "" : hour + "小时";
-                            String dayStr = day == 0 ? "" : day + "天";
-                            brewHistory.setBrewingState("发酵中");
-                            brewHistory.setBrewingStageInfo("剩" +dayStr + hourStr + minute + "分钟");
-                        }
-                    }else{
-                        brewHistory.setBrewingState("待发酵");
-
-                    }
-                    Long formula_id = brewHistory.getFormula_id();
-                    String formulaId = String.format("%08x", formula_id);
-                    fermentingFormulaIdToPosition.put(formulaId, i);
-                    brewSessionsPresenter.getRecipeInfo(formulaId);
-                }
+                showFermentingState();
             }
         });
 
     }
 
+    @Override
+    public void onGetFinishedSession(final List<DBBrewHistory> finishedBrewHistories) {
+        this.getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                finishedHistoryList = finishedBrewHistories;
+                finishedSessionAdapter.setData(finishedBrewHistories);
+                finishedController.notifyDataSetChanged();
+            }
+        });
+
+    }
+
+    @Override
+    public void onGetSuspendSession(final List<DBBrewHistory> suspendBrewHistories) {
+        this.getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+
+                suspendHistoryList = suspendBrewHistories;
+                suspendSessionAdapter.setData(suspendBrewHistories);
+                suspendController.notifyDataSetChanged();
+            }
+        });
+    }
+
+    private void reqSessionStateByTcpReqQueue() {
+        for (int i = 0, size = brewingHistoryList.size(); i < size; i++) {
+            DBBrewHistory brewHistory = brewingHistoryList.get(i);
+            Long formula_id = brewHistory.getFormula_id();
+            String formulaId = String.format("%08x", formula_id);
+            brewingFormulaIdToPosition.put(formulaId, i);
+            onBrewingSessionListener.onReqBrewingSession(brewHistory.getPackage_id());
+        }
+    }
+
+    private void showFermentingState() {
+        int fermentTotalTime = 10 * 24 * 60 * 60;
+        for (int i = 0, size = fermentingHistoryList.size(); i < size; i++) {
+            DBBrewHistory brewHistory = fermentingHistoryList.get(i);
+            brewHistory.setShowStepInfo(false);
+            showFermentingTime(fermentTotalTime, brewHistory);
+
+            Long formula_id = brewHistory.getFormula_id();
+            String formulaId = String.format("%08x", formula_id);
+            fermentingFormulaIdToPosition.put(formulaId, i);
+        }
+    }
+
+    //TODO 写在服务里面， 后台提醒发酵时间
+    private void showFermentingTime(final int fermentTotalTime, final DBBrewHistory brewHistory) {
+        Boolean sessionProcessing = sessionProcessingMap.get(brewHistory.getPackage_id());
+        Log.e("showFermentingTime call", "=======sessionProcessing=" + sessionProcessing + "===========");
+
+        if (brewHistory == null || (sessionProcessing != null && sessionProcessing))
+            return;
+        Observable.interval(0, 30, TimeUnit.SECONDS).flatMap(new Func1<Long, Observable<Long>>() {
+            @Override
+            public Observable<Long> call(Long aLong) {
+                return Observable.create(new Observable.OnSubscribe<Long>() {
+                    @Override
+                    public void call(Subscriber<? super Long> subscriber) {
+                        long fermentingStartTimeStamp = BrewSessionUtils.getFermentingStartTimeStamp(brewHistory.getPackage_id());
+                        Log.e("timer", fermentingStartTimeStamp+" s");
+                        if (fermentingStartTimeStamp != 0) {
+                            long timePassed = System.currentTimeMillis() - fermentingStartTimeStamp;
+                            int ratio = (int) (((timePassed / 1000)*100) / fermentTotalTime);
+                            long timeLeft = fermentTotalTime - timePassed / 1000;
+                            if (timeLeft > 0) {
+                                long day = timeLeft /(60* 60 * 24);
+                                long hour = (timeLeft / (60*60))% 60;
+                                long minute = (timeLeft /60) % 60;
+                                String hourStr = hour == 0 ? "" : hour + "小时";
+                                String dayStr = day == 0 ? "" : day + "天";
+                                brewHistory.setRatio(ratio);
+                                brewHistory.setBrewingState("发酵中");
+                                brewHistory.setBrewingStageInfo("剩" + dayStr + hourStr + minute + "分钟");
+                                subscriber.onNext(timeLeft);
+                            } else {
+                                brewHistory.setBrewingState("酿造完成");
+                                subscriber.onError(new Throwable(Constants.FermentDoneMsg)); // stop interval
+                            }
+                        } else {
+                            brewHistory.setBrewingState("待发酵");
+                            subscriber.onError(new Throwable("ferment not started"));  // stop interval
+
+                        }
+                    }
+                }).subscribeOn(AndroidSchedulers.mainThread());
+            }
+        }).subscribe(new Subscriber<Long>() {
+            @Override
+            public void onCompleted() {
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                if(Constants.FermentDoneMsg.equals(e.getMessage())){
+                    brewHistory.setState(4);
+                    brewHistory.setBrewingState("酿造完成");
+                    DBManager.getInstance().getDBBrewHistoryDao().update(brewHistory);
+                    updateFermentingAdapter(brewHistory);
+
+                }
+                sessionProcessingMap.put(brewHistory.getPackage_id(), false);
+
+            }
+
+            @Override
+            public void onNext(Long aLong) {
+                Log.e("onNext", aLong+" s");
+                updateFermentingAdapter(brewHistory);
+                sessionProcessingMap.put(brewHistory.getPackage_id(), true);
+
+            }
+        });
+    }
+
+    private void updateFermentingAdapter(DBBrewHistory brewHistory) {
+        Long formula_id = brewHistory.getFormula_id();
+        String formulaId = String.format("%08x", formula_id);
+        Integer position = fermentingFormulaIdToPosition.get(formulaId);
+        if(position != null)
+            fermentingSessionAdapter.notifyItemChanged(position);
+        else
+            fermentingSessionAdapter.notifyDataSetChanged();
+    }
+
     private void animateProgressView(int gone, int anim_popup_close) {
         spinKit.setVisibility(gone);
-        Animation animation = android.view.animation.AnimationUtils.loadAnimation(getContext(), anim_popup_close);
+        Animation animation = AnimationUtils.loadAnimation(getContext(), anim_popup_close);
         spinKit.setAnimation(animation);
     }
 
@@ -436,7 +563,7 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if(spinKit.isShown())
+                if (spinKit.isShown())
                     animateProgressView(View.GONE, R.anim.anim_popup_close_progress);
             }
         });
@@ -455,16 +582,16 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
 //        Log.e("onDownloadRecipeSuccess", dbRecipe + "  ---   " +dbRecipe.getBrewSteps());
         Integer position = brewingFormulaIdToPosition.get(dbRecipe.getIdForFn());
         if (position != null && brewingHistoryList != null && brewingHistoryList.size() > position) {
-            BrewHistory brewHistory = brewingHistoryList.get(position);
-            brewHistory.setDbRecipe(dbRecipe);
+            DBBrewHistory brewHistory = brewingHistoryList.get(position);
+            brewHistory.setDBRecipe(dbRecipe);
             brewingSessionAdapter.setData(brewingHistoryList);
             brewingSessionAdapter.notifyItemChanged(position);
         }
         Integer positionForFinishedSession = fermentingFormulaIdToPosition.get(dbRecipe.getIdForFn());
         if (positionForFinishedSession != null && fermentingHistoryList != null && fermentingHistoryList.size() > positionForFinishedSession) {
 
-            BrewHistory brewHistory = fermentingHistoryList.get(positionForFinishedSession);
-            brewHistory.setDbRecipe(dbRecipe);
+            DBBrewHistory brewHistory = fermentingHistoryList.get(positionForFinishedSession);
+            brewHistory.setDBRecipe(dbRecipe);
             fermentingSessionAdapter.setData(fermentingHistoryList);
             fermentingSessionAdapter.notifyItemChanged(positionForFinishedSession);
 
@@ -480,15 +607,15 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
     public void onDownLoadRecipeAfterBrewBegin(DBRecipe dbRecipe) {
         Log.e("onDownLoadRecipe", "calling==========================");
         ParamStoreUtil.getInstance().setCurrentCreatingRecipe(dbRecipe);
-        BrewHistory brewHistory = new BrewHistory();
-        brewHistory.setDbRecipe(dbRecipe);
-        if(packId != null) {
+        DBBrewHistory brewHistory = new DBBrewHistory();
+        brewHistory.setDBRecipe(dbRecipe);
+        if (packId != null) {
             brewHistory.setPackage_id(Long.valueOf(packId));
             packId = null;
         }
         brewingHistoryList.add(0, brewHistory);
 
-        if(brewingHistoryList.size() != 0){
+        if (brewingHistoryList.size() != 0) {
             noBrewingTaskTv.setVisibility(View.GONE);
         }
         brewingSessionAdapter.notifyDataSetChanged();
@@ -501,14 +628,15 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
         fermentingSessionAdapter.notifyDataSetChanged();
     }
 
-    public interface onBrewingSessionListener {
-        void onReqBrewingSession(Long package_id);
-        void unlockLockerToExecuteNextMsg();
-    }
-
-    public int getBrewingSessionCount(){
-        if(brewingHistoryList == null)
+    public int getBrewingSessionCount() {
+        if (brewingHistoryList == null)
             return 0;
         return brewingHistoryList.size();
+    }
+
+    public interface onBrewingSessionListener {
+        void onReqBrewingSession(Long package_id);
+
+        void unlockLockerToExecuteNextMsg();
     }
 }

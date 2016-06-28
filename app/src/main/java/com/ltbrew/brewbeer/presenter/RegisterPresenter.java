@@ -3,8 +3,10 @@ package com.ltbrew.brewbeer.presenter;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.ltbrew.brewbeer.api.model.HttpResponse;
+import com.ltbrew.brewbeer.api.ssoApi.LoginApi;
 import com.ltbrew.brewbeer.api.ssoApi.RegisterApi;
 import com.ltbrew.brewbeer.interfaceviews.RegisterView;
+import com.ltbrew.brewbeer.uis.Constants;
 
 import rx.Observable;
 import rx.Subscriber;
@@ -27,6 +29,28 @@ public class RegisterPresenter {
         Observable.create(new Observable.OnSubscribe<String>() {
             @Override
             public void call(Subscriber<? super String> subscriber) {
+
+                HttpResponse checkAccountResp = LoginApi.checkAccount(username);
+                if (checkAccountResp.isSuccess()) {
+                    String content = checkAccountResp.getContent();
+                    JSONObject stateJson = JSON.parseObject(content);
+                    String state = stateJson.getString("state");
+                    if(Constants.CheckAccState.PHONE_NOT_REGISTERED.equals(state)){
+                        //进入请求验证码流程
+                    }else if(Constants.CheckAccState.NUMB_NOT_PHONE.equals(state)){
+                        subscriber.onError(new Throwable(Constants.CheckAccState.NOT_PHONE_NOTICE));
+                        return;
+
+                    }else if(Constants.CheckAccState.ACC_REGISTERED.equals(state)){
+                        subscriber.onError(new Throwable(Constants.CheckAccState.ACC_REGISTERED_NOTICE));
+                        return;
+
+                    }
+                } else {
+                    subscriber.onError(new Throwable("" + checkAccountResp.getCode()));
+                    return;
+                }
+
                 HttpResponse httpResponse = RegisterApi.reqRegCode(username);
                 if(httpResponse.isSuccess()){
                     String content = httpResponse.getContent();

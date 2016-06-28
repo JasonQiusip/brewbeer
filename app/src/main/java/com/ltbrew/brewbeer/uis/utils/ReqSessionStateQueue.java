@@ -4,8 +4,10 @@ package com.ltbrew.brewbeer.uis.utils;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.os.RemoteException;
 import android.util.Log;
 
+import com.ltbrew.brewbeer.service.ILtPushServiceAidlInterface;
 import com.ltbrew.brewbeer.service.LtPushService;
 
 import java.util.concurrent.TimeUnit;
@@ -18,13 +20,13 @@ import java.util.concurrent.locks.ReentrantLock;
 public class ReqSessionStateQueue extends Thread {
 
     public Handler handler;
-    LtPushService ltPushService;
+    ILtPushServiceAidlInterface ltPushService;
 
-    public LtPushService getLtPushService() {
+    public ILtPushServiceAidlInterface getLtPushService() {
         return ltPushService;
     }
 
-    public void setLtPushService(LtPushService ltPushService) {
+    public void setLtPushService(ILtPushServiceAidlInterface ltPushService) {
         this.ltPushService = ltPushService;
     }
 
@@ -41,7 +43,12 @@ public class ReqSessionStateQueue extends Thread {
                 Log.e("", "looper mao si mei zuo yong ?");
                 Long package_id = (Long) msg.obj;
                 if(ltPushService != null) {
-                    ltPushService.sendBrewSessionCmd(package_id);
+                    try {
+                        ltPushService.sendBrewSessionCmd(package_id);
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                        Log.e("", "remote call error?");
+                    }
                     try {
                         synchronized (lock) {
                             lock.wait(5000);

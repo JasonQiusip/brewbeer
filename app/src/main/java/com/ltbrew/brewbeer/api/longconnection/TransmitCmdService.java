@@ -87,10 +87,10 @@ public class TransmitCmdService {
 //        cmdSocket = new Socket(serverAddress, ManageLongConnIp.getInstance().port); //25712
         if(cmdSocket != null && !cmdSocket.isClosed())
             return;
-//        serverAddress = InetAddress.getByName("117.28.254.73"); // "27.154.54.242"
-//        cmdSocket = new Socket(serverAddress, 26012); //25712
-        serverAddress = InetAddress.getByName("218.5.96.6"); // "27.154.54.242"
-        cmdSocket = new Socket(serverAddress, 25712); //25712
+        serverAddress = InetAddress.getByName("117.28.254.73"); // "27.154.54.242"
+        cmdSocket = new Socket(serverAddress, 26012); //25712
+//        serverAddress = InetAddress.getByName("218.5.96.6"); // "27.154.54.242"
+//        cmdSocket = new Socket(serverAddress, 25712); //25712
         CSSLog.showLog("serverAddress:" + serverAddress, "cmdSocket:" + cmdSocket);
         cmdOutputStream = cmdSocket.getOutputStream();
     }
@@ -111,6 +111,11 @@ public class TransmitCmdService {
             @Override
             public void onWriteHbFailed() {
 
+            }
+
+            @Override
+            public void onBeforeWriteHb() {
+                fileSocketReadyCallback.onWritingHb();
             }
         });
         cmdRead = newSocketRead(socket);
@@ -237,18 +242,31 @@ public class TransmitCmdService {
         closeCmdWriteSocket();
     }
 
-    public SOCKETSTATE isCmdSocketClosed() {
-        if (cmdSocket.isClosed() && !transmitFileService.isfileSocketClose()) {
+    public SOCKETSTATE isSocketClosed() {
+        if (isCmdSocketClosed() && !transmitFileService.isfileSocketClose()) {
+
             return SOCKETSTATE.cmd_socket_closed;
-        } else if (!cmdSocket.isClosed() && !transmitFileService.isfileSocketClose()) {
+        } else if (!isCmdSocketClosed() && !transmitFileService.isfileSocketClose()) {
+
             return SOCKETSTATE.socket_alive;
-        } else if (cmdSocket.isClosed() && transmitFileService.isfileSocketClose()) {
+        } else if (isCmdSocketClosed() && transmitFileService.isfileSocketClose()) {
+
             return SOCKETSTATE.socket_closed;
-        } else if (!cmdSocket.isClosed() && transmitFileService.isfileSocketClose()) {
+        } else if (!isCmdSocketClosed()&& transmitFileService.isfileSocketClose()) {
+
             return SOCKETSTATE.file_socket_closed;
         }
         return SOCKETSTATE.unknown;
     }
+
+    public boolean isCmdSocketClosed(){
+        if (cmdSocket == null || (cmdSocket != null && cmdSocket.isClosed()))
+            return true;
+        else
+            return false;
+
+    }
+
     //api called from outside
     public void beginFileUpload(UploadParam uploadParam) {
         if(transmitFileService != null)
@@ -299,5 +317,7 @@ public class TransmitCmdService {
     public interface SocketWriteCallback {
         void onMaximumFileLen(int len);
         void onWriteHbFailed();
+
+        void onBeforeWriteHb();
     }
 }

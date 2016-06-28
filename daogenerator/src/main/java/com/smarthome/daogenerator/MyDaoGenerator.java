@@ -9,7 +9,7 @@ import de.greenrobot.daogenerator.ToMany;
 public class MyDaoGenerator {
 
     public static void main(String[] args) throws Exception {
-        Schema schema = new Schema(1004, "com.ltbrew.brewbeer.persistence.greendao");
+        Schema schema = new Schema(1005, "com.ltbrew.brewbeer.persistence.greendao");
 
         addRecipe(schema);
 
@@ -58,8 +58,27 @@ public class MyDaoGenerator {
         ToMany recipeToSlot = recipe.addToMany(dbSlot, recipeId1);
         recipeToSlot.setName("slots");
 
+        Entity dBBrewHistory = schema.addEntity("DBBrewHistory");
+        dBBrewHistory.addIdProperty();
+        dBBrewHistory.addLongProperty("formula_id").notNull().unique();
+        dBBrewHistory.addLongProperty("package_id").notNull().unique();
+        dBBrewHistory.addStringProperty("begin_time");
+        dBBrewHistory.addStringProperty("end_time");
+        dBBrewHistory.addIntProperty("pid");
+        dBBrewHistory.addIntProperty("state");
+        dBBrewHistory.addIntProperty("ratio");
+        dBBrewHistory.addIntProperty("si");
+        dBBrewHistory.addStringProperty("brewingState");
+        dBBrewHistory.addStringProperty("st");
+        dBBrewHistory.addIntProperty("ms");
+        dBBrewHistory.addStringProperty("brewingCmnMsg");
+        dBBrewHistory.addBooleanProperty("showStepInfo");
+        dBBrewHistory.addStringProperty("brewingStageInfo");
+        Property recipeIdHistory = dBBrewHistory.addLongProperty("recipeId").notNull().getProperty();
+        dBBrewHistory.addToOne(recipe, recipeIdHistory);
+
+
     }
-//
 //    Long formula_id;
 //    String begin_time;
 //    String end_time;
@@ -72,6 +91,8 @@ public class MyDaoGenerator {
 //    String st;
 //    int ms;
 //    String brewingCmnMsg;
-
+//    DBRecipe dbRecipe;
+//    boolean showStepInfo;
+//    String brewingStageInfo
 
 }

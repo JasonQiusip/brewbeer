@@ -5,6 +5,7 @@ import android.database.sqlite.SQLiteDatabase;
 
 import com.ltbrew.brewbeer.BrewApp;
 import com.ltbrew.brewbeer.api.cssApi.BrewApi;
+import com.ltbrew.brewbeer.persistence.greendao.DBBrewHistoryDao;
 import com.ltbrew.brewbeer.persistence.greendao.DBBrewStep;
 import com.ltbrew.brewbeer.persistence.greendao.DBBrewStepDao;
 import com.ltbrew.brewbeer.persistence.greendao.DBRecipeDao;
@@ -23,6 +24,7 @@ public class DBManager {
     private DBBrewStepDao dbBrewStepDao;
     private DBSlotDao dbSlotDao;
     private static DBManager dbManager;
+    private DBBrewHistoryDao dbBrewHistoryDao;
 
     private DBManager(){
     }
@@ -72,5 +74,12 @@ public class DBManager {
             dbSlotDao = getDaoSession().getDBSlotDao();
         }
         return dbSlotDao;
+    }
+
+    public DBBrewHistoryDao getDBBrewHistoryDao(){
+        if(dbBrewHistoryDao == null) {
+            dbBrewHistoryDao = getDaoSession().getDBBrewHistoryDao();
+        }
+        return dbBrewHistoryDao;
     }
 }

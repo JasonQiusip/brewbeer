@@ -7,9 +7,9 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.ltbrew.brewbeer.R;
+import com.ltbrew.brewbeer.persistence.greendao.DBBrewHistory;
 import com.ltbrew.brewbeer.persistence.greendao.DBBrewStep;
 import com.ltbrew.brewbeer.persistence.greendao.DBRecipe;
-import com.ltbrew.brewbeer.presenter.model.BrewHistory;
 import com.ltbrew.brewbeer.uis.adapter.viewholder.BaseViewHolder;
 import com.ltbrew.brewbeer.uis.adapter.viewholder.BrewingVH;
 import com.ltbrew.brewbeer.uis.view.SwipeRevealLayout;
@@ -17,8 +17,6 @@ import com.ltbrew.brewbeer.uis.view.SwipeRevealLayout;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-
-import butterknife.BindView;
 
 /**
  * Created by 151117a on 2016/5/4.
@@ -28,7 +26,7 @@ public class BrewingSessionAdapter extends RecyclerView.Adapter<BrewingVH> {
     private final Context context;
 
     private BaseViewHolder.OnRvItemClickListener onRvItemClickListener;
-    private List<BrewHistory> brewingHitories = Collections.EMPTY_LIST;
+    private List<DBBrewHistory> brewingHitories = Collections.EMPTY_LIST;
     private OnDeleteClickListener mOnDeleteClickListener;
     private HashMap<Integer, Integer> openOrCloseState = new HashMap<>();
 
@@ -46,8 +44,8 @@ public class BrewingSessionAdapter extends RecyclerView.Adapter<BrewingVH> {
     @Override
     public void onBindViewHolder(final BrewingVH holder, final int position) {
 
-        BrewHistory brewHistory = brewingHitories.get(position);
-        DBRecipe dbRecipe = brewHistory.getDbRecipe();
+        DBBrewHistory brewHistory = brewingHitories.get(position);
+        DBRecipe dbRecipe = brewHistory.getDBRecipe();
         DBRecipe recipe = dbRecipe;
         if (recipe != null) {
             holder.brewingSessionItemTv.setText(recipe.getName());
@@ -113,11 +111,13 @@ public class BrewingSessionAdapter extends RecyclerView.Adapter<BrewingVH> {
         Integer si = brewHistory.getSi();
         String brewingStageInfo = brewHistory.getBrewingStageInfo();
         if(si != null && dbRecipe != null && brewingStageInfo == null) {
-            List<DBBrewStep> brewSteps = dbRecipe.getBrewSteps();
-            if(brewSteps != null && brewSteps.size() > si) {
-                String stageInfo = getStageInfo(brewSteps.get(si));
-                holder.brewingStage.setText(stageInfo);
-            }
+            holder.brewingStage.setText("");
+//
+//            List<DBBrewStep> brewSteps = dbRecipe.getBrewSteps();
+//            if(brewSteps != null && brewSteps.size() > si) {
+//                String stageInfo = getStageInfo(brewSteps.get(si));
+//                holder.brewingStage.setText(stageInfo);
+//            }
         }else{
             holder.brewingStage.setText(brewingStageInfo);
         }
@@ -143,7 +143,7 @@ public class BrewingSessionAdapter extends RecyclerView.Adapter<BrewingVH> {
         return brewingHitories.size();
     }
 
-    public void setData(List<BrewHistory> brewingHitories) {
+    public void setData(List<DBBrewHistory> brewingHitories) {
         this.brewingHitories = brewingHitories;
     }
 

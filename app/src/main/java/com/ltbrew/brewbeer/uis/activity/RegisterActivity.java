@@ -103,6 +103,13 @@ public class RegisterActivity extends BaseActivity implements RegisterView {
     @Override
     public void onReqRegCodeFailed(String message) {
         cancelTimer();
+        if(Constants.CheckAccState.NOT_PHONE_NOTICE.equals(message)){
+            showSnackBar(Constants.CheckAccState.NOT_PHONE_NOTICE);
+            return;
+        }else if(Constants.CheckAccState.ACC_REGISTERED_NOTICE.equals(message)){
+            showSnackBar(Constants.CheckAccState.ACC_REGISTERED_NOTICE);
+            return;
+        }
         showErrorMsg(message);
     }
 

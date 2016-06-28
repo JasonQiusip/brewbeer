@@ -1,10 +1,14 @@
 package com.ltbrew.brewbeer.uis.activity;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -41,6 +45,7 @@ public class AddDevActivity extends BaseActivity implements AddDevView, OnAddDev
 
     private static final int REQUEST_CODE_SCAN_DEV_QR = 11;
     public static final String DEVICES_EXTRA = "devices";
+    private static final int CAMERA = 12;
     @BindView(R.id.backIv)
     ImageView backIv;
     @BindView(R.id.toolbar)
@@ -111,7 +116,32 @@ public class AddDevActivity extends BaseActivity implements AddDevView, OnAddDev
 
     @Override
     public void onClickQrScanBtn() {
-        startActivityForResult(new Intent(this, CaptureActivity.class), REQUEST_CODE_SCAN_DEV_QR);
+        startQrScan();
+//        startActivityForResult(new Intent(this, CaptureActivity.class), REQUEST_CODE_SCAN_DEV_QR);
+    }
+
+    public void startQrScan() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+            //申请CAMERA权限
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA},
+                    CAMERA);
+        }else{
+            startActivityForResult(new Intent(this, CaptureActivity.class), REQUEST_CODE_SCAN_DEV_QR);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == CAMERA) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission Granted
+                startActivityForResult(new Intent(this, CaptureActivity.class), REQUEST_CODE_SCAN_DEV_QR);
+            } else {
+                // Permission Denied
+            }
+        }
     }
 
     @Override

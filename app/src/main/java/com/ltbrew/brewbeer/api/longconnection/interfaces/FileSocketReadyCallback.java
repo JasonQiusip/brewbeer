@@ -48,4 +48,6 @@ public interface FileSocketReadyCallback {
     void onLongConnectionKickedOut();
 
     void onGeBrewSessionResp(String tk, String state);
+
+    void onWritingHb();
 }

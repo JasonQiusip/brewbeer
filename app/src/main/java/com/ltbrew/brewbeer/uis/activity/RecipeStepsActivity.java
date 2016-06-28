@@ -9,10 +9,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.ltbrew.brewbeer.R;
+import com.ltbrew.brewbeer.persistence.greendao.DBBrewHistory;
 import com.ltbrew.brewbeer.persistence.greendao.DBBrewStep;
 import com.ltbrew.brewbeer.persistence.greendao.DBRecipe;
 import com.ltbrew.brewbeer.persistence.greendao.DBSlot;
-import com.ltbrew.brewbeer.presenter.model.BrewHistory;
 import com.ltbrew.brewbeer.thirdpartylib.MessageWindow;
 import com.ltbrew.brewbeer.uis.utils.ParamSetObserver;
 import com.ltbrew.brewbeer.uis.utils.ParamStoreUtil;
@@ -110,10 +110,10 @@ public class RecipeStepsActivity extends BaseActivity {
 
     @OnClick(R.id.materialsReadyBtn)
     public void ClickFinishBtn(){
-        BrewHistory brewHistory = new BrewHistory();
-        brewHistory.setDbRecipe(dbRecipe);
-        brewHistory.setPackage_id(Long.valueOf(packId));
-        ParamStoreUtil.getInstance().setBrewHistory(brewHistory); //store data to local cache
+        DBBrewHistory DBBrewHistory = new DBBrewHistory();
+        DBBrewHistory.setDBRecipe(dbRecipe);
+        DBBrewHistory.setPackage_id(Long.valueOf(packId));
+        ParamStoreUtil.getInstance().setBrewHistory(DBBrewHistory); //store data to local cache
         Intent intent = new Intent(this, BrewSessionControlActivity.class);
         intent.putExtra("From", "recipeStepsAty");
         startActivity(intent);

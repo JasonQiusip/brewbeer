@@ -29,6 +29,9 @@ public interface Constants {
         String PHONE_NOT_REGISTERED = "0";
         String NUMB_NOT_PHONE = "1";
         String ACC_REGISTERED = "2";
+
+        String NOT_PHONE_NOTICE = "账号不是手机号";
+        String ACC_REGISTERED_NOTICE = "账号已注册";
     }
 
     interface ReqPwdLostState{
@@ -44,5 +47,13 @@ public interface Constants {
         public static final String VAL_CODE_ERROR = "3";
     }
 
+    interface BrewSessionType{
+        int BREWING = 0;
+        int FERMENTING = 1;
+        int SUSPEND = 2;
+        int FINSHED = 3;
+    }
+
+    String FermentDoneMsg = "time left less than or equal to 0";
 
 }

@@ -75,6 +75,20 @@ public class RecipePresenter {
         });
 
     }
+
+    public List<Recipe> getRecipesSync(String formula_id){
+        final String devId = DeviceUtil.getCurrentDevId();
+        if(TextUtils.isEmpty(devId)){
+            return null;
+        }
+        HttpResponse brewRecipes = BrewApi.getBrewRecipes(devId, formula_id);
+        if (brewRecipes.isSuccess()) {
+            String content = brewRecipes.getContent();
+            List<Recipe> recipes = parseFormula(devId, content);
+            return recipes;
+        }
+        return null;
+    }
     //[{"cus": "", "id_typ": 0, "ref": "", "id": "001672f7", "name": "\u5e1d\u90fd\u5564\u9152\u82b1"}, ...]
 
     private List<Recipe> parseFormula(String devId, String content) {
@@ -137,6 +151,51 @@ public class RecipePresenter {
                 recipeView.onGetRecipeFailed();
             }
         });
+    }
+
+    public DBRecipe downloadRecipeSync(String devId, Recipe recipe){
+        String fn = recipe.getId();
+
+        DBRecipe dbRecipe;
+        String ref = recipe.getRef();
+        if(TextUtils.isEmpty(ref)){
+            return null;
+        }
+
+        HttpResponse httpResponse = BrewApi.downloadRecipe(devId, fn, ref);
+        if(httpResponse != null && httpResponse.isSuccess()){
+            byte[] file = httpResponse.getFile();
+            if(file == null)
+                return null;
+            String recipeFile = new String(file);
+            System.out.println(recipeFile);
+
+            if(TextUtils.isEmpty(recipeFile))
+                return null;
+            JSONObject jsonObject = JSON.parseObject(recipeFile);
+            if(jsonObject == null)
+                return null;
+            JSONObject formula = jsonObject.getJSONObject("formula");
+            if(formula == null)
+                return null;
+            JSONObject slots = formula.getJSONObject("slot");
+            if(slots == null)
+                return null;
+
+            dbRecipe = new DBRecipe();
+            dbRecipe.setIdForFn(fn);
+            dbRecipe.setRef(ref);
+
+            parseRecipeProperties(dbRecipe, formula);
+            parseSlots(slots, dbRecipe);
+            parseSteps(formula, dbRecipe);
+
+            Log.e("dbRecipe", dbRecipe.toString());
+            return dbRecipe;
+        }else{
+            return null;
+        }
+
     }
 
     private Observable<DBRecipe> downloadSingleRecipe(final String devId, final Recipe recipe){

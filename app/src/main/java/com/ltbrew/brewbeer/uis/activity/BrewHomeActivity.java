@@ -1,17 +1,23 @@
 package com.ltbrew.brewbeer.uis.activity;
 
+import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.provider.Settings;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
@@ -33,16 +39,21 @@ import com.ltbrew.brewbeer.interfaceviews.BrewHomeView;
 import com.ltbrew.brewbeer.presenter.BrewHomePresenter;
 import com.ltbrew.brewbeer.presenter.model.Device;
 import com.ltbrew.brewbeer.presenter.util.DeviceUtil;
+import com.ltbrew.brewbeer.service.ILtPushServiceAidlInterface;
 import com.ltbrew.brewbeer.service.LtPushService;
 import com.ltbrew.brewbeer.uis.Constants;
 import com.ltbrew.brewbeer.uis.adapter.DevsAdapter;
 import com.ltbrew.brewbeer.uis.adapter.SectionsPagerAdapter;
 import com.ltbrew.brewbeer.uis.adapter.viewholder.BaseViewHolder;
 import com.ltbrew.brewbeer.uis.dialog.DeleteOrRenameDevPopupWindow;
+import com.ltbrew.brewbeer.uis.dialog.NoticeDialog;
+import com.ltbrew.brewbeer.uis.dialog.OnNegativeButtonClickListener;
+import com.ltbrew.brewbeer.uis.dialog.OnPositiveButtonClickListener;
 import com.ltbrew.brewbeer.uis.dialog.SetDevNameDialog;
 import com.ltbrew.brewbeer.uis.fragment.BrewSessionFragment;
 import com.ltbrew.brewbeer.uis.fragment.RecipeFragment;
 import com.ltbrew.brewbeer.uis.utils.AccUtils;
+import com.ltbrew.brewbeer.uis.utils.NetworkConnectionUtil;
 import com.ltbrew.brewbeer.uis.utils.ReqSessionStateQueue;
 
 import java.util.Collections;
@@ -56,6 +67,8 @@ import butterknife.OnClick;
 
 public class BrewHomeActivity extends BaseActivity
         implements NavigationView.OnNavigationItemSelectedListener, BrewHomeView, View.OnClickListener, BrewSessionFragment.onBrewingSessionListener {
+
+    private static final int SYSTEM_ALERT = 21;
 
     @BindView(R.id.homeCenterTitle)
     ImageView homeCenterTitle;
@@ -93,7 +106,7 @@ public class BrewHomeActivity extends BaseActivity
     private List<Device> devices = Collections.EMPTY_LIST;
     private boolean serviceIsConnected;
     private int positionCurrentDevInDevices;
-    private LtPushService ltPushService;
+    private ILtPushServiceAidlInterface ltPushService;
     private ReqSessionStateQueue reqSessionStateQueue;
     private DeleteOrRenameDevPopupWindow deleteOrRenameDevPopupWindow;
     private Handler handler = new Handler();
@@ -103,6 +116,7 @@ public class BrewHomeActivity extends BaseActivity
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+            Log.e("broadcastReceiver", "brewhome...");
             String action = intent.getAction();
             if (LtPushService.UNBIND_ACTION.equals(action)) {
                 if (brewHomePresenter != null)
@@ -114,14 +128,12 @@ public class BrewHomeActivity extends BaseActivity
                     return;
                 onReqBrewingSession(packId);
                 return;
+            }else if(LtPushService.SOCKET_IS_KICKED_OUT.equals(action)){
+                showMsgWindow("提醒", "推送服务未连上，请确认帐号是否已在其它设备上登录", null);
+                return;
             }
             if (brewHomePresenter != null)
                 brewHomePresenter.getDevs();
-//            ArrayList<Device> devs = intent.getParcelableArrayListExtra(AddDevActivity.DEVICES_EXTRA);
-//            devices = devs;
-//            positionCurrentDevInDevices = findWhereIsCurrentDevInDevices();
-//            updateUIForDev();
-//            reqDataFromServer();
         }
     };
     private DevsAdapter devsAdapter;
@@ -135,13 +147,13 @@ public class BrewHomeActivity extends BaseActivity
         ButterKnife.bind(this);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-//        homeCenterTitle.setTypeface(BrewApp.getInstance().textFont);
-
+//        applyPermissionsForM();
 
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(ADD_DEV_SUCCESS_ACTION);
         intentFilter.addAction(PUSH_REQ_SESSION_ACTION);
         intentFilter.addAction(LtPushService.UNBIND_ACTION);
+        intentFilter.addAction(LtPushService.SOCKET_IS_KICKED_OUT);
         registerReceiver(broadcastReceiver, intentFilter);
 
         setupViewPager();
@@ -183,17 +195,37 @@ public class BrewHomeActivity extends BaseActivity
             }
         });
         accTv.setText(AccUtils.getAcc());
-//        leftArrowIv.setOnClickListener(this);
-//        devIdTv.setOnClickListener(this);
-//        rightArrowIv.setOnClickListener(this);
         navAddDev.setOnClickListener(this);
         navAbout.setOnClickListener(this);
         navExit.setOnClickListener(this);
-//        }
         brewHomePresenter = new BrewHomePresenter(this);
         brewHomePresenter.getDevs();
         initMessageQueue();
     }
+
+//    private void applyPermissionsForM(){
+//        if (Build.VERSION.SDK_INT >= 23 && !Settings.canDrawOverlays(this)) {
+//            NoticeDialog noticeDialog = new NoticeDialog(this);
+//            noticeDialog.setMsg("APP需要获取系统悬浮窗权限，以显示提醒信息!");
+//            noticeDialog.setOnPositiveButtonClickListener(new OnPositiveButtonClickListener() {
+//                @Override
+//                public void onPositiveButtonClick() {
+//                    startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION));
+//                }
+//            }).setOnNegativeButtonClickListener(new OnNegativeButtonClickListener() {
+//                @Override
+//                public void onNegativeButtonClick() {
+//
+//                }
+//            }).show();
+//            Log.e("", "permission not granted");
+//
+//        }else{
+//            Log.e("", "permission granted");
+//
+//
+//        }
+//    }
 
     //初始化ViewPager
     private void setupViewPager() {
@@ -339,12 +371,11 @@ public class BrewHomeActivity extends BaseActivity
     public void onGetDevsSuccess(List<Device> devices) {
         this.devices = devices;
 
-//        if (this.devices != null && this.devices.size() == 0) {
-//            devIdTv.setText("没有设备");
-//            DeviceUtil.storeCurrentDevId("");
-//            brewSessionFragment.clearData();
-//            return;
-//        }
+        if (this.devices != null && this.devices.size() == 0) {
+            DeviceUtil.storeCurrentDevId("");
+            if(brewSessionFragment != null)
+                brewSessionFragment.clearData();
+        }
         Log.e("onGetDevsSuccess", devices.toString());
 
         startPushService();
@@ -377,7 +408,7 @@ public class BrewHomeActivity extends BaseActivity
     ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-            ltPushService = ((LtPushService.ServiceBinder) iBinder).getService();
+            ltPushService = ILtPushServiceAidlInterface.Stub.asInterface(iBinder);
             reqSessionStateQueue.setLtPushService(ltPushService);
             serviceIsConnected = true;
         }
@@ -466,20 +497,15 @@ public class BrewHomeActivity extends BaseActivity
             unregisterReceiver(broadcastReceiver);
         if (mServiceConnection != null && serviceIsConnected)
             unbindService(mServiceConnection);
-//        stopService(new Intent(this, LtPushService.class));
     }
 
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.accAvatar:
-//                switchToPrevDevInList();
                 break;
             case R.id.accTv:
 
-                break;
-            case R.id.rightArrowIv:
-//                switchToNextDevInList();
                 break;
             case R.id.nav_add_dev:
                 startAddDevActivity();

@@ -44,7 +44,7 @@
                 android:paddingLeft="8dp"
                 android:paddingRight="8dp"
                 android:text="新建酿造"
-                android:textColor="@color/colorAccent" />
+                android:textColor="@color/colorPrimaryDark" />
 
         </android.support.v7.widget.Toolbar>
 

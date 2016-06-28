@@ -49,4 +49,11 @@
         <item name="android:background">@mipmap/title_bar_bg</item>
     </style>
 
+    <style name="bottomWinTvStyle">
+        <item name="android:background">@drawable/bg_bottom_line</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textSize">16sp</item>
+
+    </style>
+
 </resources>

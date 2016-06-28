@@ -9,9 +9,11 @@ import com.alibaba.fastjson.JSONObject;
 import com.ltbrew.brewbeer.api.cssApi.BrewApi;
 import com.ltbrew.brewbeer.api.model.HttpResponse;
 import com.ltbrew.brewbeer.interfaceviews.BrewSessionVeiw;
+import com.ltbrew.brewbeer.persistence.greendao.DBBrewHistory;
+import com.ltbrew.brewbeer.persistence.greendao.DBBrewHistoryDao;
 import com.ltbrew.brewbeer.persistence.greendao.DBRecipe;
 import com.ltbrew.brewbeer.persistence.greendao.DBRecipeDao;
-import com.ltbrew.brewbeer.presenter.model.BrewHistory;
+import com.ltbrew.brewbeer.presenter.model.Recipe;
 import com.ltbrew.brewbeer.presenter.util.DBManager;
 import com.ltbrew.brewbeer.presenter.util.DeviceUtil;
 
@@ -22,9 +24,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import de.greenrobot.dao.query.QueryBuilder;
 import rx.Observable;
 import rx.Subscriber;
-import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 
@@ -50,16 +52,23 @@ public class BrewSessionsPresenter {
         Observable.create(new Observable.OnSubscribe<String>() {
             @Override
             public void call(Subscriber<? super String> subscriber) {
+                List<DBBrewHistory> brewingHistoryList = new ArrayList<>();
+                List<DBBrewHistory> fermentingHistoryList = new ArrayList<>();
+                List<DBBrewHistory> suspendHistoryList = new ArrayList<>();
+                fermentingHistoryList = getBrewHistoriesFromDB(2);
+                suspendHistoryList = getBrewHistoriesFromDB(3);
+                brewSessionView.onGetFinishedSession(getBrewHistoriesFromDB(4));
+                brewSessionView.onGetSuspendSession(suspendHistoryList);
                 String[] date = getTodayUnixTime();
                 HttpResponse brewHistory = BrewApi.getBrewHistory(devId, date[1], date[0], "");
+
                 if(brewHistory.isSuccess()){
 
                     String content = brewHistory.getContent();
                     JSONArray jsonArray = JSON.parseArray(content);
-                    List<BrewHistory> brewingHistoryList = new ArrayList<>();
-                    List<BrewHistory> finishedHistoryList = new ArrayList<>();
+
                     if(jsonArray == null) {
-                        brewSessionView.onGetBrewSessionSuccess(brewingHistoryList, finishedHistoryList);
+                        brewSessionView.onGetBrewSessionSuccess(brewingHistoryList, fermentingHistoryList);
                         return;
                     }
                     for (int i = 0, size = jsonArray.size(); i < size; i++) {
@@ -69,24 +78,32 @@ public class BrewSessionsPresenter {
                         String begin_time = jsonObject.getString("begin");
                         String end_time = jsonObject.getString("end");
                         Long package_id = jsonObject.getLong("pack_id");
-                        Long pid = jsonObject.getLong("pid");
+                        Integer pid = jsonObject.getInteger("pid");
                         Integer state = jsonObject.getInteger("state");
-                        BrewHistory brewHistoryModel = new BrewHistory();
+                        DBBrewHistory brewHistoryModel = new DBBrewHistory();
                         brewHistoryModel.setFormula_id(formula_id_long);
                         brewHistoryModel.setBegin_time(begin_time);
                         brewHistoryModel.setEnd_time(end_time);
                         brewHistoryModel.setPackage_id(package_id);
                         brewHistoryModel.setPid(pid);
                         brewHistoryModel.setState(state);
-                        if(state == 0 || state == 1 || state == 3) {
+//                        String formulaId = String.format("%08x", formula_id);
+                        List<Recipe> recipesSync = recipePresenter.getRecipesSync(formula_id);
+                        DBRecipe dbRecipe = recipePresenter.downloadRecipeSync(devId, recipesSync.get(0));
+                        if(dbRecipe == null){
+                            continue;
+                        }
+                        brewHistoryModel.setDBRecipe(dbRecipe);
+                        DBManager.getInstance().getDBBrewHistoryDao().insertOrReplace(brewHistoryModel);
+                        if(state == 0 || state == 1) {
                             brewingHistoryList.add(brewHistoryModel);
                         }else if(state == 2 ){
-                            finishedHistoryList.add(brewHistoryModel);
+                            fermentingHistoryList.add(brewHistoryModel);
                         }else{
 
                         }
                     }
-                    brewSessionView.onGetBrewSessionSuccess(brewingHistoryList, finishedHistoryList);
+                    brewSessionView.onGetBrewSessionSuccess(brewingHistoryList, fermentingHistoryList);
 
 
                 }else{
@@ -123,6 +140,26 @@ public class BrewSessionsPresenter {
         return dateTime;
 
     }
+
+    public List<DBBrewHistory> getBrewHistoriesFromDB(int state){
+        Calendar calendar = Calendar.getInstance();
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        long ts = 0;
+        try {
+            Date date = simpleDateFormat.parse(year + "-" + month + "-" + day + " 00:00:00");
+            long time = date.getTime();
+            ts = time/1000;
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        QueryBuilder<DBBrewHistory> dbBrewHistoryQueryBuilder = DBManager.getInstance().getDBBrewHistoryDao().queryBuilder();
+        return dbBrewHistoryQueryBuilder.where(DBBrewHistoryDao.Properties.State.eq(state),
+                DBBrewHistoryDao.Properties.Begin_time.le(ts)).build().list();
+    }
+
 
     public void getRecipeAfterBrewBegin(String formula_id){
         recipePresenter.getRecipes(formula_id);

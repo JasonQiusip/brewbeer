@@ -19,6 +19,7 @@
     <uses-permission android:name="android.permission.FLASHLIGHT" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
     <uses-permission
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="18" />
@@ -83,7 +84,8 @@
             android:label=""
             android:theme="@style/AppTheme" />
 
-        <service android:name=".service.LtPushService" />
+        <service android:name=".service.LtPushService"
+            android:process=":ltpush"/>
 
         <activity
             android:name=".uis.activity.RecipeDetailActivity"
@@ -96,6 +98,13 @@
             android:name=".uis.activity.RecipeStepsActivity"
             android:label=""
             android:theme="@style/AppTheme"></activity>
+        <activity android:name=".uis.activity.UserInfoActivity"></activity>
+        <receiver android:name=".service.broadcastreceivers.ConnectStateChangeReceiver">
+            <intent-filter>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
+                <action android:name="android.intent.action.USER_PRESENT"/>
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

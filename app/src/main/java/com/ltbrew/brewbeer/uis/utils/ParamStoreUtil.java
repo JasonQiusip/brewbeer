@@ -1,7 +1,7 @@
 package com.ltbrew.brewbeer.uis.utils;
 
+import com.ltbrew.brewbeer.persistence.greendao.DBBrewHistory;
 import com.ltbrew.brewbeer.persistence.greendao.DBRecipe;
-import com.ltbrew.brewbeer.presenter.model.BrewHistory;
 
 /**
  * Created by qiusiping on 16/5/7.
@@ -13,7 +13,7 @@ public class ParamStoreUtil {
     private DBRecipe dbCreatingRecipe;
     private ParamSetObserver paramSetObserver;
     public boolean isRecipeSet;
-    private BrewHistory brewHistory;
+    private DBBrewHistory brewHistory;
 
     private ParamStoreUtil(){}
 
@@ -65,11 +65,11 @@ public class ParamStoreUtil {
         this.paramSetObserver = paramSetObserver;
     }
 
-    public void setBrewHistory(BrewHistory brewHistory) {
+    public void setBrewHistory(DBBrewHistory brewHistory) {
         this.brewHistory = brewHistory;
     }
 
-    public BrewHistory getBrewHistory(){
+    public DBBrewHistory getBrewHistory(){
         return this.brewHistory;
     }
 }

@@ -95,6 +95,8 @@ public abstract class SocketCustomWriter {
 
                             }
                         }
+                        if(socketWriteCb != null)
+                            socketWriteCb.onBeforeWriteHb();
                         locker.seqNo++;
                         outputStream.write(toByteArr(ParsePackKits.makePack(Cmds.buildHeartRateCmd(locker.seqNo, pushServiceKits))));
                         System.err.print("hb = " + locker.seqNo);
@@ -105,7 +107,7 @@ public abstract class SocketCustomWriter {
                         synchronized (hblocker) {
                             hblocker.wait();
                         }
-                        Thread.sleep(5*60*1000);
+                        Thread.sleep(4*60*1000);
                     } catch (IOException e) {
                         excute = false;
                         if(socketWriteCb != null)

@@ -188,7 +188,7 @@ public class TransmitFileService {
     }
 
     public boolean isfileSocketClose() {
-        if (fileSocket != null && fileSocket.isClosed())
+        if (fileSocket == null || (fileSocket != null && fileSocket.isClosed()))
             return true;
         else
             return false;

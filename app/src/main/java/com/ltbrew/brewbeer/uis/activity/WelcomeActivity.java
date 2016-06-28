@@ -39,8 +39,8 @@ public class WelcomeActivity extends BaseActivity {
         Observable.create(new Observable.OnSubscribe<Long>() {
             @Override
             public void call(Subscriber<? super Long> subscriber) {
-//                boolean b = HostUtil.checkHostports(BrewApp.getInstance());
-                boolean b = true;//测试的时候打开
+                boolean b = HostUtil.checkHostports(BrewApp.getInstance());
+//                boolean b = true;//测试的时候打开
                 if(b){
                     subscriber.onNext(3000l);
                 }else{
