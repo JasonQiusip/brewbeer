@@ -47,6 +47,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import rx.Observable;
 import rx.Subscriber;
+import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.functions.Func1;
@@ -85,13 +86,19 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
     private BrewSessionsPresenter brewSessionsPresenter;
     private HashMap<String, Integer> brewingFormulaIdToPosition = new HashMap<>();
     private HashMap<String, Integer> fermentingFormulaIdToPosition = new HashMap<>();
-    private HashMap<Long, Boolean> sessionProcessingMap = new HashMap<>();
+    private HashMap<Long, Subscription> sessionProcessingMap = new HashMap<>();
     private List<DBBrewHistory> brewingHistoryList = Collections.EMPTY_LIST;
     private List<DBBrewHistory> fermentingHistoryList = Collections.EMPTY_LIST;
     private List<DBBrewHistory> suspendHistoryList = Collections.EMPTY_LIST;
     private List<DBBrewHistory> finishedHistoryList = Collections.EMPTY_LIST;
     private onBrewingSessionListener onBrewingSessionListener;
     private String packId;
+    private boolean activelyRefreshStart = false;
+
+    private BrewSessionRvController brewingController;
+    private BrewSessionRvController fermentingController;
+    private BrewSessionRvController suspendController;
+    private BrewSessionRvController finishedController;
 
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
@@ -134,7 +141,6 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
                 Log.e(TAG + "CMN_PRGS_CHECK_ACTION", brewHistory+"");
 
                 brewHistory.setBrewingState(pushMsgObj.des);
-                brewHistory.setBrewingStageInfo(null);
                 setTimeLeft(pushMsgObj, brewHistory);
                 brewHistory.setSt(st);
                 brewingSessionAdapter.setData(brewingHistoryList);
@@ -165,7 +171,6 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
                 brewHistory.setRatio(pldForCmnPrgs.ratio);
                 brewHistory.setSi(pldForCmnPrgs.si);
                 brewHistory.setBrewingState(pushMsgObj.des);
-                brewHistory.setBrewingStageInfo(null);
                 setTimeLeft(pushMsgObj, brewHistory);
                 brewHistory.setSt(st);
                 brewingSessionAdapter.setData(brewingHistoryList);
@@ -210,13 +215,15 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
         }
 
         private void setTimeLeft(final PushMsg pushMsgObj, final DBBrewHistory brewHistory) {
-            Boolean sessionProcessing = sessionProcessingMap.get(brewHistory.getPackage_id());
-            Log.e("setTimeLeft call", "=======sessionProcessing=" + sessionProcessing + "===========");
-
-            if (brewHistory == null || (sessionProcessing != null && sessionProcessing))
+            if (brewHistory == null )
                 return;
+
+            Subscription subscription = sessionProcessingMap.get(brewHistory.getPackage_id());
+            if(subscription != null)
+                subscription.unsubscribe();
+
             if ("糖化中".equals(pushMsgObj.des) || "煮沸中".equals(pushMsgObj.des)) {
-                Observable.interval(0, 30, TimeUnit.SECONDS).flatMap(new Func1<Long, Observable<Long>>() {
+                Subscription subscribe = Observable.interval(0, 30, TimeUnit.SECONDS).flatMap(new Func1<Long, Observable<Long>>() {
                     @Override
                     public Observable<Long> call(Long aLong) {
                         return calTimeLeftAndShowOb(brewHistory, pushMsgObj);
@@ -225,20 +232,19 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
                     @Override
                     public void call(Long aLong) {
                         Log.e("setTimeLeft call", "========" + aLong + "===========");
-                        if(brewingSessionAdapter != null)
+                        if (brewingSessionAdapter != null)
                             brewingSessionAdapter.notifyDataSetChanged();
-                        sessionProcessingMap.put(brewHistory.getPackage_id(), true);
 
                     }
                 }, new Action1<Throwable>() {
                     @Override
                     public void call(Throwable throwable) {
-                        sessionProcessingMap.put(brewHistory.getPackage_id(), false);
 
                         Log.e("setTimeLeft call", "========stop===========");
                         throwable.printStackTrace();
                     }
                 });
+                sessionProcessingMap.put(brewHistory.getPackage_id(), subscribe);
             }
         }
     };
@@ -247,7 +253,7 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
         return Observable.create(new Observable.OnSubscribe<Long>() {
             @Override
             public void call(Subscriber<? super Long> subscriber) {
-                long timePassed = System.currentTimeMillis() - BrewSessionUtils.getStepStartTimeStamp();
+                long timePassed = System.currentTimeMillis() - BrewSessionUtils.getStepStartTimeStamp(brewHistory.getPackage_id()+"");
                 DBRecipe dbRecipe = brewHistory.getDBRecipe();
                 if (dbRecipe == null)
                     return;
@@ -259,6 +265,7 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
                         long timeLeft = k / 60 - timePassed / (60 * 1000);
                         long hourLeft = timeLeft / 60;
                         if (timeLeft > 0) {
+                            brewHistory.setRatio((int) ((timePassed*100)/1000/k));
                             brewHistory.setBrewingStageInfo("剩" + (hourLeft == 0 ? "" : hourLeft + "小时") + timeLeft % 60 + "分钟");
                             subscriber.onNext(timeLeft);
                         }else{
@@ -270,10 +277,6 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
         }).subscribeOn(AndroidSchedulers.mainThread());
     }
 
-    private BrewSessionRvController brewingController;
-    private BrewSessionRvController fermentingController;
-    private BrewSessionRvController suspendController;
-    private BrewSessionRvController finishedController;
 
     private DBBrewHistory findBrewHistory(String package_id) {
         for (int i = 0, size = brewingHistoryList.size(); i < size; i++) {
@@ -363,6 +366,7 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
         reboundScrollView.setOnRefreshListener(new ReboundScrollView.OnRefreshListener() {
             @Override
             public void onRefresh() {
+                activelyRefreshStart = true;
                 getBrewHistory();
             }
 
@@ -374,6 +378,10 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
         });
     }
 
+    public void setActivelyRefreshStart(boolean activelyRefreshStart) {
+        this.activelyRefreshStart = activelyRefreshStart;
+    }
+
     @Override
     public void onDestroyView() {
         super.onDestroyView();
@@ -383,6 +391,7 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
     public void getBrewHistory() {
         if (brewSessionsPresenter != null)
             brewSessionsPresenter.getBrewHistory();
+
     }
 
     @Override
@@ -417,6 +426,9 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
                 reqSessionStateByTcpReqQueue();
 
                 showFermentingState();
+                if(!activelyRefreshStart)
+                    onBrewingSessionListener.onFinishReqBrewHistory();
+                activelyRefreshStart = false;
             }
         });
 
@@ -473,27 +485,28 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
 
     //TODO 写在服务里面， 后台提醒发酵时间
     private void showFermentingTime(final int fermentTotalTime, final DBBrewHistory brewHistory) {
-        Boolean sessionProcessing = sessionProcessingMap.get(brewHistory.getPackage_id());
-        Log.e("showFermentingTime call", "=======sessionProcessing=" + sessionProcessing + "===========");
-
-        if (brewHistory == null || (sessionProcessing != null && sessionProcessing))
+        if(brewHistory == null)
             return;
-        Observable.interval(0, 30, TimeUnit.SECONDS).flatMap(new Func1<Long, Observable<Long>>() {
+        Subscription subscription = sessionProcessingMap.get(brewHistory.getPackage_id());
+        if(subscription != null)
+            subscription.unsubscribe();
+
+        Subscription subscribe = Observable.interval(0, 30, TimeUnit.SECONDS).flatMap(new Func1<Long, Observable<Long>>() {
             @Override
             public Observable<Long> call(Long aLong) {
                 return Observable.create(new Observable.OnSubscribe<Long>() {
                     @Override
                     public void call(Subscriber<? super Long> subscriber) {
                         long fermentingStartTimeStamp = BrewSessionUtils.getFermentingStartTimeStamp(brewHistory.getPackage_id());
-                        Log.e("timer", fermentingStartTimeStamp+" s");
+                        Log.e("timer", fermentingStartTimeStamp + " s");
                         if (fermentingStartTimeStamp != 0) {
                             long timePassed = System.currentTimeMillis() - fermentingStartTimeStamp;
-                            int ratio = (int) (((timePassed / 1000)*100) / fermentTotalTime);
+                            int ratio = (int) (((timePassed / 1000) * 100) / fermentTotalTime);
                             long timeLeft = fermentTotalTime - timePassed / 1000;
                             if (timeLeft > 0) {
-                                long day = timeLeft /(60* 60 * 24);
-                                long hour = (timeLeft / (60*60))% 60;
-                                long minute = (timeLeft /60) % 60;
+                                long day = timeLeft / (60 * 60 * 24);
+                                long hour = (timeLeft / (60 * 60)) % 24;
+                                long minute = (timeLeft / 60) % 60;
                                 String hourStr = hour == 0 ? "" : hour + "小时";
                                 String dayStr = day == 0 ? "" : day + "天";
                                 brewHistory.setRatio(ratio);
@@ -520,25 +533,25 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
 
             @Override
             public void onError(Throwable e) {
-                if(Constants.FermentDoneMsg.equals(e.getMessage())){
+                if (Constants.FermentDoneMsg.equals(e.getMessage())) {
                     brewHistory.setState(4);
                     brewHistory.setBrewingState("酿造完成");
                     DBManager.getInstance().getDBBrewHistoryDao().update(brewHistory);
                     updateFermentingAdapter(brewHistory);
 
                 }
-                sessionProcessingMap.put(brewHistory.getPackage_id(), false);
 
             }
 
             @Override
             public void onNext(Long aLong) {
-                Log.e("onNext", aLong+" s");
+                Log.e("onNext", aLong + " s");
                 updateFermentingAdapter(brewHistory);
-                sessionProcessingMap.put(brewHistory.getPackage_id(), true);
 
             }
         });
+        sessionProcessingMap.put(brewHistory.getPackage_id(), subscribe);
+
     }
 
     private void updateFermentingAdapter(DBBrewHistory brewHistory) {
@@ -638,5 +651,7 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
         void onReqBrewingSession(Long package_id);
 
         void unlockLockerToExecuteNextMsg();
+
+        void onFinishReqBrewHistory();
     }
 }

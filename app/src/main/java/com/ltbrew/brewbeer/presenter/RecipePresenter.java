@@ -7,7 +7,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.ltbrew.brewbeer.api.cssApi.BrewApi;
-import com.ltbrew.brewbeer.api.generalApi.GeneralApi;
 import com.ltbrew.brewbeer.api.model.HttpResponse;
 import com.ltbrew.brewbeer.interfaceviews.RecipeView;
 import com.ltbrew.brewbeer.persistence.greendao.DBBrewStep;
@@ -17,12 +16,9 @@ import com.ltbrew.brewbeer.persistence.greendao.DBSlot;
 import com.ltbrew.brewbeer.presenter.model.Recipe;
 import com.ltbrew.brewbeer.presenter.util.DBManager;
 import com.ltbrew.brewbeer.presenter.util.DeviceUtil;
-import com.ltbrew.brewbeer.presenter.util.RxUtil;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.TreeMap;
 
 import rx.Observable;
 import rx.Subscriber;
@@ -84,10 +80,31 @@ public class RecipePresenter {
         HttpResponse brewRecipes = BrewApi.getBrewRecipes(devId, formula_id);
         if (brewRecipes.isSuccess()) {
             String content = brewRecipes.getContent();
-            List<Recipe> recipes = parseFormula(devId, content);
+            List<Recipe> recipes = parseFormulaWithoutDownload(devId, content);
             return recipes;
         }
         return null;
+    }
+
+    private List<Recipe> parseFormulaWithoutDownload(String devId, String content) {
+        List<Recipe> recipesList = new ArrayList<>();
+        JSONArray jsonArray = JSON.parseArray(content);
+        for (int i = 0, size = jsonArray.size(); i < size; i++) {
+            JSONObject jsonObject = jsonArray.getJSONObject(i);
+            String id = jsonObject.getString("id");
+            int id_type = jsonObject.getInteger("id_typ");
+            String name = jsonObject.getString("name");
+            String cus = jsonObject.getString("cus");
+            String ref = jsonObject.getString("ref");
+            Recipe recipe = new Recipe();
+            recipe.setId(id);
+            recipe.setId_type(id_type + "");
+            recipe.setName(name);
+            recipe.setCus(cus);
+            recipe.setRef(ref);
+            recipesList.add(recipe);
+        }
+        return recipesList;
     }
     //[{"cus": "", "id_typ": 0, "ref": "", "id": "001672f7", "name": "\u5e1d\u90fd\u5564\u9152\u82b1"}, ...]
 

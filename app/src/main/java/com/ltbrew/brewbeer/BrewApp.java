@@ -6,6 +6,8 @@ import android.graphics.Typeface;
 import com.ltbrew.brewbeer.api.ConfigApi;
 import com.ltbrew.brewbeer.presenter.util.DBManager;
 
+import cn.jpush.android.api.JPushInterface;
+
 /**
  * Created by 151117a on 2016/5/2.
  */
@@ -18,6 +20,8 @@ public class BrewApp extends Application {
     public void onCreate() {
         super.onCreate();
         app = this;
+        JPushInterface.setDebugMode(false);
+        JPushInterface.init(this);
         textFont = Typeface.createFromAsset(getAssets(), "fonts/DancingScript-Regular.otf");
         DBManager.initDB(this);
         ConfigApi.init(this);

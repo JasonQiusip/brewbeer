@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.os.RemoteException;
 import android.provider.Settings;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
@@ -41,6 +42,7 @@ import com.ltbrew.brewbeer.presenter.model.Device;
 import com.ltbrew.brewbeer.presenter.util.DeviceUtil;
 import com.ltbrew.brewbeer.service.ILtPushServiceAidlInterface;
 import com.ltbrew.brewbeer.service.LtPushService;
+import com.ltbrew.brewbeer.thirdpartylib.MessageWindow;
 import com.ltbrew.brewbeer.uis.Constants;
 import com.ltbrew.brewbeer.uis.adapter.DevsAdapter;
 import com.ltbrew.brewbeer.uis.adapter.SectionsPagerAdapter;
@@ -131,6 +133,24 @@ public class BrewHomeActivity extends BaseActivity
             }else if(LtPushService.SOCKET_IS_KICKED_OUT.equals(action)){
                 showMsgWindow("提醒", "推送服务未连上，请确认帐号是否已在其它设备上登录", null);
                 return;
+            }else if(LtPushService.SOCKET_INIT_FAILED.equals(action)){
+                showMsgWindow("提醒", "推送服务初始化失败， 请重试", new MessageWindow.OnMsgWindowActionListener(){
+
+                    @Override
+                    public void onCloseWindow() {
+                        if(ltPushService != null)
+                            try {
+                                ltPushService.startLongConn();
+                            } catch (RemoteException e) {
+                                e.printStackTrace();
+                            }
+                    }
+
+                    @Override
+                    public void onClickDetail() {
+
+                    }
+                }).setTextForCloseTv("确定");
             }
             if (brewHomePresenter != null)
                 brewHomePresenter.getDevs();
@@ -147,13 +167,13 @@ public class BrewHomeActivity extends BaseActivity
         ButterKnife.bind(this);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-//        applyPermissionsForM();
 
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(ADD_DEV_SUCCESS_ACTION);
         intentFilter.addAction(PUSH_REQ_SESSION_ACTION);
         intentFilter.addAction(LtPushService.UNBIND_ACTION);
         intentFilter.addAction(LtPushService.SOCKET_IS_KICKED_OUT);
+        intentFilter.addAction(LtPushService.SOCKET_INIT_FAILED);
         registerReceiver(broadcastReceiver, intentFilter);
 
         setupViewPager();
@@ -182,7 +202,10 @@ public class BrewHomeActivity extends BaseActivity
                 handler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        reqDataFromServer();
+                        if (brewSessionFragment == null)
+                            return;
+                        brewSessionFragment.setActivelyRefreshStart(true);
+                        brewSessionFragment.getBrewHistory();
                     }
                 }, 1000);
             }
@@ -202,30 +225,6 @@ public class BrewHomeActivity extends BaseActivity
         brewHomePresenter.getDevs();
         initMessageQueue();
     }
-
-//    private void applyPermissionsForM(){
-//        if (Build.VERSION.SDK_INT >= 23 && !Settings.canDrawOverlays(this)) {
-//            NoticeDialog noticeDialog = new NoticeDialog(this);
-//            noticeDialog.setMsg("APP需要获取系统悬浮窗权限，以显示提醒信息!");
-//            noticeDialog.setOnPositiveButtonClickListener(new OnPositiveButtonClickListener() {
-//                @Override
-//                public void onPositiveButtonClick() {
-//                    startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION));
-//                }
-//            }).setOnNegativeButtonClickListener(new OnNegativeButtonClickListener() {
-//                @Override
-//                public void onNegativeButtonClick() {
-//
-//                }
-//            }).show();
-//            Log.e("", "permission not granted");
-//
-//        }else{
-//            Log.e("", "permission granted");
-//
-//
-//        }
-//    }
 
     //初始化ViewPager
     private void setupViewPager() {
@@ -394,7 +393,6 @@ public class BrewHomeActivity extends BaseActivity
         if (recipeFragment == null)
             return;
         brewSessionFragment.getBrewHistory();
-        recipeFragment.getAllRecipes();
     }
 
     //启动后台推送服务
@@ -586,5 +584,11 @@ public class BrewHomeActivity extends BaseActivity
         synchronized (lock) {
             lock.notifyAll();
         }
+    }
+
+    @Override
+    public void onFinishReqBrewHistory() {
+        if(recipeFragment != null)
+            recipeFragment.getAllRecipes();
     }
 }

@@ -189,6 +189,11 @@ public class MessageWindow {
 		return this;
 	}
 
+	public MessageWindow setTextForCloseTv(String txt){
+		tvClose.setText(txt);
+		return this;
+	}
+
 	private void setTouchEvent(View view) {
 
 		view.setOnTouchListener(new OnTouchListener() {

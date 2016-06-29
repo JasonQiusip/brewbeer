@@ -9,4 +9,6 @@ interface ILtPushServiceAidlInterface {
      * and return values in AIDL.
      */
     void sendBrewSessionCmd(long pack_id);
+
+    void startLongConn();
 }

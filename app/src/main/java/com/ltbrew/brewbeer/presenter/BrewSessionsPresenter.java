@@ -68,7 +68,7 @@ public class BrewSessionsPresenter {
                     JSONArray jsonArray = JSON.parseArray(content);
 
                     if(jsonArray == null) {
-                        brewSessionView.onGetBrewSessionSuccess(brewingHistoryList, fermentingHistoryList);
+//                        brewSessionView.onGetBrewSessionSuccess(brewingHistoryList, fermentingHistoryList);
                         return;
                     }
                     for (int i = 0, size = jsonArray.size(); i < size; i++) {

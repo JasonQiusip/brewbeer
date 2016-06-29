@@ -21,6 +21,7 @@ import com.ltbrew.brewbeer.uis.utils.AccUtils;
 
 import java.util.concurrent.TimeUnit;
 
+import cn.jpush.android.api.JPushInterface;
 import rx.Observable;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
@@ -40,7 +41,7 @@ public class WelcomeActivity extends BaseActivity {
             @Override
             public void call(Subscriber<? super Long> subscriber) {
                 boolean b = HostUtil.checkHostports(BrewApp.getInstance());
-//                boolean b = true;//测试的时候打开
+//                boolean b = true;//测试的时候打开218
                 if(b){
                     subscriber.onNext(3000l);
                 }else{
@@ -75,4 +76,15 @@ public class WelcomeActivity extends BaseActivity {
         });
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        JPushInterface.onResume(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        JPushInterface.onPause(this);
+    }
 }

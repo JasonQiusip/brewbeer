@@ -6,18 +6,21 @@ import android.os.Parcelable;
 public class PldForCmnMsg implements Parcelable{
         public int ms;
     public String tk;
+    public String id;
 
     public PldForCmnMsg(){}
 
     protected PldForCmnMsg(Parcel in) {
         ms = in.readInt();
         tk = in.readString();
+        id = in.readString();
     }
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeInt(ms);
         dest.writeString(tk);
+        dest.writeString(id);
     }
 
     @Override

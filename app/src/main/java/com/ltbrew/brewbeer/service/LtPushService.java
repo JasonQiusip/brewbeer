@@ -9,7 +9,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -20,7 +19,6 @@ import android.widget.Toast;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.ltbrew.brewbeer.BrewApp;
 import com.ltbrew.brewbeer.R;
 import com.ltbrew.brewbeer.api.ConfigApi;
 import com.ltbrew.brewbeer.api.longconnection.SOCKETSTATE;
@@ -57,6 +55,7 @@ public class LtPushService extends Service implements FileSocketReadyCallback {
     public static final String ANDROID_INTENT_ACTION_USER_PRESENT = "android.intent.action.USER_PRESENT";
     private static final int SYSTEM_ALERT = 20;
     public static final String SOCKET_IS_KICKED_OUT = "socket_is_kicked";
+    public static final String SOCKET_INIT_FAILED = "socket_init_failed";
     private int tryAgain = 3;
     private TransmitCmdService transmitCmdService;
     private final static int GRAY_SERVICE_ID = 2016;
@@ -105,6 +104,11 @@ public class LtPushService extends Service implements FileSocketReadyCallback {
         @Override
         public void sendBrewSessionCmd(long pack_id) throws RemoteException {
             sendBrewSession(pack_id);
+        }
+
+        @Override
+        public void startLongConn() throws RemoteException {
+            startConnectionOnNewThread();
         }
     };
 
@@ -220,10 +224,11 @@ public class LtPushService extends Service implements FileSocketReadyCallback {
         Log.e("", "======================onInitializeLongConnFailed=========================");
         Intent intent = new Intent(this, BrewHomeActivity.class);
         showNotification(this, "连接服务初始化失败，请点击重连", intent);
+        sendBroadcast(new Intent(SOCKET_INIT_FAILED));
+
         startLongConnectionThread = null;
         if(transmitCmdService != null)
             transmitCmdService.closeSocket();
-        Toast.makeText(getApplicationContext(), "服务初始化失败，请点击通知栏通知重连服务", Toast.LENGTH_SHORT).show();
 
     }
 
@@ -336,6 +341,8 @@ public class LtPushService extends Service implements FileSocketReadyCallback {
                     pldForCmnPrgs.si = si;
                     pldForCmnPrgs.ratio = ratio;
                     pldForCmnPrgs.st = st;
+                    pushMessage.des = getStartTSOfSteps(st, pushMessage.des);
+
                     Log.e("pushmsg -> cmn_prgs", pldForCmnPrgs.toString());
                     intent.setAction(CMN_PRGS_PUSH_ACTION);
                     intent.putExtra(PUSH_MSG_EXTRA, pushMessage);
@@ -376,7 +383,13 @@ public class LtPushService extends Service implements FileSocketReadyCallback {
 
     }
 
-    private String getStartTSOfSteps(String des) {
+    private String getStartTSOfSteps(String st, String des) {
+        if(st == null)
+            return des;
+        String[] sts = st.split(":");
+        if(sts.length < 2)
+            return des;
+        String pack_id = sts[1];
         String timeStamp = null;
         if (des.contains("糖化中 ")) {
             //获取糖化开始时间
@@ -394,7 +407,7 @@ public class LtPushService extends Service implements FileSocketReadyCallback {
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             try {
                 Date date = simpleDateFormat.parse(timeStamp);
-                BrewSessionUtils.storeStepStartTimeStamp(date.getTime());
+                BrewSessionUtils.storeStepStartTimeStamp(pack_id, date.getTime());
 
             } catch (ParseException e) {
                 e.printStackTrace();
@@ -409,7 +422,6 @@ public class LtPushService extends Service implements FileSocketReadyCallback {
         String description = jsonObject.getString("description");
         String id = jsonObject.getString("id");
         Integer f = jsonObject.getInteger("f");
-        description = getStartTSOfSteps(description);
 
         pushMessage.cb = cb;
         pushMessage.des = description;
@@ -444,7 +456,9 @@ public class LtPushService extends Service implements FileSocketReadyCallback {
         pushMessage.st = tk;
         byte[] bytes = ParsePackKits.charToByteArray(body.toCharArray()); //utf8中文串通过转字符串再转String会出现乱码， 所以在次将String转会byte数组， 再用系统的方法转为中文
         pushMessage.des = new String(bytes);
-        pushMessage.des = getStartTSOfSteps(pushMessage.des);
+        Log.e(TAG,  "onGetCmdPrgs "+pushMessage.des);
+
+        pushMessage.des = getStartTSOfSteps(pushMessage.st, pushMessage.des);
         Intent intent = new Intent();
         intent.setAction(CMN_PRGS_CHECK_ACTION);
         intent.putExtra(PUSH_MSG_EXTRA, pushMessage);

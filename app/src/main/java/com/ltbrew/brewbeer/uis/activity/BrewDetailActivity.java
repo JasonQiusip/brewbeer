@@ -50,6 +50,8 @@ public class BrewDetailActivity extends BaseActivity {
 
 
         DBRecipe dbRecipe = ParamStoreUtil.getInstance().getDbRecipe();
+        if(dbRecipe == null)
+            return;
         addItemToContainer("配方详情", "", true);
         addItemToContainer("配方名称", dbRecipe.getName());
         Integer wr = dbRecipe.getWr();

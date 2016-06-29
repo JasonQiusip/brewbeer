@@ -23,8 +23,7 @@ public class AboutActivity extends BaseActivity {
     TextView appVerTv;
     @BindView(R.id.qscVerTv)
     TextView qscVerTv;
-    @BindView(R.id.wifiVerTv)
-    TextView wifiVerTv;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,8 +49,7 @@ public class AboutActivity extends BaseActivity {
                 JSONObject jsonObject = JSON.parseObject(s);
                 String qsc_ver = jsonObject.getString("qsc_ver");
                 String wifi_ver = jsonObject.getString("wifi_ver");
-                qscVerTv.setText(qsc_ver);
-                wifiVerTv.setText(wifi_ver);
+                qscVerTv.setText(qsc_ver+"/"+wifi_ver);
 
             }
         }, new Action1<Throwable>() {

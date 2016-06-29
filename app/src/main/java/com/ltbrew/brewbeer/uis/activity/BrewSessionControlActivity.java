@@ -25,6 +25,7 @@ import com.ltbrew.brewbeer.persistence.greendao.DBSlot;
 import com.ltbrew.brewbeer.presenter.AddPackPresenter;
 import com.ltbrew.brewbeer.presenter.model.Recipe;
 import com.ltbrew.brewbeer.presenter.util.DBManager;
+import com.ltbrew.brewbeer.presenter.util.DeviceUtil;
 import com.ltbrew.brewbeer.service.LtPushService;
 import com.ltbrew.brewbeer.service.PldForCmnMsg;
 import com.ltbrew.brewbeer.service.PldForCmnPrgs;
@@ -78,7 +79,9 @@ public class BrewSessionControlActivity extends BaseActivity implements AddPackV
 
                 PushMsg pushMsgObj = intent.getParcelableExtra(LtPushService.PUSH_MSG_EXTRA);
                 PldForCmnPrgs pldForCmnPrgs = intent.getParcelableExtra(LtPushService.PUSH_PLD_EXTRA);
-
+                if(pldForCmnPrgs.st != null && !pldForCmnPrgs.st.contains(brewHistory.getPackage_id()+"")){
+                    return;
+                }
                 if (brewHistory != null && pldForCmnPrgs != null) {
 
                     brewHistory.setRatio(pldForCmnPrgs.ratio);
@@ -94,6 +97,9 @@ public class BrewSessionControlActivity extends BaseActivity implements AddPackV
                 Log.e("CMN_PRGS_CHECK_ACTION", pushMsgObj.toString());
 
                 String st = pushMsgObj.st;
+                if(st != null && !st.contains(brewHistory.getPackage_id()+"")){
+                    return;
+                }
                 if (brewHistory != null) {
                     brewHistory.setRatio(pushMsgObj.ratio);
                     brewHistory.setSi(pushMsgObj.si);
@@ -103,9 +109,12 @@ public class BrewSessionControlActivity extends BaseActivity implements AddPackV
                 changeRecipeState();
             } else if (LtPushService.CMN_MSG_PUSH_ACTION.equals(action)) {//温度状态上报
                 PushMsg pushMsgObj = intent.getParcelableExtra(LtPushService.PUSH_MSG_EXTRA);
-                Log.e("CMN_MSG_PUSH_ACTION", pushMsgObj.toString());
                 PldForCmnMsg pldForCmnMsg = intent.getParcelableExtra(LtPushService.PUSH_PLD_EXTRA);
 
+                Log.e("CMN_MSG_PUSH_ACTION", pushMsgObj.toString()+DeviceUtil.getCurrentDevId()+" "+pldForCmnMsg.id);
+
+                if(!DeviceUtil.getCurrentDevId().equals(pushMsgObj.id))
+                    return;
                 int ms = pldForCmnMsg.ms;
                 if (ms > 90) {
                     pushMsgObj.des = "煮沸";
@@ -236,6 +245,8 @@ public class BrewSessionControlActivity extends BaseActivity implements AddPackV
             @Override
             public void onClickRestartBtn() {
                 BrewSessionUtils.storeFermentingStartTimeStamp(brewHistory.getPackage_id(), System.currentTimeMillis());
+                mHandler.removeCallbacksAndMessages(null);
+                showFermentingCountDown();
             }
 
             @Override
@@ -353,7 +364,9 @@ public class BrewSessionControlActivity extends BaseActivity implements AddPackV
                 if (brewHistory.getBrewingState().contains("准备"))
                     return;
             }
-        } else if (brewHistory.getBrewingState() == null && !showStrartToBrewTxt) {
+        } else if ((brewHistory.getBrewingState() == null
+                || (brewHistory.getBrewingState() != null&& brewHistory.getBrewingState().contains("加热中")))
+                && !showStrartToBrewTxt) {
             if(si != null && si > 0)
                 curState.setText("加热中");
             return;
@@ -373,6 +386,8 @@ public class BrewSessionControlActivity extends BaseActivity implements AddPackV
                 mHandler.removeCallbacksAndMessages(null);
                 if (si != null)
                     showTimeCountDown(brewSteps.get(si));
+                else
+                    curState.setText("糖化中");
                 return;
             }
 
@@ -419,7 +434,7 @@ public class BrewSessionControlActivity extends BaseActivity implements AddPackV
         final Integer totalSecondsForThisStep = dbBrewStep.getK();
         if (totalSecondsForThisStep == null)
             return;
-        final long stepStartTimeStamp = BrewSessionUtils.getStepStartTimeStamp();
+        final long stepStartTimeStamp = BrewSessionUtils.getStepStartTimeStamp(brewHistory.getPackage_id()+"");
 
         countdown(totalSecondsForThisStep, stepStartTimeStamp);
     }
