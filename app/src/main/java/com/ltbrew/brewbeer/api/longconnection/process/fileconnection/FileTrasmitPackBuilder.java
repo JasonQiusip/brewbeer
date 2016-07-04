@@ -105,6 +105,16 @@ public class FileTrasmitPackBuilder {
         return buildRequestString;
     }
 
+    static String buildCmnMsgLastCmd(long seqNo, String pid, String token, ParsePackKits pushServiceKits) {
+        List<String> list = new ArrayList<String>();
+        list.add("cmn_msg_last");
+        list.add(seqNo + "");
+        list.add(pid+"");
+        list.add(token+"");
+        String buildRequestString = pushServiceKits.buildRequestString(list);
+        return buildRequestString;
+    }
+
     static String toString(byte[] filePart) {
         System.out.print(Arrays.toString(filePart));
         return ParsePackKits.byteArrayToStr(filePart).toString();

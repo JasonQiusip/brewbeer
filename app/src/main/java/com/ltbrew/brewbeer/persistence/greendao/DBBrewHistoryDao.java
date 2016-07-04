@@ -31,7 +31,7 @@ public class DBBrewHistoryDao extends AbstractDao<DBBrewHistory, Long> {
         public final static Property Package_id = new Property(2, long.class, "package_id", false, "PACKAGE_ID");
         public final static Property Begin_time = new Property(3, String.class, "begin_time", false, "BEGIN_TIME");
         public final static Property End_time = new Property(4, String.class, "end_time", false, "END_TIME");
-        public final static Property Pid = new Property(5, Integer.class, "pid", false, "PID");
+        public final static Property Pid = new Property(5, String.class, "pid", false, "PID");
         public final static Property State = new Property(6, Integer.class, "state", false, "STATE");
         public final static Property Ratio = new Property(7, Integer.class, "ratio", false, "RATIO");
         public final static Property Si = new Property(8, Integer.class, "si", false, "SI");
@@ -65,7 +65,7 @@ public class DBBrewHistoryDao extends AbstractDao<DBBrewHistory, Long> {
                 "\"PACKAGE_ID\" INTEGER NOT NULL UNIQUE ," + // 2: package_id
                 "\"BEGIN_TIME\" TEXT," + // 3: begin_time
                 "\"END_TIME\" TEXT," + // 4: end_time
-                "\"PID\" INTEGER," + // 5: pid
+                "\"PID\" TEXT," + // 5: pid
                 "\"STATE\" INTEGER," + // 6: state
                 "\"RATIO\" INTEGER," + // 7: ratio
                 "\"SI\" INTEGER," + // 8: si
@@ -106,9 +106,9 @@ public class DBBrewHistoryDao extends AbstractDao<DBBrewHistory, Long> {
             stmt.bindString(5, end_time);
         }
  
-        Integer pid = entity.getPid();
+        String pid = entity.getPid();
         if (pid != null) {
-            stmt.bindLong(6, pid);
+            stmt.bindString(6, pid);
         }
  
         Integer state = entity.getState();
@@ -179,7 +179,7 @@ public class DBBrewHistoryDao extends AbstractDao<DBBrewHistory, Long> {
             cursor.getLong(offset + 2), // package_id
             cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3), // begin_time
             cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4), // end_time
-            cursor.isNull(offset + 5) ? null : cursor.getInt(offset + 5), // pid
+            cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5), // pid
             cursor.isNull(offset + 6) ? null : cursor.getInt(offset + 6), // state
             cursor.isNull(offset + 7) ? null : cursor.getInt(offset + 7), // ratio
             cursor.isNull(offset + 8) ? null : cursor.getInt(offset + 8), // si
@@ -202,7 +202,7 @@ public class DBBrewHistoryDao extends AbstractDao<DBBrewHistory, Long> {
         entity.setPackage_id(cursor.getLong(offset + 2));
         entity.setBegin_time(cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3));
         entity.setEnd_time(cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4));
-        entity.setPid(cursor.isNull(offset + 5) ? null : cursor.getInt(offset + 5));
+        entity.setPid(cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5));
         entity.setState(cursor.isNull(offset + 6) ? null : cursor.getInt(offset + 6));
         entity.setRatio(cursor.isNull(offset + 7) ? null : cursor.getInt(offset + 7));
         entity.setSi(cursor.isNull(offset + 8) ? null : cursor.getInt(offset + 8));

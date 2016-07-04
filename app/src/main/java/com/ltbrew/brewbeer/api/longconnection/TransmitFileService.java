@@ -28,7 +28,7 @@ public class TransmitFileService {
     private final ExecutorService pool;
     private String ip;
     private int host;
-    private SocketWrite cmdsWrite;
+    private SocketWriteProxy cmdsWrite;
     public int fileBeginSeqNo;
     private Object hbLocker = new Object();
     private SocketRead cmdRead;
@@ -59,7 +59,7 @@ public class TransmitFileService {
     }
 
     private void startFileWriteRead(Socket socket, OutputStream outputStream, CommonParam locker) {
-        cmdsWrite = new SocketWrite(outputStream, this.authorizeToken, ReqType.file);
+        cmdsWrite = new SocketWriteProxy(outputStream, this.authorizeToken, ReqType.file);
         cmdsWrite.setLocker(locker);
         cmdsWrite.sethbLocker(hbLocker);
         cmdRead = newCmdRead(socket);
@@ -125,6 +125,11 @@ public class TransmitFileService {
             @Override
             public void onGetCmnPrgs(String percent, String seq_index, String body) {
                 fileSocketCb.onGetCmdPrgs(percent, seq_index, body);
+            }
+
+            @Override
+            public void onGetCmnMsg(String des) {
+                fileSocketCb.onGetCmnMsg(des);
             }
 
             @Override
@@ -213,16 +218,23 @@ public class TransmitFileService {
     }
 
     public void getPidHeartRr(String id, String bTime, int linkIndex, int testBindex) throws IOException {
+
         cmdsWrite.sendHeartRr(id,bTime,linkIndex,testBindex);
     }
 
     public void getPidHearHistory(String id, int endIndex, int whats6day, boolean isZip) throws IOException {
-        cmdsWrite.senHeartHistory(id,endIndex, whats6day, isZip);
+        if(cmdsWrite != null)
+            cmdsWrite.senHeartHistory(id,endIndex, whats6day, isZip);
     }
 
     public void sendBrewSessionCmd(Long package_id) {
         if(cmdsWrite != null)
             cmdsWrite.sendBrewSessionCmd(package_id);
+    }
+
+    public void checkCmnMsgLast(String pid, String token){
+        if(cmdsWrite != null)
+            cmdsWrite.checkLastCmnMsg(pid, token);
     }
 
     interface SocketReackCallback extends TransmitCmdService.SocketReadCallback{
@@ -231,6 +243,7 @@ public class TransmitFileService {
 
         void onGetCmnPrgs(String percent, String seq_index, String body);
 
+        void onGetCmnMsg(String des);
     }
 
     interface FileSocketReadCallback {

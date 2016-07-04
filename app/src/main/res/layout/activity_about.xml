@@ -27,7 +27,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text=" V0.1.8 Version"
+        android:text=" V0.1.9 Version"
         android:layout_centerHorizontal="true"
         android:textSize="16sp"
         android:layout_marginTop="30dp"

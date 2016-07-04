@@ -439,6 +439,13 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
         this.getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                if(finishedBrewHistories == null ||
+                        (finishedBrewHistories != null && finishedBrewHistories.size() == 0)){
+                    suspendTaskTv.setVisibility(View.VISIBLE);
+                }else{
+                    suspendTaskTv.setVisibility(View.GONE);
+
+                }
                 finishedHistoryList = finishedBrewHistories;
                 finishedSessionAdapter.setData(finishedBrewHistories);
                 finishedController.notifyDataSetChanged();
@@ -452,7 +459,13 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
         this.getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                if(suspendBrewHistories == null ||
+                        (suspendBrewHistories != null && suspendBrewHistories.size() == 0)){
+                    suspendTaskTv.setVisibility(View.VISIBLE);
+                }else{
+                    suspendTaskTv.setVisibility(View.GONE);
 
+                }
                 suspendHistoryList = suspendBrewHistories;
                 suspendSessionAdapter.setData(suspendBrewHistories);
                 suspendController.notifyDataSetChanged();

@@ -14,7 +14,7 @@ public class DBBrewHistory {
     private long package_id;
     private String begin_time;
     private String end_time;
-    private Integer pid;
+    private String pid;
     private Integer state;
     private Integer ratio;
     private Integer si;
@@ -43,7 +43,7 @@ public class DBBrewHistory {
         this.id = id;
     }
 
-    public DBBrewHistory(Long id, long formula_id, long package_id, String begin_time, String end_time, Integer pid, Integer state, Integer ratio, Integer si, String brewingState, String st, Integer ms, String brewingCmnMsg, Boolean showStepInfo, String brewingStageInfo, long recipeId) {
+    public DBBrewHistory(Long id, long formula_id, long package_id, String begin_time, String end_time, String pid, Integer state, Integer ratio, Integer si, String brewingState, String st, Integer ms, String brewingCmnMsg, Boolean showStepInfo, String brewingStageInfo, long recipeId) {
         this.id = id;
         this.formula_id = formula_id;
         this.package_id = package_id;
@@ -108,11 +108,11 @@ public class DBBrewHistory {
         this.end_time = end_time;
     }
 
-    public Integer getPid() {
+    public String getPid() {
         return pid;
     }
 
-    public void setPid(Integer pid) {
+    public void setPid(String pid) {
         this.pid = pid;
     }
 

@@ -13,6 +13,7 @@ public interface CmdsConstant {
 
    enum CMDSTR{
         auth,
+        st,
         mss,
         hb,
         file_ul_begin,
@@ -28,7 +29,8 @@ public interface CmdsConstant {
         r_hrh,
         kick,
         cmn_prgs,
-       brew_session;
+       brew_session,
+       cmn_msg;
 
 
         public static final Map lookup = new HashMap();

@@ -85,7 +85,7 @@ public class BrewSessionsPresenter {
                         brewHistoryModel.setBegin_time(begin_time);
                         brewHistoryModel.setEnd_time(end_time);
                         brewHistoryModel.setPackage_id(package_id);
-                        brewHistoryModel.setPid(pid);
+                        brewHistoryModel.setPid(devId);
                         brewHistoryModel.setState(state);
 //                        String formulaId = String.format("%08x", formula_id);
                         List<Recipe> recipesSync = recipePresenter.getRecipesSync(formula_id);
@@ -100,7 +100,8 @@ public class BrewSessionsPresenter {
                         }else if(state == 2 ){
                             fermentingHistoryList.add(brewHistoryModel);
                         }else{
-
+                            suspendHistoryList.add(brewHistoryModel);
+                            brewSessionView.onGetSuspendSession(suspendHistoryList);
                         }
                     }
                     brewSessionView.onGetBrewSessionSuccess(brewingHistoryList, fermentingHistoryList);
@@ -149,15 +150,17 @@ public class BrewSessionsPresenter {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         long ts = 0;
         try {
-            Date date = simpleDateFormat.parse(year + "-" + month + "-" + day + " 00:00:00");
+            Date date = simpleDateFormat.parse(year + "-" + (month + 1)+ "-" + day + " 00:00:00");
             long time = date.getTime();
             ts = time/1000;
         } catch (ParseException e) {
             e.printStackTrace();
         }
         QueryBuilder<DBBrewHistory> dbBrewHistoryQueryBuilder = DBManager.getInstance().getDBBrewHistoryDao().queryBuilder();
-        return dbBrewHistoryQueryBuilder.where(DBBrewHistoryDao.Properties.State.eq(state),
-                DBBrewHistoryDao.Properties.Begin_time.le(ts)).build().list();
+        return dbBrewHistoryQueryBuilder.where(
+                DBBrewHistoryDao.Properties.State.eq(state),
+                DBBrewHistoryDao.Properties.Begin_time.le(ts),
+                DBBrewHistoryDao.Properties.Pid.eq(DeviceUtil.getCurrentDevId())).build().list();
     }
 
 

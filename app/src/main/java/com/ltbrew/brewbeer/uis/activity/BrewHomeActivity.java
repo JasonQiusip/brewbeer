@@ -115,6 +115,7 @@ public class BrewHomeActivity extends BaseActivity
     private long recordTimeMillis = 0;
 
 
+    private MessageWindow msgWin;
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -131,13 +132,28 @@ public class BrewHomeActivity extends BaseActivity
                 onReqBrewingSession(packId);
                 return;
             }else if(LtPushService.SOCKET_IS_KICKED_OUT.equals(action)){
-                showMsgWindow("提醒", "推送服务未连上，请确认帐号是否已在其它设备上登录", null);
+                if(msgWin != null)
+                    msgWin.hidePopupWindow();
+                msgWin = showMsgWindow("提醒", "推送服务未连上，请确认帐号是否已在其它设备上登录", new MessageWindow.OnMsgWindowActionListener() {
+                    @Override
+                    public void onCloseWindow() {
+                        msgWin = null;
+                    }
+
+                    @Override
+                    public void onClickDetail() {
+
+                    }
+                });
                 return;
             }else if(LtPushService.SOCKET_INIT_FAILED.equals(action)){
-                showMsgWindow("提醒", "推送服务初始化失败， 请重试", new MessageWindow.OnMsgWindowActionListener(){
+                if(msgWin != null)
+                    msgWin.hidePopupWindow();
+                msgWin = showMsgWindow("提醒", "推送服务初始化失败， 请重试", new MessageWindow.OnMsgWindowActionListener(){
 
                     @Override
                     public void onCloseWindow() {
+                        msgWin = null;
                         if(ltPushService != null)
                             try {
                                 ltPushService.startLongConn();

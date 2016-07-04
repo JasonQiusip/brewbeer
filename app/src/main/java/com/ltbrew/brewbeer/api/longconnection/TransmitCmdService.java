@@ -1,5 +1,7 @@
 package com.ltbrew.brewbeer.api.longconnection;
 
+import android.util.Log;
+
 import com.ltbrew.brewbeer.api.common.CSSLog;
 import com.ltbrew.brewbeer.api.common.TokenDispatcher;
 import com.ltbrew.brewbeer.api.longconnection.interfaces.FileSocketReadyCallback;
@@ -36,7 +38,7 @@ public class TransmitCmdService {
     private static TransmitCmdService cmdService;
     private FileSocketReadyCallback fileSocketReadyCallback;
     private SocketRead cmdRead;
-    private SocketWrite cmdsWrite;
+    private SocketWriteProxy cmdsWrite;
     private String ip;
     private int port;
 
@@ -82,13 +84,17 @@ public class TransmitCmdService {
     }
 
     private void initCmdTransmitSocket() throws IOException {
-//        if(ManageLongConnIp.getInstance().ipHost == null)
-//        serverAddress = InetAddress.getByName(ManageLongConnIp.getInstance().ipHost); // "27.154.54.242"
-//        cmdSocket = new Socket(serverAddress, ManageLongConnIp.getInstance().port); //25712
+
         if(cmdSocket != null && !cmdSocket.isClosed())
             return;
-        serverAddress = InetAddress.getByName("117.28.254.73"); // "27.154.54.242"
-        cmdSocket = new Socket(serverAddress, 26012); //25712
+//        if(ManageLongConnIp.getInstance().ipHost == null) {
+//            serverAddress = InetAddress.getByName(ManageLongConnIp.getInstance().ipHost); // "27.154.54.242"
+//            cmdSocket = new Socket(serverAddress, ManageLongConnIp.getInstance().port); //25712
+//        }else {
+            Log.e("ip", ManageLongConnIp.getInstance().ipHost+"");
+            serverAddress = InetAddress.getByName("117.28.254.73"); // "27.154.54.242"
+            cmdSocket = new Socket(serverAddress, 26012); //25712
+//        }
 //        serverAddress = InetAddress.getByName("218.5.96.6"); // "27.154.54.242"
 //        cmdSocket = new Socket(serverAddress, 25712); //25712
         CSSLog.showLog("serverAddress:" + serverAddress, "cmdSocket:" + cmdSocket);
@@ -98,7 +104,7 @@ public class TransmitCmdService {
     private void startCmdWriteRead(Socket socket, final OutputStream outputStream, final CommonParam locker) {
         newPool();
         transmitFileService = new TransmitFileService(authorizeToken, pool, fileSocketReadyCallback);
-        cmdsWrite = new SocketWrite(outputStream, this.authorizeToken, ReqType.cmd);
+        cmdsWrite = new SocketWriteProxy(outputStream, this.authorizeToken, ReqType.cmd);
         //写操作设置锁
         cmdsWrite.setLocker(locker);
         cmdsWrite.sethbLocker(hbLocker);
@@ -116,6 +122,16 @@ public class TransmitCmdService {
             @Override
             public void onBeforeWriteHb() {
                 fileSocketReadyCallback.onWritingHb();
+            }
+
+            @Override
+            public void onOutputStreamIOError() {
+                reconnect("");
+            }
+
+            @Override
+            public void onWriteInerrupt() {
+                reconnect("");
             }
         });
         cmdRead = newSocketRead(socket);
@@ -155,24 +171,7 @@ public class TransmitCmdService {
             @Override
             public void onReconnect(String command) {
                 System.out.println("reconnect");
-                closeCmdWriteSocket();
-                boolean isCmdExist = CmdsConstant.CMDSTR.checkCmd(command);
-                if (isCmdExist && CmdsConstant.CMDSTR.valueOf(command) == CmdsConstant.CMDSTR.auth) {
-                    fileSocketReadyCallback.onOAuthFailed();
-                }
-                if(isCmdExist && CmdsConstant.CMDSTR.valueOf(command) == CmdsConstant.CMDSTR.kick){
-                    TokenDispatcher.getInstance().setToken(null);
-                    fileSocketReadyCallback.onLongConnectionKickedOut();
-                    return;
-                }
-                fileSocketReadyCallback.onCmdSocketReconnect();
-                initializeCmdLongConn();
-
-                if (transmitFileService != null && transmitFileService.isFileSocketAvailable()) {
-                    newPool();
-                    transmitFileService.closeFileSocketConnection();
-                    transmitFileService = new TransmitFileService(authorizeToken, pool, fileSocketReadyCallback);
-                }
+                reconnect(command);
 
             }
 
@@ -206,6 +205,27 @@ public class TransmitCmdService {
         });
 
         return cmdRead;
+    }
+
+    private void reconnect(String command) {
+        closeCmdWriteSocket();
+        boolean isCmdExist = CmdsConstant.CMDSTR.checkCmd(command);
+        if (isCmdExist && CmdsConstant.CMDSTR.valueOf(command) == CmdsConstant.CMDSTR.auth) {
+            fileSocketReadyCallback.onOAuthFailed();
+        }
+        if(isCmdExist && CmdsConstant.CMDSTR.valueOf(command) == CmdsConstant.CMDSTR.kick){
+            TokenDispatcher.getInstance().setToken(null);
+            fileSocketReadyCallback.onLongConnectionKickedOut();
+            return;
+        }
+        fileSocketReadyCallback.onCmdSocketReconnect();
+        initializeCmdLongConn();
+
+        if (transmitFileService != null && transmitFileService.isFileSocketAvailable()) {
+            newPool();
+            transmitFileService.closeFileSocketConnection();
+            transmitFileService = new TransmitFileService(authorizeToken, pool, fileSocketReadyCallback);
+        }
     }
 
     private void closeCmdWriteSocket() {
@@ -298,6 +318,8 @@ public class TransmitCmdService {
         }
     }
 
+
+
     public interface SocketReadCallback {
         void onIPHostReceived(String[] ip);
 
@@ -319,5 +341,9 @@ public class TransmitCmdService {
         void onWriteHbFailed();
 
         void onBeforeWriteHb();
+
+        void onOutputStreamIOError();
+
+        void onWriteInerrupt();
     }
 }

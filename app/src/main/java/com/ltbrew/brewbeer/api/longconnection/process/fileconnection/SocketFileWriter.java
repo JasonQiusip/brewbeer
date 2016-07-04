@@ -5,7 +5,7 @@ import android.util.Log;
 
 import com.ltbrew.brewbeer.api.common.CSSLog;
 import com.ltbrew.brewbeer.api.longconnection.process.ParsePackKits;
-import com.ltbrew.brewbeer.api.longconnection.process.SocketCustomWriter;
+import com.ltbrew.brewbeer.api.longconnection.process.BaseSocketWriter;
 import com.ltbrew.brewbeer.api.longconnection.process.cmdconnection.CmdsConstant;
 import com.ltbrew.brewbeer.api.model.UploadParam;
 
@@ -14,7 +14,7 @@ import java.io.IOException;
 /**
  * Created by Jason on 2015/6/13.
  */
-public class SocketFileWriter extends SocketCustomWriter {
+public class SocketFileWriter extends BaseSocketWriter {
 
     private int fileBeginSeqNo;
     private boolean fileUL = false;
@@ -46,7 +46,7 @@ public class SocketFileWriter extends SocketCustomWriter {
                     outputStream.write(toByteArr(dataSend));
                     queue.remove(0);
                     synchronized (locker) {
-                        locker.wait();
+                        locker.wait(); // 在读线程中解锁
                     }
                 }
 
@@ -63,6 +63,10 @@ public class SocketFileWriter extends SocketCustomWriter {
             case auth:
                 CSSLog.showLog("fileWriterOperator", "auth");
                 writeAuthorizePack();
+                cmdType = CmdsConstant.CMDSTR.st;
+                break;
+            case st:
+                writeSt();
                 cmdType = CmdsConstant.CMDSTR.hb;
                 break;
             case hb:
@@ -95,6 +99,9 @@ public class SocketFileWriter extends SocketCustomWriter {
                 break;
             case brew_session:
                 cmdType = CmdsConstant.CMDSTR.idle;
+                break;
+            case cmn_msg:
+                cmdType = CmdsConstant.CMDSTR.idle; //回到idle状态锁住写线程
                 break;
         }
     }
@@ -161,6 +168,11 @@ public class SocketFileWriter extends SocketCustomWriter {
         super.writeAuthorizePack();
     }
 
+    @Override
+    public void writeSt() throws IOException {
+        super.writeSt();
+    }
+
     /**
      * 写心跳包
      */
@@ -192,16 +204,13 @@ public class SocketFileWriter extends SocketCustomWriter {
         synchronized (signal) {
             signal.notifyAll();
         }
-        try {
-            writeFileBegin(uploadParam);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        writeFileBegin(uploadParam);
+
     }
 
-    private void writeFileBegin(UploadParam uploadParam) throws IOException {
+    private void writeFileBegin(UploadParam uploadParam) {
         locker.seqNo++;
-        writeData(ParsePackKits.makePack(FileTrasmitPackBuilder.buildFileBeginCmd(locker.seqNo, uploadParam,
+        pushDataToQueue(ParsePackKits.makePack(FileTrasmitPackBuilder.buildFileBeginCmd(locker.seqNo, uploadParam,
                 this.pushServiceKits)));
         fileBeginSeqNo = locker.seqNo;
     }
@@ -214,17 +223,14 @@ public class SocketFileWriter extends SocketCustomWriter {
         this.file = file;
         cmdType = CmdsConstant.CMDSTR.file_ul;
 
-        try {
-            writeFile(file); //将文件放入伪队列中
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        writeFile(file); //将文件放入伪队列中
+
     }
 
-    private void writeFileEnd(int fileBeginSeqNo) throws IOException {
+    private void writeFileEnd(int fileBeginSeqNo) {
         fileUL = false;
         locker.seqNo++;
-        writeData(ParsePackKits.makePack(FileTrasmitPackBuilder.buildFileEndCmd(locker.seqNo, fileBeginSeqNo,
+        pushDataToQueue(ParsePackKits.makePack(FileTrasmitPackBuilder.buildFileEndCmd(locker.seqNo, fileBeginSeqNo,
                 this.pushServiceKits)));
     }
 
@@ -232,20 +238,17 @@ public class SocketFileWriter extends SocketCustomWriter {
     @Override
     public void setFileEnd() {
         cmdType = CmdsConstant.CMDSTR.file_ul_end;
-        try {
-            writeFileEnd(fileBeginSeqNo); //将文件放入伪队列中
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        writeFileEnd(fileBeginSeqNo); //将文件放入伪队列中
+
         super.setFileEnd();
     }
 
-    private void writeFile(byte[] fileParts) throws IOException {
+    private void writeFile(byte[] fileParts) {
         fileUL = true;
         locker.seqNo++;
         String pack = ParsePackKits.makePack(FileTrasmitPackBuilder.buildFileParts(locker.seqNo, fileParts,
                 this.pushServiceKits));
-        writeData(pack);
+        pushDataToQueue(pack);
     }
     //------------------------------------------发送brew_session
 
@@ -254,7 +257,7 @@ public class SocketFileWriter extends SocketCustomWriter {
         super.changeCmdToSendBrewSession(package_id);
         cmdType = CmdsConstant.CMDSTR.brew_session;
         sendCmdToCheckBrewSession(package_id); //将文件放入伪队列中
-        //启动线程
+        //启动线程， 从队列中获取数据执行
         synchronized (signal) {
             signal.notifyAll();
         }
@@ -265,12 +268,8 @@ public class SocketFileWriter extends SocketCustomWriter {
             locker.notifyAll();
         }
         locker.seqNo++;
-        try {
-            String requestStr = FileTrasmitPackBuilder.buildBrewSessionCmd(package_id, locker.seqNo,this.pushServiceKits);
-            writeData(ParsePackKits.makePack(requestStr));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        String requestStr = FileTrasmitPackBuilder.buildBrewSessionCmd(package_id, locker.seqNo,this.pushServiceKits);
+        pushDataToQueue(ParsePackKits.makePack(requestStr));
     }
 
     //------------------------------------- 发送cmn_prgs
@@ -280,7 +279,7 @@ public class SocketFileWriter extends SocketCustomWriter {
         this.token = token;
         cmdType = CmdsConstant.CMDSTR.cmn_prgs;
         sendCmdToGetCmnPrgs(token);//将文件放入伪队列中
-        //启动线程
+        //启动线程， 从队列中获取数据执行
         synchronized (signal) {
             signal.notifyAll();
         }
@@ -288,17 +287,27 @@ public class SocketFileWriter extends SocketCustomWriter {
 
     private void sendCmdToGetCmnPrgs(String token) {
         locker.seqNo++;
-        try {
-            String requestStr = FileTrasmitPackBuilder.buildCmnPrgsCmd(locker.seqNo,token, this.pushServiceKits);
-            writeData(ParsePackKits.makePack(requestStr));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        String requestStr = FileTrasmitPackBuilder.buildCmnPrgsCmd(locker.seqNo,token, this.pushServiceKits);
+        pushDataToQueue(ParsePackKits.makePack(requestStr)); //将文件放入伪队列中
+
     }
 
     //------------------------------------------
+    @Override
+    public void checkLastCmnMsg(String pid, String token){
+        cmdType = CmdsConstant.CMDSTR.cmn_msg;
 
-    private void writeData(String data) throws IOException {
+        locker.seqNo++;
+        String requestStr = FileTrasmitPackBuilder.buildCmnMsgLastCmd(locker.seqNo, pid, token, this.pushServiceKits);
+        pushDataToQueue(ParsePackKits.makePack(requestStr)); //将文件放入伪队列中
+
+        //启动线程， 从队列中获取数据执行
+        synchronized (signal) {
+            signal.notifyAll();
+        }
+    }
+
+    private void pushDataToQueue(String data){
         queue.add(data);
     }
 

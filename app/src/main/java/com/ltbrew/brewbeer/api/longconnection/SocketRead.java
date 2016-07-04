@@ -187,6 +187,7 @@ public class SocketRead implements Runnable {
                         socketReadCallback.onIPHostReceived(ipAddrs);
                     }
                     break;
+                case st:
                 case mss:
                     synchronized (locker) {
                         locker.notifyAll();
@@ -250,6 +251,11 @@ public class SocketRead implements Runnable {
                     String seq_index = listResult.get(3);
                     String body = listResult.get(4);
                     ((TransmitFileService.SocketReackCallback)socketReadCallback).onGetCmnPrgs(percent, seq_index, body);
+                    break;
+                case cmn_msg:
+                    String des = listResult.get(4);
+                    ((TransmitFileService.SocketReackCallback)socketReadCallback).onGetCmnMsg(des);
+
                     break;
                 default:
                     break;

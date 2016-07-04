@@ -1,12 +1,10 @@
 package com.ltbrew.brewbeer.api.longconnection;
 
-import android.util.Log;
-
 import com.ltbrew.brewbeer.api.longconnection.process.CommonParam;
 import com.ltbrew.brewbeer.api.longconnection.process.ParsePackKits;
 import com.ltbrew.brewbeer.api.longconnection.process.ReqType;
 import com.ltbrew.brewbeer.api.longconnection.process.cmdconnection.SocketCmdWriter;
-import com.ltbrew.brewbeer.api.longconnection.process.SocketCustomWriter;
+import com.ltbrew.brewbeer.api.longconnection.process.BaseSocketWriter;
 import com.ltbrew.brewbeer.api.longconnection.process.fileconnection.SocketFileWriter;
 import com.ltbrew.brewbeer.api.model.UploadParam;
 
@@ -17,18 +15,18 @@ import java.util.Date;
 /**
  * Created by Jason on 2015/6/10.
  */
-public class SocketWrite implements Runnable {
+public class SocketWriteProxy implements Runnable {
 
     private final String authorizeToken;
     private final OutputStream outputStream;
     private final ReqType type;
-    private SocketCustomWriter socketWritter;
+    private BaseSocketWriter socketWritter;
 
     private CommonParam locker;
     private Object hblocker = new Object();
     private final ParsePackKits pushServiceKits;
 
-    public SocketWrite(OutputStream outputStream, String authorizeToken, ReqType type) {
+    public SocketWriteProxy(OutputStream outputStream, String authorizeToken, ReqType type) {
         this.outputStream = outputStream;
         this.authorizeToken = authorizeToken;
         this.pushServiceKits = new ParsePackKits();
@@ -123,9 +121,14 @@ public class SocketWrite implements Runnable {
     }
 
     public void sendBrewSessionCmd(Long package_id){
-
         socketWritter.changeCmdToSendBrewSession(package_id);
     }
+
+    public void checkLastCmnMsg(String pid, String token){
+        socketWritter.checkLastCmnMsg(pid, token);
+
+    }
+
 
     /************************************************************************************
      * *********************************   需要外部调用的命令  ****************************

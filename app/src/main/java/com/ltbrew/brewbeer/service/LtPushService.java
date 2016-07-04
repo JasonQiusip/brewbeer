@@ -15,8 +15,6 @@ import android.os.RemoteException;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
-import android.widget.Toast;
-
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.ltbrew.brewbeer.R;
@@ -175,6 +173,9 @@ public class LtPushService extends Service implements FileSocketReadyCallback {
             transmitCmdService.sendBrewSessionCmd(package_id);
     }
 
+    public void checkCmnMSgLast(String pid, String token){
+    }
+
     @Override
     public void onGetOauthTokenFailed() {
 
@@ -304,7 +305,7 @@ public class LtPushService extends Service implements FileSocketReadyCallback {
             System.out.println("未识别的指令");
             return;
         }
-        if(isBackground(this)){
+        if(isBackground(this) && "cmn_msg".equals(cb)){
             Intent intent = new Intent(this, BrewHomeActivity.class);
             showNotification(this, pushMessage.des, intent);
         }
@@ -445,6 +446,12 @@ public class LtPushService extends Service implements FileSocketReadyCallback {
 
     @Override
     public void onWritingHb() {
+
+    }
+
+    @Override
+    public void onGetCmnMsg(String des) {
+        Log.e(TAG,  "onGetCmnMsg "+des);
 
     }
 

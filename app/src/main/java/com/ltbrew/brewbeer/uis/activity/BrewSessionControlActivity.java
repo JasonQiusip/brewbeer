@@ -34,6 +34,7 @@ import com.ltbrew.brewbeer.uis.Constants;
 import com.ltbrew.brewbeer.uis.dialog.FermentingDialog;
 import com.ltbrew.brewbeer.uis.dialog.NoticeForBrewEndDialog;
 import com.ltbrew.brewbeer.uis.dialog.OnPositiveButtonClickListener;
+import com.ltbrew.brewbeer.uis.dialog.SetDevFermentingTempDialog;
 import com.ltbrew.brewbeer.uis.fragment.BrewSessionFragment;
 import com.ltbrew.brewbeer.uis.utils.BrewSessionUtils;
 import com.ltbrew.brewbeer.uis.utils.DpSpPixUtils;
@@ -127,6 +128,7 @@ public class BrewSessionControlActivity extends BaseActivity implements AddPackV
             }
         }
     };
+    private TextView brewTitle;
 
     private void changeRecipeState() {
         Integer si = brewHistory.getSi();
@@ -150,6 +152,7 @@ public class BrewSessionControlActivity extends BaseActivity implements AddPackV
                 if (childAtIndex == null)
                     continue;
                 TextView contentDes = (TextView) childAtIndex.findViewById(R.id.brewDetailContentTv);
+                TextView title = (TextView) childAtIndex.findViewById(R.id.brewDetailTitleTv);
                 if (contentDes == null) {
                     continue;
                 }
@@ -180,8 +183,9 @@ public class BrewSessionControlActivity extends BaseActivity implements AddPackV
                 } else if (i > totalStepCount - 1) {
 
                     childAtIndex.setBackgroundColor(getResources().getColor(R.color.colorGreen));
-                    contentDes.setText(brewHistory.getBrewingState());
+                    contentDes.setText("");
                     brewDetailDes = contentDes;
+                    brewTitle = title;
                 }
             }
         }
@@ -258,12 +262,24 @@ public class BrewSessionControlActivity extends BaseActivity implements AddPackV
     @OnClick(R.id.curState)
     public void clickCurState() {
         if ("开始酿造".equals(curState.getText().toString())) {
+
             curState.setBackgroundDrawable(null);
             addPackPresenter.addPackToDev(brewHistory.getPackage_id() + "", OPEN_DEV_START_BREWING);
         } else if ("开始发酵".equals(curState.getText().toString())) {
-            BrewSessionUtils.storeFermentingStartTimeStamp(brewHistory.getPackage_id(), System.currentTimeMillis());
-            curState.setBackgroundDrawable(null);
-            showFermentingCountDown();
+
+            SetDevFermentingTempDialog setDevFermentingTempDialog = new SetDevFermentingTempDialog(this);
+            setDevFermentingTempDialog.setOnSetPhoneNumbForDevListener(new SetDevFermentingTempDialog.OnSetFermentingTempForDevListener() {
+                @Override
+                public void onSetFermentingTemp(String temp, int position) {
+                    if(brewTitle != null){
+                        brewTitle.setText("发酵\n"+temp);
+                    }
+                    BrewSessionUtils.storeFermentingStartTimeStamp(brewHistory.getPackage_id(), System.currentTimeMillis());
+                    curState.setBackgroundDrawable(null);
+                    showFermentingCountDown();
+                }
+            }).show();
+
         }
     }
 
@@ -344,6 +360,7 @@ public class BrewSessionControlActivity extends BaseActivity implements AddPackV
     private void showCurState(Integer si, List<DBBrewStep> brewSteps) {
         if (brewSteps.size() == 0)
             return;
+
         if(type == Constants.BrewSessionType.FINSHED){
             curState.setText("酿造完成");
             return;
@@ -351,6 +368,10 @@ public class BrewSessionControlActivity extends BaseActivity implements AddPackV
         //发酵
         if (si != null && si == brewSteps.size() && brewHistory.getRatio() != null && brewHistory.getRatio() == 100) {
             showFermentingInfo();
+            return;
+        }
+
+        if(si != null && brewSteps.size() <= si) {
             return;
         }
 

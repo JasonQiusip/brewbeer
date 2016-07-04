@@ -9,7 +9,7 @@ import de.greenrobot.daogenerator.ToMany;
 public class MyDaoGenerator {
 
     public static void main(String[] args) throws Exception {
-        Schema schema = new Schema(1005, "com.ltbrew.brewbeer.persistence.greendao");
+        Schema schema = new Schema(1006, "com.ltbrew.brewbeer.persistence.greendao");
 
         addRecipe(schema);
 
@@ -64,7 +64,7 @@ public class MyDaoGenerator {
         dBBrewHistory.addLongProperty("package_id").notNull().unique();
         dBBrewHistory.addStringProperty("begin_time");
         dBBrewHistory.addStringProperty("end_time");
-        dBBrewHistory.addIntProperty("pid");
+        dBBrewHistory.addStringProperty("pid");
         dBBrewHistory.addIntProperty("state");
         dBBrewHistory.addIntProperty("ratio");
         dBBrewHistory.addIntProperty("si");

@@ -2,7 +2,7 @@ package com.ltbrew.brewbeer.api.longconnection.process.cmdconnection;
 
 
 import com.ltbrew.brewbeer.api.longconnection.process.ParsePackKits;
-import com.ltbrew.brewbeer.api.longconnection.process.SocketCustomWriter;
+import com.ltbrew.brewbeer.api.longconnection.process.BaseSocketWriter;
 
 import java.io.IOException;
 
@@ -10,7 +10,7 @@ import java.io.IOException;
  * Created by Jason on 2015/6/13.
  * 定义cmd的写操作
  */
-public class SocketCmdWriter extends SocketCustomWriter {
+public class SocketCmdWriter extends BaseSocketWriter {
 
     private String ackSeqNo;
     private String endQueueNo;
@@ -34,8 +34,10 @@ public class SocketCmdWriter extends SocketCustomWriter {
                 }
                 System.out.println("sendCmdReqPacks unlocked");
             } catch (IOException e) {
+                socketWriteCb.onOutputStreamIOError();
                 e.printStackTrace();
             } catch (InterruptedException e) {
+                socketWriteCb.onWriteInerrupt();
                 e.printStackTrace();
             }
         }
@@ -45,12 +47,12 @@ public class SocketCmdWriter extends SocketCustomWriter {
         switch (cmdType) {
             case auth:
                 writeAuthorizePack();
+                cmdType = CmdsConstant.CMDSTR.st;
+                break;
+            case st:
+                writeSt();
                 cmdType = CmdsConstant.CMDSTR.hb;
                 break;
-//            case mss:
-//                writeProbeMss();
-//                cmdType = CmdsConstant.CMDSTR.hb;
-//                break;
             case hb:
                 writeHeartbeat();
                 cmdType = CmdsConstant.CMDSTR.idle;
@@ -67,6 +69,13 @@ public class SocketCmdWriter extends SocketCustomWriter {
     public void writeAuthorizePack() throws IOException {
         super.writeAuthorizePack();
     }
+
+    @Override
+    public void writeSt() throws IOException {
+        super.writeSt();
+
+    }
+
 
     private void writeProbeMss() {
         int reduceCount = 0;
@@ -113,6 +122,10 @@ public class SocketCmdWriter extends SocketCustomWriter {
         synchronized (locker){
             locker.notifyAll();
         }
+    }
+
+    public byte[] toByteArr(String str) {
+        return ParsePackKits.charToByteArray(str.toCharArray());
     }
 
 

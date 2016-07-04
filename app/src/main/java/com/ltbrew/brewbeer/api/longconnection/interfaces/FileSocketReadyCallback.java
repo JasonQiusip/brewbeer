@@ -50,4 +50,6 @@ public interface FileSocketReadyCallback {
     void onGeBrewSessionResp(String tk, String state);
 
     void onWritingHb();
+
+    void onGetCmnMsg(String des);
 }

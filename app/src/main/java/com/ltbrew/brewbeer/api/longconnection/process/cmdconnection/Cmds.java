@@ -20,6 +20,14 @@ public class Cmds {
         return buildRequestString;
     }
 
+    public static String buildStCmd(int seqNo, ParsePackKits pushServiceKits) {
+        List<String> list = new ArrayList<String>();
+        list.add("st");
+        list.add(seqNo + "");
+        String buildRequestString = pushServiceKits.buildRequestString(list);
+        return buildRequestString;
+    }
+
     static String buildProbeMssCmd(int seqNo, int reduceCount, ParsePackKits pushServiceKits) {
         byte[] mssByte = new byte[CmdsConstant.MSSMAX - reduceCount * CmdsConstant.DECREASERATE];
         List<String> list = new ArrayList<String>();
