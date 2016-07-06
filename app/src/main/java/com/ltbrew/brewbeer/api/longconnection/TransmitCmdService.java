@@ -7,7 +7,7 @@ import com.ltbrew.brewbeer.api.common.TokenDispatcher;
 import com.ltbrew.brewbeer.api.longconnection.interfaces.FileSocketReadyCallback;
 import com.ltbrew.brewbeer.api.longconnection.process.cmdconnection.CmdsConstant;
 import com.ltbrew.brewbeer.api.longconnection.process.CommonParam;
-import com.ltbrew.brewbeer.api.longconnection.process.ManageLongConnIp;
+import com.ltbrew.brewbeer.api.longconnection.process.ManageLongConn;
 import com.ltbrew.brewbeer.api.longconnection.process.ReqType;
 import com.ltbrew.brewbeer.api.model.UploadParam;
 
@@ -75,7 +75,7 @@ public class TransmitCmdService {
             initCmdTransmitSocket();
             startCmdWriteRead(cmdSocket, cmdOutputStream, cmdSocketLocker);
         } catch (IOException e) {
-            ManageLongConnIp.getInstance().switchPort();
+            ManageLongConn.getInstance().switchPort();
             fileSocketReadyCallback.onInitializeLongConnFailed();
             e.printStackTrace();
             return false;
@@ -87,11 +87,11 @@ public class TransmitCmdService {
 
         if(cmdSocket != null && !cmdSocket.isClosed())
             return;
-        if(ManageLongConnIp.getInstance().ipHost != null) {
-            serverAddress = InetAddress.getByName(ManageLongConnIp.getInstance().ipHost); // "27.154.54.242"
-            cmdSocket = new Socket(serverAddress, ManageLongConnIp.getInstance().port); //25712
+        if(ManageLongConn.getInstance().ipHost != null) {
+            serverAddress = InetAddress.getByName(ManageLongConn.getInstance().ipHost); // "27.154.54.242"
+            cmdSocket = new Socket(serverAddress, ManageLongConn.getInstance().port); //25712
         }else {
-            Log.e("ip", ManageLongConnIp.getInstance().ipHost+"");
+            Log.e("ip", ManageLongConn.getInstance().ipHost+"");
             serverAddress = InetAddress.getByName("117.28.254.73"); // "27.154.54.242"
             cmdSocket = new Socket(serverAddress, 26012); //25712
         }
@@ -202,6 +202,11 @@ public class TransmitCmdService {
             @Override
             public void onServerRespError(String cmd) {
                 fileSocketReadyCallback.onServerRespError(cmd);
+            }
+
+            @Override
+            public void onStResultResp(String fd, String stToken) {
+                ManageLongConn.getInstance().storeFdAndStToken(fd, stToken);
             }
         });
 
@@ -339,6 +344,8 @@ public class TransmitCmdService {
         void getHeartHistory(String endindex, HashMap<String, ArrayList<Integer>> maps);
 
         void onServerRespError(String s);
+
+        void onStResultResp(String fd, String stToken);
     }
 
     public interface SocketWriteCallback {

@@ -36,6 +36,7 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 
 import com.ltbrew.brewbeer.R;
+import com.ltbrew.brewbeer.api.longconnection.process.ManageLongConn;
 import com.ltbrew.brewbeer.interfaceviews.BrewHomeView;
 import com.ltbrew.brewbeer.presenter.BrewHomePresenter;
 import com.ltbrew.brewbeer.presenter.model.Device;
@@ -530,6 +531,7 @@ public class BrewHomeActivity extends BaseActivity
             case R.id.nav_exit:
                 DeviceUtil.clearData();
                 AccUtils.clearData();
+                ManageLongConn.getInstance().clearStSp();
                 stopService(new Intent(this, LtPushService.class));
                 startLoginActivity();
                 break;

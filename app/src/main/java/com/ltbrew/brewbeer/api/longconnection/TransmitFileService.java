@@ -136,6 +136,11 @@ public class TransmitFileService {
             public void onServerRespError(String cmd) {
                 fileSocketCb.onServerRespError(cmd);
             }
+
+            @Override
+            public void onStResultResp(String fd, String stToken) {
+
+            }
         });
         cmdRead.registerSocketReadCb(new FileSocketReadCallback() {
             @Override

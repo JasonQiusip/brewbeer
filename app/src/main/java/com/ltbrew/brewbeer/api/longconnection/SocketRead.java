@@ -188,6 +188,13 @@ public class SocketRead implements Runnable {
                     }
                     break;
                 case st:
+                    String fd = listResult.get(2);
+                    String stToken = listResult.get(3);
+                    socketReadCallback.onStResultResp(fd, stToken);
+                    synchronized (locker) {
+                        locker.notifyAll();
+                    }
+                    break;
                 case mss:
                     synchronized (locker) {
                         locker.notifyAll();

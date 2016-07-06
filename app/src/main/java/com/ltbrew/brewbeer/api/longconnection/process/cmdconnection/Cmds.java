@@ -1,6 +1,7 @@
 package com.ltbrew.brewbeer.api.longconnection.process.cmdconnection;
 
 import com.ltbrew.brewbeer.api.common.CSSLog;
+import com.ltbrew.brewbeer.api.longconnection.process.ManageLongConn;
 import com.ltbrew.brewbeer.api.longconnection.process.ParsePackKits;
 
 import java.util.ArrayList;
@@ -16,6 +17,12 @@ public class Cmds {
         list.add("auth");
         list.add(seqNo + "");
         list.add(token);
+        String fd = ManageLongConn.getInstance().getFd();
+        String stToken = ManageLongConn.getInstance().getStToken();
+        if(fd != null)
+            list.add(fd);
+        if(stToken != null)
+            list.add(stToken);
         String buildRequestString = pushServiceKits.buildRequestString(list);
         return buildRequestString;
     }

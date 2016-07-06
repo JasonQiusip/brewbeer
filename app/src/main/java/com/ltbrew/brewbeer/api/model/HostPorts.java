@@ -6,7 +6,8 @@ public class HostPorts
   SSO sso;
   File file;
   Direct_push direct_push;
-  
+  Lt_stream lt_stream;
+
   public API getApi()
   {
     return this.api;
@@ -46,7 +47,15 @@ public class HostPorts
   {
     this.direct_push = direct_push;
   }
-  
+
+  public Lt_stream getLt_stream() {
+    return lt_stream;
+  }
+
+  public void setLt_stream(Lt_stream lt_stream) {
+    this.lt_stream = lt_stream;
+  }
+
   public String toString()
   {
     return "Hosts{api=" + this.api + ", sso=" + this.sso + ", file=" + this.file + ", directPush=" + this.direct_push + '}';
