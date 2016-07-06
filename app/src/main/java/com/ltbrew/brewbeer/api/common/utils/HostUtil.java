@@ -87,10 +87,10 @@ public class HostUtil {
         catch (UnknownHostException e)
         {
             e.printStackTrace();
-            return true;
         }
         if (ipAddressFromServer == null) {
-            return false;
+            ipAddressFromServer = new ArrayList<>();
+            ipAddressFromServer.add(ServerHostHanlder.BACKUPHOST);
         }
         try
         {

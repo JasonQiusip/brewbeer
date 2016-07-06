@@ -13,7 +13,7 @@ public class ServerHostHanlder
 {
   private static final String ROUTE_URL = "http://%s:8001/routes";
   private static final String DN = "5bands.com";
-  private static final String BACKUPHOST = "117.28.254.73";
+  public static final String BACKUPHOST = "117.28.254.73";
   private static boolean tryedBackupHost = false;
   
   public static ArrayList<String> getIpAddressFromServer()
