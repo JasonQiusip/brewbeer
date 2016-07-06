@@ -590,6 +590,7 @@ public class BrewHomeActivity extends BaseActivity
     @Override
     public void onReqBrewingSession(Long package_id) {
         Message msg = new Message();
+        msg.what = ReqSessionStateQueue.CHECK_CMN_PRGS;
         msg.obj = package_id;
         reqSessionStateQueue.handler.sendMessage(msg); //将消息发送到消息队列进行排队处理
     }
@@ -606,5 +607,13 @@ public class BrewHomeActivity extends BaseActivity
     public void onFinishReqBrewHistory() {
         if(recipeFragment != null)
             recipeFragment.getAllRecipes();
+    }
+
+    @Override
+    public void onCheckTemp(long package_id) {
+        Message msg = new Message();
+        msg.what = ReqSessionStateQueue.CHECK_CMN_MSG;
+        msg.obj = package_id;
+        reqSessionStateQueue.handler.sendMessage(msg); //将消息发送到消息队列进行排队处理
     }
 }

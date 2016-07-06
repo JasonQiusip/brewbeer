@@ -93,6 +93,7 @@ public class BrewSessionsPresenter {
                         if(dbRecipe == null){
                             continue;
                         }
+                        brewHistoryModel.setRecipeId(dbRecipe.getId());
                         brewHistoryModel.setDBRecipe(dbRecipe);
                         DBManager.getInstance().getDBBrewHistoryDao().insertOrReplace(brewHistoryModel);
                         if(state == 0 || state == 1) {

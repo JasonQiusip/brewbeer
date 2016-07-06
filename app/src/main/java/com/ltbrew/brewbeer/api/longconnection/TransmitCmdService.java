@@ -87,14 +87,14 @@ public class TransmitCmdService {
 
         if(cmdSocket != null && !cmdSocket.isClosed())
             return;
-//        if(ManageLongConnIp.getInstance().ipHost == null) {
-//            serverAddress = InetAddress.getByName(ManageLongConnIp.getInstance().ipHost); // "27.154.54.242"
-//            cmdSocket = new Socket(serverAddress, ManageLongConnIp.getInstance().port); //25712
-//        }else {
+        if(ManageLongConnIp.getInstance().ipHost != null) {
+            serverAddress = InetAddress.getByName(ManageLongConnIp.getInstance().ipHost); // "27.154.54.242"
+            cmdSocket = new Socket(serverAddress, ManageLongConnIp.getInstance().port); //25712
+        }else {
             Log.e("ip", ManageLongConnIp.getInstance().ipHost+"");
             serverAddress = InetAddress.getByName("117.28.254.73"); // "27.154.54.242"
             cmdSocket = new Socket(serverAddress, 26012); //25712
-//        }
+        }
 //        serverAddress = InetAddress.getByName("218.5.96.6"); // "27.154.54.242"
 //        cmdSocket = new Socket(serverAddress, 25712); //25712
         CSSLog.showLog("serverAddress:" + serverAddress, "cmdSocket:" + cmdSocket);
@@ -150,10 +150,11 @@ public class TransmitCmdService {
                 boolean initFileSocket = false;
                 for (int ipScount = 0; ipScount <= ips.length - 1; ipScount++) {
                     String ipsigle = ips[ipScount];
-//                    Log.wtf("lqm", "ipsigle=" + ipsigle);
                     String[] splitedIp = ipsigle.split(":");
                     String ipaddr = splitedIp[0];
                     String host = splitedIp[1];
+                    Log.e("iphost", ipaddr+" ipsigle=  " + host);
+
                     if (transmitFileService != null) {
                         if (transmitFileService.initializeFileLongConn(ipaddr, Integer.parseInt(host))) {
                             initFileSocket = true;
@@ -318,7 +319,11 @@ public class TransmitCmdService {
         }
     }
 
-
+    public void checkCmnMSgLast(String pid, String token) {
+        if (transmitFileService != null) {
+            transmitFileService.checkCmnMsgLast(pid, token);
+        }
+    }
 
     public interface SocketReadCallback {
         void onIPHostReceived(String[] ip);

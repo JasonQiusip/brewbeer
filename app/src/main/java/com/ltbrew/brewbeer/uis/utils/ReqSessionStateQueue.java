@@ -21,6 +21,8 @@ public class ReqSessionStateQueue extends Thread {
 
     public Handler handler;
     ILtPushServiceAidlInterface ltPushService;
+    public static final int CHECK_CMN_PRGS = 1;
+    public static final int CHECK_CMN_MSG = 2;
 
     public ILtPushServiceAidlInterface getLtPushService() {
         return ltPushService;
@@ -40,11 +42,20 @@ public class ReqSessionStateQueue extends Thread {
             @Override
             public void handleMessage(Message msg) {
                 super.handleMessage(msg);
-                Log.e("", "looper mao si mei zuo yong ?");
+                Log.e("", "looper ");
                 Long package_id = (Long) msg.obj;
                 if(ltPushService != null) {
+                    Log.e("", "ltPushService is not null");
+
                     try {
-                        ltPushService.sendBrewSessionCmd(package_id);
+                        switch (msg.what) {
+                            case CHECK_CMN_PRGS:
+                                ltPushService.sendBrewSessionCmd(package_id);
+                                break;
+                            case CHECK_CMN_MSG:
+                                ltPushService.sendCmdToCheckTemp(package_id);
+                                break;
+                        }
                     } catch (RemoteException e) {
                         e.printStackTrace();
                         Log.e("", "remote call error?");

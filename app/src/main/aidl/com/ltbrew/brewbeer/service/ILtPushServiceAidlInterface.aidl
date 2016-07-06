@@ -11,4 +11,6 @@ interface ILtPushServiceAidlInterface {
     void sendBrewSessionCmd(long pack_id);
 
     void startLongConn();
+
+    void sendCmdToCheckTemp(long pack_id);
 }

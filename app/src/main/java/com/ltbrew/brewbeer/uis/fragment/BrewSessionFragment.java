@@ -139,7 +139,9 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
                     pushMsgObj.des = "煮沸";
                 }
                 Log.e(TAG + "CMN_PRGS_CHECK_ACTION", brewHistory+"");
-
+                if(pushMsgObj.des != null && pushMsgObj.des.contains("加热中")&&onBrewingSessionListener != null){
+                    onBrewingSessionListener.onCheckTemp(brewHistory.getPackage_id());
+                }
                 brewHistory.setBrewingState(pushMsgObj.des);
                 setTimeLeft(pushMsgObj, brewHistory);
                 brewHistory.setSt(st);
@@ -666,5 +668,7 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
         void unlockLockerToExecuteNextMsg();
 
         void onFinishReqBrewHistory();
+
+        void onCheckTemp(long package_id);
     }
 }

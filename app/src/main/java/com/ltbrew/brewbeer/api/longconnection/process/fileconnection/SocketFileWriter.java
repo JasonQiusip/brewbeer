@@ -264,9 +264,7 @@ public class SocketFileWriter extends BaseSocketWriter {
     }
 
     private void sendCmdToCheckBrewSession(Long package_id) {
-        synchronized (locker){
-            locker.notifyAll();
-        }
+
         locker.seqNo++;
         String requestStr = FileTrasmitPackBuilder.buildBrewSessionCmd(package_id, locker.seqNo,this.pushServiceKits);
         pushDataToQueue(ParsePackKits.makePack(requestStr));

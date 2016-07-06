@@ -23,6 +23,7 @@ import com.ltbrew.brewbeer.api.longconnection.SOCKETSTATE;
 import com.ltbrew.brewbeer.api.longconnection.TransmitCmdService;
 import com.ltbrew.brewbeer.api.longconnection.interfaces.FileSocketReadyCallback;
 import com.ltbrew.brewbeer.api.longconnection.process.ParsePackKits;
+import com.ltbrew.brewbeer.presenter.util.DeviceUtil;
 import com.ltbrew.brewbeer.uis.activity.BrewHomeActivity;
 import com.ltbrew.brewbeer.uis.utils.BrewSessionUtils;
 import com.ltbrew.brewbeer.uis.utils.NetworkConnectionUtil;
@@ -108,6 +109,13 @@ public class LtPushService extends Service implements FileSocketReadyCallback {
         public void startLongConn() throws RemoteException {
             startConnectionOnNewThread();
         }
+
+        @Override
+        public void sendCmdToCheckTemp(long pack_id) throws RemoteException {
+            Log.e(TAG, "======sendCmdToCheckTemp=====");
+
+            checkCmnMSgLast(DeviceUtil.getCurrentDevId(), "pack:"+pack_id);
+        }
     };
 
 
@@ -174,6 +182,8 @@ public class LtPushService extends Service implements FileSocketReadyCallback {
     }
 
     public void checkCmnMSgLast(String pid, String token){
+        if (transmitCmdService != null)
+            transmitCmdService.checkCmnMSgLast(pid, token);
     }
 
     @Override
@@ -452,6 +462,22 @@ public class LtPushService extends Service implements FileSocketReadyCallback {
     @Override
     public void onGetCmnMsg(String des) {
         Log.e(TAG,  "onGetCmnMsg "+des);
+        JSONObject jsonObject = JSON.parseObject(des);
+        PushMsg pushMessage = parsePushMsg(jsonObject);
+        JSONObject pld = jsonObject.getJSONObject("_pld");
+        if(pld != null || !pld.equals("null")){
+            PldForCmnMsg pldForCmnMsg = new PldForCmnMsg();
+            int ms = pld.getInteger("ms");
+            String tk = pld.getString("tk");
+            pldForCmnMsg.ms = ms;
+            pldForCmnMsg.tk = tk;
+            Log.e("pushmsg -> cmn_prgs", pldForCmnMsg.toString());
+            Intent intent = new Intent();
+            intent.setAction(CMN_MSG_PUSH_ACTION);
+            intent.putExtra(PUSH_MSG_EXTRA, pushMessage);
+            intent.putExtra(PUSH_PLD_EXTRA, pldForCmnMsg);
+            sendBroadcast(intent);
+        }
 
     }
 
