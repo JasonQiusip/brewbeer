@@ -449,6 +449,7 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
 
                 }
                 finishedHistoryList = finishedBrewHistories;
+                finishedController.setBrewHistories(finishedBrewHistories);
                 finishedSessionAdapter.setData(finishedBrewHistories);
                 finishedController.notifyDataSetChanged();
             }
@@ -469,6 +470,7 @@ public class BrewSessionFragment extends Fragment implements BrewSessionVeiw {
 
                 }
                 suspendHistoryList = suspendBrewHistories;
+                suspendController.setBrewHistories(suspendBrewHistories);
                 suspendSessionAdapter.setData(suspendBrewHistories);
                 suspendController.notifyDataSetChanged();
             }
