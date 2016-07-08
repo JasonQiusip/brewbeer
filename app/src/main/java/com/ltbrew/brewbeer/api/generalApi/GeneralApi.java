@@ -2,7 +2,7 @@ package com.ltbrew.brewbeer.api.generalApi;
 
 import com.ltbrew.brewbeer.api.common.HttpMethods;
 import com.ltbrew.brewbeer.api.common.TokenDispatcher;
-import com.ltbrew.brewbeer.api.common.utils.HostUtil;
+import com.ltbrew.brewbeer.api.common.HostUtil;
 import com.ltbrew.brewbeer.api.model.HttpMethodType;
 import com.ltbrew.brewbeer.api.model.HttpReqParam;
 import com.ltbrew.brewbeer.api.model.HttpResponse;

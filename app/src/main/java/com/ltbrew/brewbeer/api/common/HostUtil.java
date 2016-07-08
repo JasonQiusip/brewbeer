@@ -1,4 +1,4 @@
-package com.ltbrew.brewbeer.api.common.utils;
+package com.ltbrew.brewbeer.api.common;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -7,7 +7,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONException;
 import com.ltbrew.brewbeer.api.common.CSSLog;
 import com.ltbrew.brewbeer.api.common.ServerHostHanlder;
-import com.ltbrew.brewbeer.api.longconnection.process.ManageLongConn;
+import com.ltbrew.brewbeer.api.longconnection.ManageLongConn;
 import com.ltbrew.brewbeer.api.model.HostPorts;
 
 import java.net.UnknownHostException;
@@ -56,6 +56,7 @@ public class HostUtil {
             if (bHost)
             {
                 ManageLongConn.getInstance().initDirect_push(context, currentHostPorts.getDirect_push());
+                ManageLongConn.getInstance().setLtStream(currentHostPorts.getLt_stream());
                 return true;
             }
             return false;
@@ -65,6 +66,8 @@ public class HostUtil {
         String hostJson = spHost.getString(hostIndex + "", "");
         HostPorts hostPortsFromLocal = getHostFromLocalSrc(hostJson);
         ManageLongConn.getInstance().initDirect_push(context, hostPortsFromLocal.getDirect_push());
+        ManageLongConn.getInstance().setLtStream(hostPortsFromLocal.getLt_stream());
+
         return true;
     }
 

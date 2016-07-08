@@ -1,24 +1,18 @@
 package com.ltbrew.brewbeer.uis.activity;
 
-import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.RemoteException;
-import android.provider.Settings;
 import android.support.design.widget.NavigationView;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
@@ -36,7 +30,7 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 
 import com.ltbrew.brewbeer.R;
-import com.ltbrew.brewbeer.api.longconnection.process.ManageLongConn;
+import com.ltbrew.brewbeer.api.longconnection.ManageLongConn;
 import com.ltbrew.brewbeer.interfaceviews.BrewHomeView;
 import com.ltbrew.brewbeer.presenter.BrewHomePresenter;
 import com.ltbrew.brewbeer.presenter.model.Device;
@@ -49,14 +43,10 @@ import com.ltbrew.brewbeer.uis.adapter.DevsAdapter;
 import com.ltbrew.brewbeer.uis.adapter.SectionsPagerAdapter;
 import com.ltbrew.brewbeer.uis.adapter.viewholder.BaseViewHolder;
 import com.ltbrew.brewbeer.uis.dialog.DeleteOrRenameDevPopupWindow;
-import com.ltbrew.brewbeer.uis.dialog.NoticeDialog;
-import com.ltbrew.brewbeer.uis.dialog.OnNegativeButtonClickListener;
-import com.ltbrew.brewbeer.uis.dialog.OnPositiveButtonClickListener;
 import com.ltbrew.brewbeer.uis.dialog.SetDevNameDialog;
 import com.ltbrew.brewbeer.uis.fragment.BrewSessionFragment;
 import com.ltbrew.brewbeer.uis.fragment.RecipeFragment;
 import com.ltbrew.brewbeer.uis.utils.AccUtils;
-import com.ltbrew.brewbeer.uis.utils.NetworkConnectionUtil;
 import com.ltbrew.brewbeer.uis.utils.ReqSessionStateQueue;
 
 import java.util.Collections;

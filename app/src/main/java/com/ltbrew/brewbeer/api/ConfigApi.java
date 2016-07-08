@@ -4,8 +4,6 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import com.ltbrew.brewbeer.api.common.TokenDispatcher;
-import com.ltbrew.brewbeer.api.common.utils.HostUtil;
-import com.ltbrew.brewbeer.api.common.utils.SharePrefUtil;
 import com.ltbrew.brewbeer.api.longconnection.TransmitCmdService;
 import com.ltbrew.brewbeer.api.longconnection.interfaces.FileSocketReadyCallback;
 import com.ltbrew.brewbeer.api.model.HttpResponse;
@@ -36,7 +34,7 @@ public class ConfigApi {
             }
         }
         TransmitCmdService transmitCmdService = TransmitCmdService.newInstance(token, cb);
-        transmitCmdService.initializeCmdLongConn();
+        transmitCmdService.initializeLongConn();
         return transmitCmdService;
     }
 }

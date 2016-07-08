@@ -37,9 +37,13 @@ public class Lt_stream
   {
     this.host = host;
   }
-  
-  public String toString()
-  {
-    return "Direct_push{host='" + this.host + '\'' + ", ports=" + this.ports + ", ttl=" + this.ttl + '}';
+
+  @Override
+  public String toString() {
+    return "Lt_stream{" +
+            "ports=" + ports +
+            ", ttl=" + ttl +
+            ", host='" + host + '\'' +
+            '}';
   }
 }

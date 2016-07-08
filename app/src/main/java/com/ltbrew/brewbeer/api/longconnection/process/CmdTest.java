@@ -3,10 +3,6 @@ package com.ltbrew.brewbeer.api.longconnection.process;
 import com.ltbrew.brewbeer.api.longconnection.TransmitCmdService;
 import com.ltbrew.brewbeer.api.longconnection.interfaces.FileSocketReadyCallback;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
 /**
  * Created by Jason on 2015/6/10.
  */
@@ -17,7 +13,7 @@ public class CmdTest {
 
         service = TransmitCmdService.newInstance("0ec24e36a96b7b0a09a0bcccfc2e7f13ce98dcf02ca852c2151cc8562956d7232dcb9fa658553364b570a023189ddd0e38e46d4b119dd26921c451f59df2ae7a4b4b3d79759fba1c4817166d3afed721f596",
                 getFileSocketReadyCallback());
-        service.initializeCmdLongConn();
+        service.initializeLongConn();
 //        System.out.print(PushServiceKits.checkIsInteger(":10\r\n$4\r\nujmd\r\n"));
     }
 

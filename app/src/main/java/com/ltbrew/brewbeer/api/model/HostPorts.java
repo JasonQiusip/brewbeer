@@ -56,8 +56,14 @@ public class HostPorts
     this.lt_stream = lt_stream;
   }
 
-  public String toString()
-  {
-    return "Hosts{api=" + this.api + ", sso=" + this.sso + ", file=" + this.file + ", directPush=" + this.direct_push + '}';
+  @Override
+  public String toString() {
+    return "HostPorts{" +
+            "api=" + api +
+            ", sso=" + sso +
+            ", file=" + file +
+            ", direct_push=" + direct_push +
+            ", lt_stream=" + lt_stream +
+            '}';
   }
 }

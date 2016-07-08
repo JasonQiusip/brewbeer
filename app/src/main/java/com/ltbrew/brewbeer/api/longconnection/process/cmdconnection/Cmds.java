@@ -1,7 +1,6 @@
 package com.ltbrew.brewbeer.api.longconnection.process.cmdconnection;
 
-import com.ltbrew.brewbeer.api.common.CSSLog;
-import com.ltbrew.brewbeer.api.longconnection.process.ManageLongConn;
+import com.ltbrew.brewbeer.api.longconnection.ManageLongConn;
 import com.ltbrew.brewbeer.api.longconnection.process.ParsePackKits;
 
 import java.util.ArrayList;

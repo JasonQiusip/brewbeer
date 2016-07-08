@@ -1,14 +1,13 @@
 package com.ltbrew.brewbeer.api.longconnection;
 
-import android.util.Log;
-
 import com.ltbrew.brewbeer.api.common.CSSLog;
 import com.ltbrew.brewbeer.api.common.TokenDispatcher;
 import com.ltbrew.brewbeer.api.longconnection.interfaces.FileSocketReadyCallback;
 import com.ltbrew.brewbeer.api.longconnection.process.cmdconnection.CmdsConstant;
 import com.ltbrew.brewbeer.api.longconnection.process.CommonParam;
-import com.ltbrew.brewbeer.api.longconnection.process.ManageLongConn;
 import com.ltbrew.brewbeer.api.longconnection.process.ReqType;
+import com.ltbrew.brewbeer.api.model.Direct_push;
+import com.ltbrew.brewbeer.api.model.Lt_stream;
 import com.ltbrew.brewbeer.api.model.UploadParam;
 
 import java.io.IOException;
@@ -49,52 +48,77 @@ public class TransmitCmdService {
         return cmdService;
     }
 
-    public void setIp(String ip) {
-        this.ip = ip;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
-    }
-
-    public static void nullCmdTransmitService() {
-        cmdService = null;
-    }
-
     private TransmitCmdService(String authorizeToken, FileSocketReadyCallback fileSocketReadyCallback) {
         this.authorizeToken = authorizeToken;
         this.fileSocketReadyCallback = fileSocketReadyCallback;
+    }
+
+
+    public boolean initializeLongConn() {
+        newPool();
+        initFileStreamTransmitSocket();
+        return initCmdSocket();
     }
 
     private void newPool() {
         pool = Executors.newFixedThreadPool(4);
     }
 
-    public boolean initializeCmdLongConn() {
-        try {
-            initCmdTransmitSocket();
-            startCmdWriteRead(cmdSocket, cmdOutputStream, cmdSocketLocker);
-        } catch (IOException e) {
-            ManageLongConn.getInstance().switchPort();
-            fileSocketReadyCallback.onInitializeLongConnFailed();
-            e.printStackTrace();
-            return false;
+    private void initFileStreamTransmitSocket(){
+        boolean initFileSocket = false;
+        transmitFileService = new TransmitFileService(authorizeToken, pool, fileSocketReadyCallback);
+        Lt_stream ltStream = ManageLongConn.getInstance().getLtStream();
+        if(ltStream == null)
+            return;
+        for (int ipScount = 0; ipScount <= ltStream.getPorts().size() - 1; ipScount++) {
+
+            if (transmitFileService != null) {
+                if(ManageLongConn.getInstance().ipHost == null){
+                    ManageLongConn.getInstance().ipHost = "117.28.254.73";
+                }
+                if (transmitFileService.initializeFileLongConn(ManageLongConn.getInstance().ipHost, ltStream.getPorts().get(ipScount))) {
+                    initFileSocket = true;
+                    break;
+                }
+            }
         }
-        return true;
+        if (!initFileSocket) {
+            if (fileSocketReadyCallback != null)
+                fileSocketReadyCallback.onInitFileSocketFailed();
+        }
     }
 
-    private void initCmdTransmitSocket() throws IOException {
+    private boolean initCmdSocket() {
+        Direct_push directPush = ManageLongConn.getInstance().getDirectPush();
+        if(directPush == null)
+            return false;
+        ArrayList<Integer> ports = directPush.getPorts();
+        for(int i = 0; i < ports.size(); i++) {
+            try {
+                initCmdTransmitSocket(ports.get(i));
+                startCmdWriteRead(cmdSocket, cmdOutputStream, cmdSocketLocker);
+                return true;
+            } catch (IOException e) {
+                fileSocketReadyCallback.onInitializeLongConnFailed();
+                e.printStackTrace();
+            }
+        }
+        return false;
+    }
+
+    private void initCmdTransmitSocket(Integer port) throws IOException {
 
         if(cmdSocket != null && !cmdSocket.isClosed())
             return;
-        if(ManageLongConn.getInstance().ipHost != null) {
-            serverAddress = InetAddress.getByName(ManageLongConn.getInstance().ipHost); // "27.154.54.242"
-            cmdSocket = new Socket(serverAddress, ManageLongConn.getInstance().port); //25712
-        }else {
-            Log.e("ip", ManageLongConn.getInstance().ipHost+"");
-            serverAddress = InetAddress.getByName("117.28.254.73"); // "27.154.54.242"
-            cmdSocket = new Socket(serverAddress, 26012); //25712
+        if(ManageLongConn.getInstance().ipHost == null){
+            ManageLongConn.getInstance().ipHost = "117.28.254.73";
         }
+        if(port == null){
+            port = 26012;
+        }
+        serverAddress = InetAddress.getByName(ManageLongConn.getInstance().getDirectPush().getHost()); // "27.154.54.242"
+        cmdSocket = new Socket(serverAddress, port); //25712
+
 //        serverAddress = InetAddress.getByName("218.5.96.6"); // "27.154.54.242"
 //        cmdSocket = new Socket(serverAddress, 25712); //25712
         CSSLog.showLog("serverAddress:" + serverAddress, "cmdSocket:" + cmdSocket);
@@ -102,8 +126,6 @@ public class TransmitCmdService {
     }
 
     private void startCmdWriteRead(Socket socket, final OutputStream outputStream, final CommonParam locker) {
-        newPool();
-        transmitFileService = new TransmitFileService(authorizeToken, pool, fileSocketReadyCallback);
         cmdsWrite = new SocketWriteProxy(outputStream, this.authorizeToken, ReqType.cmd);
         //写操作设置锁
         cmdsWrite.setLocker(locker);
@@ -147,25 +169,6 @@ public class TransmitCmdService {
 
             @Override
             public void onIPHostReceived(String[] ips) {
-                boolean initFileSocket = false;
-                for (int ipScount = 0; ipScount <= ips.length - 1; ipScount++) {
-                    String ipsigle = ips[ipScount];
-                    String[] splitedIp = ipsigle.split(":");
-                    String ipaddr = splitedIp[0];
-                    String host = splitedIp[1];
-                    Log.e("iphost", ipaddr+" ipsigle=  " + host);
-
-                    if (transmitFileService != null) {
-                        if (transmitFileService.initializeFileLongConn(ipaddr, Integer.parseInt(host))) {
-                            initFileSocket = true;
-                            break;
-                        }
-                    }
-                }
-                if (!initFileSocket) {
-                    if (fileSocketReadyCallback != null)
-                        fileSocketReadyCallback.onInitFileSocketFailed();
-                }
 
             }
 
@@ -225,7 +228,7 @@ public class TransmitCmdService {
             return;
         }
         fileSocketReadyCallback.onCmdSocketReconnect();
-        initializeCmdLongConn();
+        initializeLongConn();
 
         if (transmitFileService != null && transmitFileService.isFileSocketAvailable()) {
             newPool();
@@ -328,6 +331,10 @@ public class TransmitCmdService {
         if (transmitFileService != null) {
             transmitFileService.checkCmnMsgLast(pid, token);
         }
+    }
+
+    public static void nullCmdTransmitService() {
+        cmdService = null;
     }
 
     public interface SocketReadCallback {
